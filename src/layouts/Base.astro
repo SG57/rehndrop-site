@@ -73,8 +73,13 @@ const player = await Promise.all(
     <MiniPlayer />
     <VideoDialog />
     <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />
-    <script is:inline define:vars={{ base: BASE, sharp: u('brand/velvet.webp'), fog: u('brand/velvet-fog.jpg') }}>
+    <script is:inline define:vars={{ base: BASE, sharp: u('brand/velvet.webp'), sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg') }}>
       window.__rehndrop = { base, sharp, fog };
+      // retina laptops and 4K screens get the 3840px velvet for both the CSS layer and the lens
+      if (innerWidth * (devicePixelRatio || 1) > 2600) {
+        window.__rehndrop.sharp = sharp4k;
+        document.querySelector('.velvet')?.style.setProperty('--velvet', 'url(' + sharp4k + ')');
+      }
     </script>
     <script>
       import { startLens } from '../scripts/lens';

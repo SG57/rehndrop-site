@@ -19,12 +19,18 @@ LOGO_4K = BRAND / "01-masters/renders/logo-4k.jpg"
 # Measured mark-only bounds in logo-4k (BRAND memory): excludes the uppercase wordmark,
 # which is unratified and breaks the always-lowercase rule.
 MARK_BOX = (802, 710, 2988, 2994)
-VELVET = BRAND / "05-textures/velvet/velvet-master.png"
-# Cord's AI upscale of velvet-master.png; used automatically once it exists
-VELVET_HI = BRAND / "05-textures/velvet/velvet-master-4x.png"
-# one image serves the CSS first paint and the WebGL texture; 2560 keeps it under every
-# mobile GPU's max texture size (4096) and the download reasonable
-VELVET_MAX_W = 2560
+# Cord's AI upscales of velvet-master.png win when present, highest resolution first
+VELVET_SOURCES = [
+    BRAND / "05-textures/velvet/velvet-master-16k.jpg",
+    BRAND / "05-textures/velvet/velvet-master-4x.png",
+    BRAND / "05-textures/velvet/velvet-master.png",
+]
+# velvet.webp serves the CSS first paint and the WebGL texture everywhere; 2560 stays under
+# every mobile GPU's 4096 max texture size. velvet-4k.webp is swapped in only on screens
+# with more than ~2600 physical pixels across (retina laptops, 4K desktops).
+VELVET_W = 2560
+VELVET_4K_W = 3840
+Image.MAX_IMAGE_PIXELS = 200_000_000  # the 16k master is 133 MP; keep a bomb limit above it
 AVATAR = BRAND / "06-platforms/avatars/avatar-2400-mono.png"
 
 
@@ -55,10 +61,14 @@ def main() -> None:
     m = Image.merge("RGBA", (a.point(lambda _: 255),) * 3 + (a,))
     m.save(OUT / "r-mask-640.png", optimize=True)
 
-    velvet = Image.open(VELVET_HI if VELVET_HI.exists() else VELVET).convert("RGB")
-    if velvet.width > VELVET_MAX_W:
-        velvet = velvet.resize((VELVET_MAX_W, round(velvet.height * VELVET_MAX_W / velvet.width)), Image.LANCZOS)
-    print(f"velvet source {velvet.width}x{velvet.height}")
+    src = next(p for p in VELVET_SOURCES if p.exists())
+    master = Image.open(src).convert("RGB")
+    print(f"velvet source {src.name} {master.width}x{master.height}")
+    if master.width >= VELVET_4K_W:
+        hi = master.resize((VELVET_4K_W, round(master.height * VELVET_4K_W / master.width)), Image.LANCZOS)
+        hi.save(OUT / "velvet-4k.webp", quality=80, method=6)
+    velvet = master.resize((VELVET_W, round(master.height * VELVET_W / master.width)), Image.LANCZOS) if master.width > VELVET_W else master
+    del master
     velvet.save(OUT / "velvet.webp", quality=82, method=6)
     blur = velvet.resize((836, round(velvet.height * 836 / velvet.width)), Image.LANCZOS)
     blur = blur.filter(ImageFilter.GaussianBlur(9))
