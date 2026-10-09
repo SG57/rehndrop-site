@@ -6,6 +6,7 @@ import type { ImageMetadata } from 'astro';
 import catalog from '../data/catalog.json';
 import appleSnapshot from '../data/apple-snapshot.json';
 import curation from '../data/curation.json';
+import storeLinks from '../data/store-links.json';
 
 export type Lane = 'heavy' | 'hybrid' | 'melodic' | null;
 
@@ -142,14 +143,23 @@ async function load() {
   const byTitle = new Map<string, Track>();
   const byApple = new Map<number, Track>();
 
-  const linksFor = (title: string, apple: string | null) => ({
-    apple,
-    spotify: `https://open.spotify.com/search/${encodeURIComponent(`rehndrop ${title}`)}`,
-    youtube: topic.has(norm(title))
-      ? `https://music.youtube.com/watch?v=${topic.get(norm(title))}`
-      : `https://music.youtube.com/search?q=${encodeURIComponent(`rehndrop ${title}`)}`,
-    soundcloud: curation.stores.soundcloud,
-  });
+  // exact links, proven by scripts/store_links.py against each platform; search is the fallback
+  type StoreTrack = { spotify?: string | null; apple?: string | null; youtubeMusic?: string | null };
+  const exact = new Map<string, StoreTrack>(
+    Object.entries((storeLinks as { tracks?: Record<string, StoreTrack> }).tracks ?? {}).map(([k, v]) => [norm(k), v]),
+  );
+  const linksFor = (title: string, apple: string | null) => {
+    const x = exact.get(norm(title));
+    const q = encodeURIComponent(`rehndrop ${title}`);
+    return {
+      apple: apple ?? x?.apple ?? null,
+      spotify: x?.spotify ?? `https://open.spotify.com/search/${q}`,
+      youtube:
+        x?.youtubeMusic ??
+        (topic.has(norm(title)) ? `https://music.youtube.com/watch?v=${topic.get(norm(title))}` : `https://music.youtube.com/search?q=${q}`),
+      soundcloud: curation.stores.soundcloud,
+    };
+  };
 
   for (const c of catalog.tracks as CatalogTrack[]) {
     const t: Track = {
@@ -182,7 +192,7 @@ async function load() {
     const appleUrl = s.trackViewUrl.replace(/[?&]uo=\d+/, '');
     if (known) {
       known.released = s.releaseDate.slice(0, 10);
-      known.links.apple = appleUrl;
+      known.links.apple = appleUrl; // the exact track (?i=), sharper than ONCE's album link
       if (!known.preview.src && s.previewUrl) known.preview.src = s.previewUrl;
       continue;
     }

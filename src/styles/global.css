@@ -530,6 +530,12 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
 .mini.is-playing .pause-glyph { display: block; }
 .mini.is-playing [data-mini-toggle] .play-glyph { display: none; }
 .mini-close svg { width: 16px; height: 16px; }
+/* three store links + controls on a 375px phone: tighter, still 40px targets */
+@media (max-width: 480px) {
+  .mini { gap: 8px; grid-template-columns: 40px minmax(0, 1fr) auto; }
+  .mini-thumb { width: 40px; height: 40px; }
+  .mini-link, .mini-close { width: 40px; height: 40px; }
+}
 
 /* ---------- video dialog ---------- */
 .vdialog {

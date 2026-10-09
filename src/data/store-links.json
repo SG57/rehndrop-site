@@ -1,0 +1,425 @@
+{
+  "_note": "Per-release store URLs from ONCE (Revelator) get_release_status. Refreshed by the rehndrop-release skill when a release goes live.",
+  "fetched": "2026-10-09T22:09:31.107Z",
+  "releases": {
+    "bitch ass bitch ass bitch": {
+      "onceReleaseId": "1245ad50-3303-4856-8f3d-a516b11c8e9c",
+      "spotify": "https://play.spotify.com/album/1T7QXW2UntLY9KxeLZZXUr",
+      "apple": "https://music.apple.com/us/album/bitch-ass-bitch-ass-bitch-single/6818936679?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=5pJF42qaWlw",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-04T03:56:04.457",
+      "liveApple": "2026-10-04T03:57:59.643"
+    },
+    "pop the trunk": {
+      "onceReleaseId": "00e57519-a049-4848-bcc4-1c1f378bfff2",
+      "spotify": "https://play.spotify.com/album/0ePknioNCw4mvciiR2zQIW",
+      "apple": "https://music.apple.com/us/album/pop-the-trunk-single/6815507121?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=02hS3EgkXlc",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-02T14:29:29.2",
+      "liveApple": "2026-10-02T14:30:20.77"
+    },
+    "what's my name": {
+      "onceReleaseId": "4127a8e8-e454-4646-a58e-b200991d561a",
+      "spotify": "https://play.spotify.com/album/5tlynw5m9ewb7lvU651ONq",
+      "apple": "https://music.apple.com/us/album/whats-my-name-single/6813610478?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=jdHNzQH7sso",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-07T01:40:45.927",
+      "liveApple": "2026-10-07T01:42:37.803"
+    },
+    "something": {
+      "onceReleaseId": "f5a2740d-fcc4-42de-995c-f6b738cd7081",
+      "spotify": "https://play.spotify.com/album/3l5IRgsJcKcOsw2PNjtrBP",
+      "apple": "https://music.apple.com/us/album/something-single/6813625435?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=bmfMKVkvkPM",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-07T02:03:30.783",
+      "liveApple": "2026-10-07T02:03:12.653"
+    },
+    "buzzin'": {
+      "onceReleaseId": "dbe2ffd3-7acd-4b26-87af-f0f9d0111932",
+      "spotify": "https://play.spotify.com/album/3IE1sp5iXN9s8fbeNBGDNG",
+      "apple": "https://music.apple.com/us/album/buzzin-single/6813132367?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=fs9EjH0AzuI",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-07T02:15:49.06",
+      "liveApple": "2026-10-07T02:15:02.683"
+    },
+    "midnight": {
+      "onceReleaseId": "1d00df97-b1ad-451b-88a0-ad1fe9f08079",
+      "spotify": "https://play.spotify.com/album/5e5bwx6xaPMWEF8ZVwu8Sq",
+      "apple": "https://music.apple.com/us/album/midnight-single/6811446809?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=GcaXAZcMqdU",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-02T22:33:31.47",
+      "liveApple": "2026-10-02T22:32:48.65"
+    },
+    "light weight": {
+      "onceReleaseId": "5b2978c9-42e4-4ed0-a6ea-59be15887cb9",
+      "spotify": "https://play.spotify.com/album/6pEhbhWX0WY5wkoBZIFy53",
+      "apple": "https://music.apple.com/us/album/light-weight-single/6811715252?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=bGmO9fzvkug",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-07T02:22:24.7",
+      "liveApple": "2026-10-07T02:21:52.543"
+    },
+    "back to that feeling": {
+      "onceReleaseId": "3858096b-3d76-423a-8c35-46708990d3ae",
+      "spotify": "https://play.spotify.com/album/49BBDBW1cjdjWyYNsEL30L",
+      "apple": "https://music.apple.com/us/album/back-to-that-feeling-single/6811716046?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=mWMLNEqZJCE",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-07T02:17:52.68",
+      "liveApple": "2026-10-07T02:19:33.807"
+    },
+    "done waiting": {
+      "onceReleaseId": "eb8bdc8b-8f59-4e97-8ff6-ed5d887efebe",
+      "spotify": "https://play.spotify.com/album/251bKNi7DA0qRRz4Z8RuQf",
+      "apple": "https://music.apple.com/us/album/done-waiting-single/6811715415?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=Oy1Z1kdeadQ",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-07T02:29:57.337",
+      "liveApple": "2026-10-07T02:30:40.197"
+    },
+    "waiting for": {
+      "onceReleaseId": "25c98eee-6c79-4dfd-9460-becd0f7bf97a",
+      "spotify": "https://play.spotify.com/album/2ZWbbtUgE4rrw74fGrUeUr",
+      "apple": "https://music.apple.com/us/album/waiting-for-single/6811715898?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=uDqzIhOT6Go",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-10-03T01:12:34.92",
+      "liveApple": "2026-10-03T01:17:40.263"
+    },
+    "disconnect": {
+      "onceReleaseId": "950d8c1f-2495-4358-9e55-eeb67595493a",
+      "spotify": "https://play.spotify.com/album/3vQFeF8u9e0qtoMVEc8nxs",
+      "apple": "https://music.apple.com/us/album/disconnect-single/6811719113?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=leSycoR0Qrc",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-09-11T02:44:54.6",
+      "liveApple": "2026-09-14T00:52:19.87"
+    },
+    "meaningless": {
+      "onceReleaseId": "f3962431-6b84-4c6b-b9bb-5992c33745af",
+      "spotify": "https://play.spotify.com/album/0wf0hHiYw4p7hAfUMeIctN",
+      "apple": "https://music.apple.com/us/album/meaningless-single/6810393252?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=B-rNjxJxnn4",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-09-08T20:23:12.587",
+      "liveApple": "2026-09-09T20:24:38.343"
+    },
+    "demons in my ear": {
+      "onceReleaseId": "1c15a0ed-1a9c-4ef0-bf58-192f2206a5f8",
+      "spotify": "https://play.spotify.com/album/6HbdCVuqJoiwn23RBw4Oza",
+      "apple": "https://music.apple.com/us/album/demons-in-my-ear-single/6808257586?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=OZJlhd0kNsQ",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-09-03T14:05:54.887",
+      "liveApple": "2026-09-03T14:06:51.463"
+    },
+    "see the real me": {
+      "onceReleaseId": "79512cfb-187e-45dc-a803-2e89d1cec5ff",
+      "spotify": "https://play.spotify.com/album/0ihujJwJBPzpNGHjWkvoDC",
+      "apple": "https://music.apple.com/us/album/see-the-real-me-single/6804444887?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=odPPBqLt2Gk",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:44:13.397",
+      "liveApple": "2026-08-23T15:45:17.443"
+    },
+    "wild beauty": {
+      "onceReleaseId": "1075d051-0544-46ce-9528-48bea9dd7890",
+      "spotify": "https://play.spotify.com/album/1cAGcJG7l1WAGuZK7z1guo",
+      "apple": "https://music.apple.com/us/album/wild-beauty-single/6804445195?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=S-Z1ANv-Zdc",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:45:48.117",
+      "liveApple": "2026-08-23T15:46:50.503"
+    },
+    "we're gonna be alright": {
+      "onceReleaseId": "526c4052-c3c3-4bfe-b166-9af7882c0a9d",
+      "spotify": "https://play.spotify.com/album/0CBEfqejagFhiOosNPYt2Z",
+      "apple": "https://music.apple.com/us/album/were-gonna-be-alright-single/6804445149?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=C1UHvD7Pu20",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:47:39.177",
+      "liveApple": "2026-08-23T15:46:25.847"
+    },
+    "set your heart ablaze": {
+      "onceReleaseId": "f0d3b106-67c8-4390-95f5-35db8768770a",
+      "spotify": "https://play.spotify.com/album/4cDwW0N1YMki6sO6nwQJLL",
+      "apple": "https://music.apple.com/us/album/set-your-heart-ablaze-single/6804445207?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=vYqEIoVwSz8",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:47:34.407",
+      "liveApple": "2026-08-23T15:47:20.797"
+    },
+    "pretty lights": {
+      "onceReleaseId": "28f6e1da-8f48-41b9-b910-9a3f5f1baa48",
+      "spotify": "https://play.spotify.com/album/2Wye1uf8C4dhBdszEFL3UJ",
+      "apple": "https://music.apple.com/us/album/pretty-lights-single/6804445665?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=mkOk1iffLxY",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:49:34.993",
+      "liveApple": "2026-08-23T15:50:45.917"
+    },
+    "high then higher": {
+      "onceReleaseId": "efdace06-cce0-4742-955c-0142edc31344",
+      "spotify": "https://play.spotify.com/album/6LN4V8oS0hpVu5DTaRooru",
+      "apple": "https://music.apple.com/us/album/high-then-higher-single/6804445670?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=LN2PZkU2xZA",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:50:19.193",
+      "liveApple": "2026-08-23T15:51:11.83"
+    },
+    "mr. big stuff": {
+      "onceReleaseId": "c1a6d0bb-9556-4cc4-ab6a-92f17c694b69",
+      "spotify": "https://play.spotify.com/album/6M8NDF4WK5JvmEX7kVx1OH",
+      "apple": "https://music.apple.com/us/album/mr-big-stuff-single/6804445652?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=_Az56PT-Jzc",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:51:37.533",
+      "liveApple": "2026-08-23T15:50:23.977"
+    },
+    "bass bumpin'": {
+      "onceReleaseId": "3fb5bf90-7e70-4f18-ba34-390261f03317",
+      "spotify": "https://play.spotify.com/album/7hA4IuBceCp3lYPbewzh3M",
+      "apple": "https://music.apple.com/us/album/bass-bumpin-single/6804446412?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=lkkzguDkiKk",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T15:51:37.673",
+      "liveApple": "2026-08-23T15:54:28.503"
+    },
+    "can you hear me?": {
+      "onceReleaseId": "a1c524c9-5733-4e42-83fd-b8dce7b718b5",
+      "spotify": "https://play.spotify.com/album/1T6qFZchijY1MJ2uxuwv9T",
+      "apple": "https://music.apple.com/us/album/can-you-hear-me-single/6804458249?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=LwE7zWVHLNk",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T16:52:21.08",
+      "liveApple": "2026-08-23T16:59:39.137"
+    },
+    "you ain't ready baby": {
+      "onceReleaseId": "38041454-39a0-492d-b7be-113dbd815cdc",
+      "spotify": "https://play.spotify.com/album/4RuHcL9h3ohGmEjwUoWN2Z",
+      "apple": "https://music.apple.com/us/album/you-aint-ready-baby-single/6804458613?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=1QiEbq7Or0c",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-23T16:57:40.517",
+      "liveApple": "2026-08-23T16:58:19.28"
+    },
+    "wobble": {
+      "onceReleaseId": "1e414754-0e74-49e7-b133-b466f16b91de",
+      "spotify": "https://play.spotify.com/album/1tfBUEN2DlozsIqNhRnr1W",
+      "apple": "https://music.apple.com/us/album/wobble-single/6804319204?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=Gk-5JU7GM0c",
+      "soundcloud": null,
+      "amazon": null,
+      "tidal": null,
+      "deezer": null,
+      "liveSpotify": "2026-08-28T22:24:09.527",
+      "liveApple": "2026-08-28T21:47:24.187"
+    }
+  },
+  "tracks": {
+    "back to that feeling": {
+      "spotify": "https://open.spotify.com/track/5JYa5EFhdpX62n2p26nqIZ",
+      "apple": "https://music.apple.com/us/album/back-to-that-feeling-single/6811716046?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=mWMLNEqZJCE"
+    },
+    "bass bumpin'": {
+      "spotify": "https://open.spotify.com/track/6PMkFUgacvNtDM84DuKlvd",
+      "apple": "https://music.apple.com/us/album/bass-bumpin-single/6804446412?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=lkkzguDkiKk"
+    },
+    "bitch ass bitch ass bitch": {
+      "spotify": "https://open.spotify.com/track/3IJ5bVoihRyneHNLciF3G2",
+      "apple": "https://music.apple.com/us/album/bitch-ass-bitch-ass-bitch-single/6818936679?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=5pJF42qaWlw"
+    },
+    "buzzin'": {
+      "spotify": "https://open.spotify.com/track/5ZjoFwizyXLtGD3CuINmXe",
+      "apple": "https://music.apple.com/us/album/buzzin-single/6813132367?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=fs9EjH0AzuI"
+    },
+    "can you hear me?": {
+      "spotify": "https://open.spotify.com/track/2a3wjW0oGYyKPVkCu5OCc4",
+      "apple": "https://music.apple.com/us/album/can-you-hear-me-single/6804458249?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=LwE7zWVHLNk"
+    },
+    "demons in my ear": {
+      "spotify": "https://open.spotify.com/track/0xiUqhAZnWvKHyPdqWokFn",
+      "apple": "https://music.apple.com/us/album/demons-in-my-ear-single/6808257586?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=OZJlhd0kNsQ"
+    },
+    "disconnect": {
+      "spotify": "https://open.spotify.com/track/5XVMtDBRHi2TqsEzE6DgjH",
+      "apple": "https://music.apple.com/us/album/disconnect-single/6811719113?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=leSycoR0Qrc"
+    },
+    "disconnect - detox": {
+      "spotify": "https://open.spotify.com/track/5pFXVRISZXBnnfPzte5plf",
+      "apple": null,
+      "youtubeMusic": null
+    },
+    "don't screw with me": {
+      "spotify": "https://open.spotify.com/track/38ru8iH6h5aZIFTzzjhuZm"
+    },
+    "done waiting": {
+      "spotify": "https://open.spotify.com/track/56U06It4VUPYbSFpBFqBEa",
+      "apple": "https://music.apple.com/us/album/done-waiting-single/6811715415?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=Oy1Z1kdeadQ"
+    },
+    "high then higher": {
+      "spotify": "https://open.spotify.com/track/6TOYAq3kpizwkD3bblU6Wz",
+      "apple": "https://music.apple.com/us/album/high-then-higher-single/6804445670?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=LN2PZkU2xZA"
+    },
+    "light weight": {
+      "spotify": "https://open.spotify.com/track/3QO0Y7wXo0Yg38N18tQcBU",
+      "apple": "https://music.apple.com/us/album/light-weight-single/6811715252?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=bGmO9fzvkug"
+    },
+    "meaningless": {
+      "spotify": "https://open.spotify.com/track/0tB5niQMy0KzQHmCfhZ4sQ",
+      "apple": "https://music.apple.com/us/album/meaningless-single/6810393252?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=B-rNjxJxnn4"
+    },
+    "midnight": {
+      "spotify": "https://open.spotify.com/track/0zQXvuXwDXSAUbsqrhnxJ2",
+      "apple": "https://music.apple.com/us/album/midnight-single/6811446809?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=GcaXAZcMqdU"
+    },
+    "mr. big stuff": {
+      "spotify": "https://open.spotify.com/track/1WaQ8RnIKgLNgMspYQpCtg",
+      "apple": "https://music.apple.com/us/album/mr-big-stuff-single/6804445652?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=_Az56PT-Jzc"
+    },
+    "pop the trunk": {
+      "spotify": "https://open.spotify.com/track/1RjbiBHxiYi3N5p0fZnrKu",
+      "apple": "https://music.apple.com/us/album/pop-the-trunk-single/6815507121?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=02hS3EgkXlc"
+    },
+    "pretty lights": {
+      "spotify": "https://open.spotify.com/track/1lxDV790tGA7yDCFDIkCTK",
+      "apple": "https://music.apple.com/us/album/pretty-lights-single/6804445665?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=mkOk1iffLxY"
+    },
+    "see the real me": {
+      "spotify": "https://open.spotify.com/track/7KwVsrlZzdbsItrOneM1ze",
+      "apple": "https://music.apple.com/us/album/see-the-real-me-single/6804444887?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=odPPBqLt2Gk"
+    },
+    "set your heart ablaze": {
+      "spotify": "https://open.spotify.com/track/2VMmVRgpVsUsESgagS1QdF",
+      "apple": "https://music.apple.com/us/album/set-your-heart-ablaze-single/6804445207?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=vYqEIoVwSz8"
+    },
+    "something": {
+      "spotify": "https://open.spotify.com/track/0CUZDvs0HOD2m6eFaFAebL",
+      "apple": "https://music.apple.com/us/album/something-single/6813625435?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=bmfMKVkvkPM"
+    },
+    "waiting for": {
+      "spotify": "https://open.spotify.com/track/72QWmIOzCAPklSjGV82EO1",
+      "apple": "https://music.apple.com/us/album/waiting-for-single/6811715898?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=uDqzIhOT6Go"
+    },
+    "we're gonna be alright": {
+      "spotify": "https://open.spotify.com/track/1p6e96mELI2BbfHroqiY0Y",
+      "apple": "https://music.apple.com/us/album/were-gonna-be-alright-single/6804445149?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=C1UHvD7Pu20"
+    },
+    "what's my name": {
+      "spotify": "https://open.spotify.com/track/6DqmeHSn37pNeGdoYEuzmM",
+      "apple": "https://music.apple.com/us/album/whats-my-name-single/6813610478?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=jdHNzQH7sso"
+    },
+    "wild beauty": {
+      "spotify": "https://open.spotify.com/track/4uYuDL2s0AL0rt8g672d3K",
+      "apple": "https://music.apple.com/us/album/wild-beauty-single/6804445195?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=S-Z1ANv-Zdc"
+    },
+    "wobble": {
+      "spotify": "https://open.spotify.com/track/741op8H0T8oX7d34MoMSnT",
+      "apple": "https://music.apple.com/us/album/wobble-single/6804319204?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=Gk-5JU7GM0c"
+    },
+    "you ain't ready baby": {
+      "spotify": "https://open.spotify.com/track/5m7Wtn9DuMZU4koL4OgnIl",
+      "apple": "https://music.apple.com/us/album/you-aint-ready-baby-single/6804458613?uo=4",
+      "youtubeMusic": "https://music.youtube.com/watch?v=1QiEbq7Or0c"
+    }
+  },
+  "verified": "2026-10-09T15:11:42"
+}

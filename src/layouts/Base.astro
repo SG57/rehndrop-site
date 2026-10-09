@@ -33,6 +33,7 @@ const player = await Promise.all(
     thumb: t.cover ? (await getImage({ src: t.cover, width: 192, height: 192, format: 'webp', quality: 75 })).src : u('brand/icon-192.png'),
     apple: t.links.apple,
     spotify: t.links.spotify,
+    youtube: t.links.youtube,
     href: u(`t/${t.slug}/`),
   })),
 );

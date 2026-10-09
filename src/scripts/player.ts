@@ -15,6 +15,7 @@ export interface PlayerTrack {
   thumb: string;
   apple: string | null;
   spotify: string;
+  youtube: string;
   href: string;
 }
 
@@ -37,6 +38,7 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
   const barToggle = bar?.querySelector<HTMLButtonElement>('[data-mini-toggle]');
   const barApple = bar?.querySelector<HTMLAnchorElement>('[data-mini-apple]');
   const barSpotify = bar?.querySelector<HTMLAnchorElement>('[data-mini-spotify]');
+  const barYoutube = bar?.querySelector<HTMLAnchorElement>('[data-mini-youtube]');
   const barClose = bar?.querySelector<HTMLButtonElement>('[data-mini-close]');
   const root = document.documentElement;
 
@@ -165,6 +167,7 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
       if (t.apple) barApple.href = t.apple;
     }
     if (barSpotify) barSpotify.href = t.spotify;
+    if (barYoutube) barYoutube.href = t.youtube;
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: t.title,
