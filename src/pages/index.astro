@@ -1,0 +1,78 @@
+---
+import Base from '../layouts/Base.astro';
+import StorePills from '../components/StorePills.astro';
+import Spotlight from '../components/Spotlight.astro';
+import Row from '../components/Row.astro';
+import Card from '../components/Card.astro';
+import VideoCard from '../components/VideoCard.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
+import { data, rows, curation } from '../lib/data';
+import { BIO, u } from '../lib/site';
+
+const r = rows();
+const site = Astro.site!;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'MusicGroup',
+  name: 'rehndrop',
+  url: new URL(u(), site).href,
+  image: new URL(u('og.jpg'), site).href,
+  genre: ['dubstep', 'riddim', 'glitch hop', 'future bass'],
+  email: curation.contact,
+  sameAs: [...Object.values(curation.stores), ...Object.values(curation.socials)],
+  track: data.tracks.map((t) => ({
+    '@type': 'MusicRecording',
+    name: t.title,
+    url: new URL(u(`t/${t.slug}/`), site).href,
+    ...(t.released ? { datePublished: t.released } : {}),
+  })),
+};
+---
+<Base title="rehndrop · bass music" description={BIO} tracks={data.tracks} jsonLd={jsonLd}>
+  <main>
+    <section class="welcome" aria-label="rehndrop">
+      <h1 class="sr-only">rehndrop</h1>
+      <div class="r-stage" data-tilt>
+        <div class="r">
+          <span class="r-glow" aria-hidden="true"></span>
+          <img class="r-img" src={u('brand/r-chrome-640.webp')} srcset={`${u('brand/r-chrome-640.webp')} 640w, ${u('brand/r-chrome-1200.webp')} 1200w`} sizes="(orientation: landscape) and (max-height: 520px) 34vh, (min-width: 900px) 300px, 46vw" width="640" height="669" alt="rehndrop" fetchpriority="high" />
+          <span class="r-sheen" aria-hidden="true" style={`--mask:url(${u('brand/r-mask-640.png')})`}></span>
+        </div>
+      </div>
+      <div class="welcome-copy">
+        <p class="bio">the heavy stuff and the pretty stuff.</p>
+        <p class="pick">pick one.</p>
+        <StorePills />
+      </div>
+      <a class="scroll-cue" href="#spotlight" aria-label="more"><span></span></a>
+    </section>
+
+    <Spotlight tracks={data.spotlight} />
+
+    <div class="shelves">
+      <Row title="newest." id="newest">
+        {r.newest.map((t, i) => <Card track={t} eager={i < 3} />)}
+      </Row>
+      <Row title="the heavy stuff." id="heavy">
+        {r.heavy.map((t) => <Card track={t} />)}
+      </Row>
+      <Row title="the pretty stuff." id="pretty">
+        {r.pretty.map((t) => <Card track={t} />)}
+      </Row>
+      {r.videos.length > 0 && (
+        <Row title="videos." id="videos">
+          {r.videos.map((v) => <VideoCard video={v} />)}
+        </Row>
+      )}
+      {r.early.length > 0 && (
+        <Row title="2021." id="early">
+          {r.early.map((t) => <Card track={t} />)}
+        </Row>
+      )}
+    </div>
+
+    <Contact />
+    <Footer />
+  </main>
+</Base>

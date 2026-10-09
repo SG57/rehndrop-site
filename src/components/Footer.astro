@@ -1,0 +1,13 @@
+---
+import Icon from './Icon.astro';
+import { curation } from '../lib/data';
+const year = new Date().getFullYear();
+---
+<footer class="foot">
+  <div class="foot-social">
+    <a href={curation.socials.instagram} target="_blank" rel="noopener" aria-label="instagram"><Icon name="instagram" size={18} /></a>
+    <a href={curation.socials.facebook} target="_blank" rel="noopener" aria-label="facebook"><Icon name="facebook" size={18} /></a>
+    <a href={curation.stores.youtube} target="_blank" rel="noopener" aria-label="youtube"><Icon name="youtube" size={18} /></a>
+  </div>
+  <p class="foot-line">© {year} rehndrop <span aria-hidden="true">·</span> <a href={curation.studio} rel="noopener">sg57.dev</a></p>
+</footer>

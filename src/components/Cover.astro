@@ -1,0 +1,19 @@
+---
+// Covers are local (exported, sigil-stamped) or remote (Apple artwork for a release the
+// exporter hasn't seen yet). Astro's <Image> types each case separately, so branch here.
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+interface Props {
+  src: ImageMetadata | string;
+  size: number;
+  widths: number[];
+  sizes: string;
+  alt: string;
+  eager?: boolean;
+  quality?: number;
+  class?: string;
+}
+const { src, size, widths, sizes, alt, eager = false, quality = 82, class: cls } = Astro.props;
+const common = { width: size, height: size, widths, sizes, alt, loading: eager ? ('eager' as const) : ('lazy' as const), format: 'webp' as const, quality, class: cls };
+---
+{typeof src === 'string' ? <Image src={src} {...common} /> : <Image src={src} {...common} />}

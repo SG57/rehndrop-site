@@ -1,0 +1,19 @@
+---
+import Icon from './Icon.astro';
+import { curation } from '../lib/data';
+const s = curation.stores;
+const pills = [
+  { name: 'spotify', label: 'spotify', href: s.spotify },
+  { name: 'apple', label: 'apple music', href: s.apple },
+  { name: 'soundcloud', label: 'soundcloud', href: s.soundcloud },
+  { name: 'youtube', label: 'youtube', href: s.youtube },
+] as const;
+---
+<nav class="stores" aria-label="listen">
+  {pills.map((p) => (
+    <a class="pill" href={p.href} rel="noopener" target="_blank">
+      <Icon name={p.name} size={17} />
+      <span>{p.label}</span>
+    </a>
+  ))}
+</nav>

@@ -1,0 +1,82 @@
+{
+  "_note": "Hand-edited. Everything else in src/data is generated (catalog.json by scripts/export_catalog.py, apple-snapshot.json from Apple). Words follow D:/rehndrop/resources/brand/VOICE.md.",
+
+  "spotlight": [
+    "whats-my-name",
+    "wild-beauty",
+    "see-the-real-me",
+    "mr-big-stuff",
+    "bitch-ass-bitch-ass-bitch",
+    "back-to-that-feeling"
+  ],
+
+  "answers": {
+    "what's my name": "now you know.",
+    "can you hear me?": "a little too well.",
+    "you ain't ready baby": "you weren't.",
+    "light weight": "it isn't.",
+    "bass bumpin'": "it is.",
+    "pop the trunk": "it's open.",
+    "meaningless": "almost.",
+    "mr. big stuff": "who do you think you are.",
+    "see the real me": "you're looking at it.",
+    "waiting for": "still.",
+    "done waiting": "same.",
+    "we're gonna be alright": "probably.",
+    "set your heart ablaze": "careful.",
+    "demons in my ear": "headphones."
+  },
+
+  "stores": {
+    "spotify": "https://open.spotify.com/artist/6TVCS8UyGDvQOeSjqet4Ok",
+    "apple": "https://music.apple.com/us/artist/rehndrop/1545317806",
+    "soundcloud": "https://soundcloud.com/rehndrop",
+    "youtube": "https://www.youtube.com/channel/UCWxLvrR1nz7rWBBarDhTW3A"
+  },
+
+  "socials": {
+    "instagram": "https://www.instagram.com/rehndrop",
+    "facebook": "https://www.facebook.com/rehndrop"
+  },
+
+  "contact": "rehndrop@sg57.dev",
+  "studio": "https://sg57.dev/services",
+
+  "youtube": {
+    "channel": "UCWxLvrR1nz7rWBBarDhTW3A",
+    "topicChannels": ["UCjCaEu8luyGYIpTy4VQVa7w", "UCoWGa9hFsSo57Js8JgU0G-Q"],
+    "hide": ["2oPsc1lHiys", "Zld23plT8MY"],
+    "topicSnapshot": {
+      "bitch ass bitch ass bitch": "5pJF42qaWlw",
+      "pop the trunk": "02hS3EgkXlc",
+      "something": "bmfMKVkvkPM",
+      "what's my name": "jdHNzQH7sso",
+      "buzzin'": "fs9EjH0AzuI",
+      "midnight": "GcaXAZcMqdU",
+      "light weight": "bGmO9fzvkug",
+      "back to that feeling": "mWMLNEqZJCE",
+      "waiting for": "uDqzIhOT6Go",
+      "done waiting": "Oy1Z1kdeadQ",
+      "disconnect": "leSycoR0Qrc",
+      "disconnect (detox)": "nSjsikYuy78",
+      "meaningless": "B-rNjxJxnn4",
+      "demons in my ear": "OZJlhd0kNsQ",
+      "wobble": "Gk-5JU7GM0c",
+      "marauder": "JFyUInWuBJo",
+      "don't screw with me": "4HmoPbq-6dY",
+      "now die": "NqenLQBSlMs",
+      "you ain't ready baby": "1QiEbq7Or0c",
+      "mr. big stuff": "_Az56PT-Jzc",
+      "we're gonna be alright": "C1UHvD7Pu20",
+      "set your heart ablaze": "vYqEIoVwSz8",
+      "wild beauty": "S-Z1ANv-Zdc",
+      "can you hear me?": "LwE7zWVHLNk"
+    },
+    "videoSnapshot": [
+      { "id": "b9PD6ZmQIu0", "title": "rehndrop - marauder (Music Video)", "published": "2021-09-15" },
+      { "id": "rJ1yxP_bdmI", "title": "lil aaron - DRUGS (rehndrop remix)", "published": "2021-03-12" },
+      { "id": "74uxNb8OU3o", "title": "rehndrop - now die (Official Music Video)", "published": "2021-02-10" },
+      { "id": "ekixx40b_qM", "title": "rehndrop - don't screw with me (Official Music Video)", "published": "2021-01-27" }
+    ]
+  }
+}

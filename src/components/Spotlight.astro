@@ -1,0 +1,39 @@
+---
+import { getImage } from 'astro:assets';
+import Cover from './Cover.astro';
+import type { Track } from '../lib/data';
+import { fmtDate } from '../lib/data';
+import { u } from '../lib/site';
+import PlayButton from './PlayButton.astro';
+import Listen from './Listen.astro';
+interface Props { tracks: Track[] }
+const { tracks } = Astro.props;
+const ambient = await Promise.all(
+  tracks.map((t) => (t.cover ? getImage({ src: t.cover, width: 96, height: 96, format: 'webp', quality: 60 }) : null)),
+);
+---
+<section class="spotlight" id="spotlight" data-spotlight aria-roledescription="carousel" aria-label="spotlight" style={`--accent-spot:${tracks[0]?.accent ?? '#c9ced6'}`}>
+  <div class="spot-slides">
+    {tracks.map((t, i) => (
+      <article class:list={['spot', { 'is-current': i === 0 }]} data-slide data-accent={t.accent} aria-roledescription="slide" aria-label={`${i + 1} of ${tracks.length}`} aria-hidden={i === 0 ? 'false' : 'true'} inert={i !== 0} style={`--slide-accent:${t.accent}`}>
+        {ambient[i] && <img class="spot-ambient" src={ambient[i]!.src} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} />}
+        <div class="spot-cover">
+          {t.cover && <Cover src={t.cover} size={720} widths={[360, 540, 720]} sizes="(min-width: 900px) 420px, (orientation: landscape) 46vh, 78vw" alt={`${t.title} cover`} eager={i === 0} quality={85} />}
+        </div>
+        <div class="spot-info">
+          <a class="spot-title" href={u(`t/${t.slug}/`)}>{t.title}</a>
+          {t.answer ? <p class="spot-answer">{t.answer}</p> : <p class="spot-answer spot-answer--date">{fmtDate(t.released)}</p>}
+          <div class="spot-actions">
+            {t.preview.src && <PlayButton slug={t.slug} title={t.title} size="lg" />}
+            <Listen track={t} />
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+  <div class="spot-ticks" role="group" aria-label="choose a track">
+    {tracks.map((t, i) => (
+      <button class:list={['tick', { 'is-current': i === 0 }]} type="button" data-tick aria-label={t.title} aria-current={i === 0 ? 'true' : 'false'}><span></span></button>
+    ))}
+  </div>
+</section>

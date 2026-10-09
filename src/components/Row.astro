@@ -1,0 +1,21 @@
+---
+// A horizontal, snap-scrolling shelf. Arrows appear on hover-capable screens.
+interface Props { title: string; id?: string }
+const { title, id } = Astro.props;
+---
+<section class="row" data-row id={id} aria-label={title.replace(/\.$/, '')}>
+  <header class="row-head">
+    <h2 class="row-title">{title}</h2>
+    <div class="row-nav">
+      <button class="row-btn" type="button" data-row-prev aria-label="scroll back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+      </button>
+      <button class="row-btn" type="button" data-row-next aria-label="scroll forward">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+      </button>
+    </div>
+  </header>
+  <div class="row-track" data-row-track>
+    <slot />
+  </div>
+</section>

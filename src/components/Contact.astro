@@ -1,0 +1,14 @@
+---
+import { curation } from '../lib/data';
+const mail = (subject: string) => `mailto:${curation.contact}?subject=${encodeURIComponent(subject)}`;
+---
+<section class="contact" aria-label="contact">
+  <nav class="contact-links">
+    <a href={mail('booking')}>booking</a>
+    <span aria-hidden="true">·</span>
+    <a href={mail('press')}>press</a>
+    <span aria-hidden="true">·</span>
+    <a href={mail('management')}>management</a>
+  </nav>
+  <a class="contact-mail" href={`mailto:${curation.contact}`}>{curation.contact}</a>
+</section>

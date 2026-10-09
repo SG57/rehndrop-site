@@ -1,0 +1,79 @@
+---
+import { getImage } from 'astro:assets';
+import Cover from '../../components/Cover.astro';
+import Base from '../../layouts/Base.astro';
+import PlayButton from '../../components/PlayButton.astro';
+import Listen from '../../components/Listen.astro';
+import Row from '../../components/Row.astro';
+import Card from '../../components/Card.astro';
+import VideoCard from '../../components/VideoCard.astro';
+import Contact from '../../components/Contact.astro';
+import Footer from '../../components/Footer.astro';
+import { data, related, fmtDate, type Track } from '../../lib/data';
+import { u } from '../../lib/site';
+
+export function getStaticPaths() {
+  return data.tracks.map((t) => ({ params: { slug: t.slug } }));
+}
+
+const track = data.bySlug.get(Astro.params.slug!) as Track;
+const more = related(track);
+const site = Astro.site!;
+const og = track.cover ? await getImage({ src: track.cover, width: 1200, height: 1200, format: 'jpg', quality: 85 }) : null;
+const ambient = track.cover ? await getImage({ src: track.cover, width: 96, height: 96, format: 'webp', quality: 60 }) : null;
+const description = `${track.title} by rehndrop. listen on spotify, apple music, soundcloud and youtube.`;
+const date = fmtDate(track.released);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'MusicRecording',
+  name: track.title,
+  url: new URL(u(`t/${track.slug}/`), site).href,
+  byArtist: { '@type': 'MusicGroup', name: 'rehndrop', url: new URL(u(), site).href },
+  ...(track.released ? { datePublished: track.released } : {}),
+  ...(og ? { image: new URL(og.src, site).href } : {}),
+};
+---
+<Base title={`${track.title} · rehndrop`} description={description} image={og?.src} type="music.song" tracks={[track, ...more]} jsonLd={jsonLd}>
+  <main class="track-page" style={`--accent-page:${track.accent}`}>
+    <a class="back" href={u()} aria-label="rehndrop home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+      <span>rehndrop</span>
+    </a>
+
+    <section class="track-hero">
+      {ambient && <img class="spot-ambient" src={ambient.src} alt="" aria-hidden="true" />}
+      <div class="track-cover">
+        {track.cover && <Cover src={track.cover} size={900} widths={[420, 640, 900]} sizes="(min-width: 900px) 460px, (orientation: landscape) 60vh, 82vw" alt={`${track.title} cover`} eager quality={86} />}
+      </div>
+      <div class="track-info">
+        <h1 class="track-title">{track.title}</h1>
+        {track.answer && <p class="spot-answer">{track.answer}</p>}
+        <p class="track-meta">
+          single{date && <> <span aria-hidden="true">·</span> {date}</>}{track.explicit && <> <span class="badge" aria-label="explicit">e</span></>}
+        </p>
+        <div class="spot-actions">
+          {track.preview.src && <PlayButton slug={track.slug} title={track.title} size="lg" />}
+        </div>
+        <Listen track={track} labels />
+      </div>
+    </section>
+
+    {track.video && (
+      <section class="track-video" aria-label="video">
+        <h2 class="row-title">video.</h2>
+        <VideoCard video={track.video} wide />
+      </section>
+    )}
+
+    {more.length > 0 && (
+      <div class="shelves">
+        <Row title="more.">
+          {more.map((t) => <Card track={t} />)}
+        </Row>
+      </div>
+    )}
+
+    <Contact />
+    <Footer />
+  </main>
+</Base>
