@@ -29,6 +29,9 @@ uniform float uFlash;    // 0..1 light hit
 uniform float uScroll;   // 0..1 page scroll, for a little parallax
 uniform vec3 uTint;
 uniform vec3 uWipe[6];   // pointer trail: xy uv, z strength
+uniform vec2 uSway;      // slow drift + cursor parallax of the scene behind the glass
+uniform vec4 uLights;    // two light pools orbiting the velvet: xy, xy in uv
+uniform vec2 uLightAmp;  // their breathing brightness
 
 // hash without sine, Dave Hoskins (MIT)
 float h11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
@@ -114,6 +117,7 @@ void main() {
 
   vec2 tuv = vUv * uCover.xy + uCover.zw;
   tuv.y += (uScroll - 0.5) * 0.04;
+  tuv += uSway * uCover.xy;
   vec3 bg = texture2D(uSharp, tuv).rgb;
   vec3 fog = texture2D(uFog, tuv + nrm * 0.004).rgb;
   vec3 lens = texture2D(uSharp, tuv - nrm * vec2(0.06 / uAspect, 0.06) * uCover.xy).rgb;
@@ -130,6 +134,17 @@ void main() {
   float lip = smoothstep(0.2, 0.95, -sn.y) * smoothstep(0.35, 0.9, sqrt(l2)) * mask;
   col += lip * (vec3(0.55, 0.6, 0.68) + uTint * 0.3) * (0.35 + uFlash);
   col += spec * (vec3(0.9, 0.94, 1.0) + uTint * 0.35) * (1.25 + uFlash * 1.8);
+
+  // the light never stops moving: two pools rake across the damask, one cold, one in the
+  // colour of whatever is playing
+  vec2 sp = vec2(vUv.x * uAspect, vUv.y);
+  vec2 d1 = sp - vec2(uLights.x * uAspect, uLights.y);
+  vec2 d2 = sp - vec2(uLights.z * uAspect, uLights.w);
+  vec3 cold = vec3(0.78, 0.82, 0.9);
+  vec3 light = cold * exp(-dot(d1, d1) * 3.0) * uLightAmp.x
+             + mix(cold, uTint, 0.8) * exp(-dot(d2, d2) * 2.4) * uLightAmp.y;
+  light *= 0.7 + 0.35 * uRain + 0.6 * uFlash;
+  col += col * light * 0.5 + light * 0.01;
 
   vec2 g = (vUv - vec2(0.5, -0.08)) * vec2(1.0, 1.5);
   col += uTint * 0.11 * (1.0 - smoothstep(0.0, 1.05, length(g))) * (0.45 + uRain);
@@ -178,7 +193,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   const u = {
     sharp: U('uSharp'), fog: U('uFog'), cover: U('uCover'), aspect: U('uAspect'), time: U('uTime'),
     slide: U('uSlide'), rain: U('uRain'), flash: U('uFlash'), scroll: U('uScroll'), tint: U('uTint'),
-    wipe: U('uWipe'),
+    wipe: U('uWipe'), sway: U('uSway'), lights: U('uLights'), lightAmp: U('uLightAmp'),
   };
   gl.uniform1i(u.sharp, 0);
   gl.uniform1i(u.fog, 1);
@@ -214,9 +229,15 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
 
   const wipes = new Float32Array(18);
   let wipeHead = 0;
+  let px = 0;
+  let py = 0;
+  let sx = 0;
+  let sy = 0;
   if (matchMedia('(pointer: fine)').matches) {
     window.addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse') return;
+      px = e.clientX / innerWidth - 0.5;
+      py = e.clientY / innerHeight - 0.5;
       const i = wipeHead++ % 6;
       wipes[i * 3] = e.clientX / innerWidth;
       wipes[i * 3 + 1] = 1 - e.clientY / innerHeight;
@@ -270,6 +291,16 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     flash = Math.max(drive.flash, flash - dt * 3);
     for (let k = 0; k < 3; k++) tint[k] += (drive.tint[k] - tint[k]) * Math.min(1, dt * 2.5);
     for (let i = 0; i < 6; i++) wipes[i * 3 + 2] = Math.max(0, wipes[i * 3 + 2] - dt * 0.7);
+
+    // wall-clock orbit and sway, computed here in float64 so the GPU never sees a large time
+    const t = now / 1000;
+    sx += (px - sx) * Math.min(1, dt * 2);
+    sy += (py - sy) * Math.min(1, dt * 2);
+    gl.uniform2f(u.sway, 0.006 * Math.sin(t * 0.21) + 0.004 * Math.sin(t * 0.13) - sx * 0.012, 0.005 * Math.cos(t * 0.17) + sy * 0.01);
+    gl.uniform4f(u.lights,
+      0.5 + 0.42 * Math.cos(t * 0.071), 0.55 + 0.36 * Math.sin(t * 0.053),
+      0.5 + 0.4 * Math.cos(t * 0.047 + 2.6), 0.45 + 0.38 * Math.sin(t * 0.061 + 1.1));
+    gl.uniform2f(u.lightAmp, 0.75 + 0.25 * Math.sin(t * 0.55), 0.75 + 0.25 * Math.sin(t * 0.41 + 1.3));
 
     const scrollMax = Math.max(1, document.documentElement.scrollHeight - innerHeight);
     gl.uniform1f(u.time, wall);

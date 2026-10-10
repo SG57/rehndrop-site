@@ -10,6 +10,18 @@
     "back-to-that-feeling"
   ],
 
+  "picks": ["whats-my-name", "wild-beauty"],
+
+  "notes": {
+    "whats-my-name": {
+      "note": "heavy dubstep under a punk vocal, opened by a victorian tease. the one that says who this is."
+    },
+    "wild-beauty": {
+      "quote": "if morning steals it all away, i'll find the beauty anyway.",
+      "note": "to live a beautiful life, find the beauty in everything."
+    }
+  },
+
   "answers": {
     "what's my name": "now you know.",
     "can you hear me?": "a little too well.",

@@ -51,22 +51,40 @@ export function startSpotlight() {
     }),
   );
 
-  // swipe between spotlight slides on touch
+  // swipe or drag between slides; pointer events cover touch, pen and mouse alike
   let x0 = 0;
   let y0 = 0;
-  root.addEventListener('touchstart', (e) => {
-    x0 = e.touches[0].clientX;
-    y0 = e.touches[0].clientY;
-  }, { passive: true });
-  root.addEventListener('touchend', (e) => {
-    const dx = e.changedTouches[0].clientX - x0;
-    const dy = e.changedTouches[0].clientY - y0;
+  let tracking = false;
+  let swiped = false;
+  root.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    tracking = true;
+    swiped = false;
+    x0 = e.clientX;
+    y0 = e.clientY;
+  });
+  root.addEventListener('pointerup', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.clientX - x0;
+    const dy = e.clientY - y0;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      swiped = true;
       holdUntil = performance.now() + 30000;
       show(index + (dx < 0 ? 1 : -1));
       schedule();
     }
-  }, { passive: true });
+  });
+  root.addEventListener('pointercancel', () => (tracking = false));
+  // a swipe that ends on the play button must not also press it
+  root.addEventListener('click', (e) => {
+    if (swiped) {
+      e.preventDefault();
+      e.stopPropagation();
+      swiped = false;
+    }
+  }, true);
+  root.addEventListener('dragstart', (e) => e.preventDefault());
 
   show(0);
   schedule();
@@ -91,6 +109,71 @@ export function startRows() {
     track.addEventListener('scroll', update, { passive: true });
     new ResizeObserver(update).observe(track);
     update();
+  });
+}
+
+// Desktop: grab a shelf and fling it. Touch screens already pan natively, so this is
+// mouse-only. A drag never counts as a click on the cover underneath it.
+export function startDrag() {
+  if (!matchMedia('(pointer: fine)').matches) return;
+  document.querySelectorAll<HTMLElement>('[data-row-track]').forEach((track) => {
+    let down = false;
+    let startX = 0;
+    let startLeft = 0;
+    let lastX = 0;
+    let lastT = 0;
+    let v = 0;
+    let moved = 0;
+    let glide = 0;
+
+    const settle = () => {
+      track.classList.remove('is-dragging');
+    };
+
+    track.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      cancelAnimationFrame(glide);
+      down = true;
+      moved = 0;
+      v = 0;
+      startX = lastX = e.clientX;
+      startLeft = track.scrollLeft;
+      lastT = performance.now();
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      moved = Math.max(moved, Math.abs(dx));
+      if (moved > 4) track.classList.add('is-dragging');
+      track.scrollLeft = startLeft - dx;
+      const now = performance.now();
+      const step = now - lastT;
+      if (step > 0) v = 0.8 * ((e.clientX - lastX) / step) + 0.2 * v;
+      lastX = e.clientX;
+      lastT = now;
+    });
+    window.addEventListener('pointerup', () => {
+      if (!down) return;
+      down = false;
+      if (moved <= 4) return settle();
+      // momentum, then let scroll-snap pick the nearest card
+      let vel = -v * 16;
+      const tick = () => {
+        track.scrollLeft += vel;
+        vel *= 0.93;
+        if (Math.abs(vel) > 0.6) glide = requestAnimationFrame(tick);
+        else settle();
+      };
+      glide = requestAnimationFrame(tick);
+    });
+    track.addEventListener('click', (e) => {
+      if (moved > 4) {
+        e.preventDefault();
+        e.stopPropagation();
+        moved = 0;
+      }
+    }, true);
+    track.addEventListener('dragstart', (e) => e.preventDefault());
   });
 }
 

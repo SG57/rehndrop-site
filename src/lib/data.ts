@@ -29,6 +29,8 @@ export interface Track {
   cover: ImageMetadata | string;
   accent: string;
   answer: string | null;
+  // liner notes in Cord's words (curation.json "notes"); the start of per-track stories
+  story: { note?: string; quote?: string } | null;
   preview: { src: string | null; dropAt: number | null; env: string | null };
   links: { apple: string | null; spotify: string; youtube: string; soundcloud: string };
   video: Video | null;
@@ -138,6 +140,7 @@ async function load() {
 
   const answers = new Map(Object.entries(curation.answers).map(([k, v]) => [norm(k), v]));
   const hidden = new Set(curation.youtube.hide);
+  const notes = curation.notes as Record<string, { note?: string; quote?: string }>;
 
   const bySlug = new Map<string, Track>();
   const byTitle = new Map<string, Track>();
@@ -173,6 +176,7 @@ async function load() {
       cover: coverFor(c.cover) ?? '',
       accent: c.accent || '#c9ced6',
       answer: answers.get(norm(c.title)) ?? null,
+      story: notes[c.slug] ?? null,
       preview: {
         src: c.preview?.src ?? c.applePreview ?? null,
         dropAt: c.preview?.src ? c.preview.dropAt ?? null : null,
@@ -211,6 +215,7 @@ async function load() {
       cover: s.artworkUrl100.replace('100x100bb', '1200x1200bb'),
       accent: '#c9ced6',
       answer: answers.get(norm(title)) ?? null,
+      story: notes[slug] ?? null,
       preview: { src: s.previewUrl ?? null, dropAt: null, env: null },
       links: linksFor(title, appleUrl),
       video: null,
@@ -242,8 +247,9 @@ async function load() {
     .sort((a, b) => b.published.localeCompare(a.published));
 
   const spotlight = curation.spotlight.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
+  const picks = curation.picks.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
 
-  return { tracks, bySlug, videos, spotlight };
+  return { tracks, bySlug, videos, spotlight, picks };
 }
 
 export const data = await load();

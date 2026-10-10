@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import StorePills from '../components/StorePills.astro';
 import Spotlight from '../components/Spotlight.astro';
+import Picks from '../components/Picks.astro';
 import Row from '../components/Row.astro';
 import Card from '../components/Card.astro';
 import VideoCard from '../components/VideoCard.astro';
@@ -50,8 +51,10 @@ const jsonLd = {
 
     <Spotlight tracks={data.spotlight} />
 
+    {data.picks.length > 0 && <Picks tracks={data.picks} />}
+
     <div class="shelves">
-      <Row title="newest." id="newest">
+      <Row title="the new stuff." id="newest">
         {r.newest.map((t, i) => <Card track={t} eager={i < 3} />)}
       </Row>
       <Row title="the heavy stuff." id="heavy">
@@ -66,7 +69,7 @@ const jsonLd = {
         </Row>
       )}
       {r.early.length > 0 && (
-        <Row title="2021." id="early">
+        <Row title="the old stuff." id="early">
           {r.early.map((t) => <Card track={t} />)}
         </Row>
       )}

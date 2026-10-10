@@ -118,6 +118,7 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
         hit = Math.exp(-d * 4.5);
         if (!kicked && d < 0.25) {
           kicked = true;
+          document.dispatchEvent(new CustomEvent('rehndrop:hit'));
           if (!reducedMotion()) {
             root.classList.remove('kick');
             void root.offsetWidth;

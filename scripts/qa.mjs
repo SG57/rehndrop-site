@@ -124,6 +124,34 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   await ctx.close();
 }
 
+// desktop drag: a fling pans the shelf and never presses play; a plain click still does
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
+  await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
+  await page.evaluate(() => document.getElementById('heavy').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(300);
+  const track = page.locator('#heavy [data-row-track]');
+  const box = await track.boundingBox();
+  const before = await track.evaluate((el) => el.scrollLeft);
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.4);
+  await page.mouse.down();
+  for (let i = 1; i <= 12; i++) await page.mouse.move(box.x + box.width * 0.7 - i * 40, box.y + box.height * 0.4);
+  await page.mouse.up();
+  await page.waitForTimeout(1500);
+  const after = await track.evaluate((el) => el.scrollLeft);
+  const playedOnDrag = await page.evaluate(() => !document.querySelector('[data-mini]').hidden);
+  await page.locator('#heavy .card-art[data-play]').nth(1).click();
+  await page.waitForTimeout(1200);
+  const playedOnClick = await page.evaluate(() => !document.querySelector('[data-mini]').hidden);
+  console.log('drag', JSON.stringify({ before, after, playedOnDrag, playedOnClick }));
+  if (!(after > before + 200)) problems.push(`drag: shelf did not pan (${before} -> ${after})`);
+  if (playedOnDrag) problems.push('drag: a drag started playback');
+  if (!playedOnClick) problems.push('drag: a click after dragging did not play');
+  await ctx.close();
+}
+
 await browser.close();
 server.close();
 console.log(problems.length ? `FAIL\n- ${problems.join('\n- ')}` : 'PASS: no overflow, no console errors, playback ok');

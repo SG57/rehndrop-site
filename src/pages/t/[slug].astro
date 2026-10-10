@@ -58,6 +58,13 @@ const jsonLd = {
       </div>
     </section>
 
+    {track.story && (
+      <section class="liner" aria-label="notes">
+        {track.story.quote && <blockquote class="pick-quote">“{track.story.quote}”</blockquote>}
+        {track.story.note && <p class="pick-note">{track.story.note}</p>}
+      </section>
+    )}
+
     {track.video && (
       <section class="track-video" aria-label="video">
         <h2 class="row-title">video.</h2>
