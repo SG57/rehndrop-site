@@ -4,12 +4,14 @@
 // and exits 1 on horizontal overflow, console errors, or a failed playback check.
 import { createServer } from 'node:http';
 import { readFile, mkdir, stat } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { chromium } from 'playwright-core';
 
 const DIST = new URL('../dist/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const OUT = new URL('../.cache/qa/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
-const BASE = '/rehndrop-site/';
+// mirrors astro.config.mjs: a committed public/CNAME means the site lives at the domain root
+const BASE = existsSync(new URL('../public/CNAME', import.meta.url)) ? '/' : '/rehndrop-site/';
 const args = process.argv.slice(2);
 const only = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',') : null;
 const full = args.includes('--full');
