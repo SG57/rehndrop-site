@@ -400,15 +400,21 @@ def run_stamp_sigil(copy_target: Path, notes: list):
     return False
 
 
+def stamp_mark_path() -> Path:
+    """The PNG stamp-sigil.py stamps with, read from the tool so the two never disagree."""
+    m = re.search(r'MARK = os\.path\.join\(HERE, "\.\.", "02-logos", "sigil", "png", "([^"]+)"\)', STAMP_TOOL.read_text(encoding="utf-8"))
+    if not m:
+        raise RuntimeError("could not read MARK from stamp-sigil.py")
+    return STAMP_TOOL.parent.parent / "02-logos" / "sigil" / "png" / m.group(1)
+
+
 def resolve_cover_source(slug: str, track_dir: Path, arts, apple_artwork_url, force, notes):
     """Returns (image_path, coverStamped) for the sigil-ready / final-source image,
     doing any downloading/stamping needed along the way."""
     art_dir = track_dir / "art"
 
-    sigil_path = art_dir / "cover-4k-sigil.jpg"
-    if sigil_path.exists():
-        return sigil_path, True
-
+    # Every website cover is stamped here with the stamp tool's current mark, even when the
+    # released art already carries an older stamp, so the site shows one consistent sigil.
     if slug == "whats-my-name":
         src = art_dir / "cover-4k.jpg"
         if src.exists():
@@ -451,7 +457,9 @@ def resolve_cover_source(slug: str, track_dir: Path, arts, apple_artwork_url, fo
     stamp_dir.mkdir(parents=True, exist_ok=True)
     copy_target = stamp_dir / "cover-4k.jpg"
     out_sigil = stamp_dir / "cover-4k-sigil.jpg"
-    if needs_rebuild([out_sigil], src_path, force):
+    # a new mark must restamp, not just a new cover
+    stale_mark = out_sigil.exists() and _mtime(stamp_mark_path()) > _mtime(out_sigil)
+    if stale_mark or needs_rebuild([out_sigil], src_path, force):
         shutil.copyfile(src_path, copy_target)
         ok = run_stamp_sigil(copy_target, notes)
         if not ok:

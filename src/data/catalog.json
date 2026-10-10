@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-09T21:44:16Z",
+  "generated": "2026-10-10T16:35:57Z",
   "appleArtistId": 1545317806,
   "tracks": [
     {
@@ -41,7 +41,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4c/52/46/4c524696-bae3-c190-da54-b4a0f0689476/mzaf_10793171601386342206.plus.aac.p.m4a",
       "cover": "covers/pop-the-trunk.jpg",
       "coverStamped": true,
-      "accent": "#538c83",
+      "accent": "#518c80",
       "preview": {
         "src": "previews/pop-the-trunk.m4a",
         "start": 25.15,
@@ -89,7 +89,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c6/dd/10/c6dd102f-a08c-bec4-a66f-8a49b5e05cc5/mzaf_6805497405017070828.plus.aac.p.m4a",
       "cover": "covers/something.jpg",
       "coverStamped": true,
-      "accent": "#84838c",
+      "accent": "#85858c",
       "preview": {
         "src": "previews/something.m4a",
         "start": 142.52,
@@ -113,7 +113,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f4/fc/89/f4fc892e-6cf5-81de-af8a-6e9625bf1112/mzaf_13937189551316965868.plus.aac.p.m4a",
       "cover": "covers/buzzin.jpg",
       "coverStamped": true,
-      "accent": "#6f6e8c",
+      "accent": "#6f6d8c",
       "preview": {
         "src": "previews/buzzin.m4a",
         "start": 50.18,
@@ -137,7 +137,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/37/04/75/370475bc-88a2-2b71-5cea-b16819b03946/mzaf_11654989572359467089.plus.aac.p.m4a",
       "cover": "covers/midnight.jpg",
       "coverStamped": true,
-      "accent": "#40638c",
+      "accent": "#3f658c",
       "preview": {
         "src": "previews/midnight.m4a",
         "start": 33.85,
@@ -161,7 +161,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/16/67/58/1667588a-5068-0a46-06ed-4f0eafc0f0e0/mzaf_16062954852079582058.plus.aac.p.m4a",
       "cover": "covers/light-weight.jpg",
       "coverStamped": true,
-      "accent": "#5a688c",
+      "accent": "#596b8c",
       "preview": {
         "src": "previews/light-weight.m4a",
         "start": 185.68,
@@ -257,7 +257,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/98/d2/ed/98d2ed48-f557-2caa-2ca3-fd03215b8831/mzaf_18351716543553656305.plus.aac.p.m4a",
       "cover": "covers/disconnect.jpg",
       "coverStamped": true,
-      "accent": "#59588c",
+      "accent": "#59598c",
       "preview": {
         "src": "previews/disconnect.m4a",
         "start": 204.88,
@@ -305,7 +305,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/72/b7/b0/72b7b019-8687-18f2-2779-c0b3e01b0754/mzaf_7784529739647379586.plus.aac.p.m4a",
       "cover": "covers/meaningless.jpg",
       "coverStamped": true,
-      "accent": "#7a718c",
+      "accent": "#7a728c",
       "preview": {
         "src": "previews/meaningless.m4a",
         "start": 107.32,
@@ -329,7 +329,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c5/95/c3/c595c3af-adf6-1ec4-d845-3561a40bf7df/mzaf_5430279960203149179.plus.aac.p.m4a",
       "cover": "covers/demons-in-my-ear.jpg",
       "coverStamped": true,
-      "accent": "#434c8c",
+      "accent": "#41548c",
       "preview": {
         "src": "previews/demons-in-my-ear.m4a",
         "start": 342.54,
@@ -353,7 +353,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9e/c0/6b/9ec06b2f-9b5b-9a85-13d2-e0ac4d38f54d/mzaf_13729884724389926070.plus.aac.p.m4a",
       "cover": "covers/wobble.jpg",
       "coverStamped": true,
-      "accent": "#7c9d0e",
+      "accent": "#7c9d0d",
       "preview": {
         "src": "previews/wobble.m4a",
         "start": 161.99,
@@ -401,7 +401,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a9/cb/3f/a9cb3f37-f2f2-79a9-8e7f-5e3c1e85f8f7/mzaf_4542050476284264862.plus.aac.p.m4a",
       "cover": "covers/wild-beauty.jpg",
       "coverStamped": true,
-      "accent": "#75798c",
+      "accent": "#747a8c",
       "preview": {
         "src": "previews/wild-beauty.m4a",
         "start": 191.18,
@@ -425,7 +425,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/57/5c/71/575c7124-cdbd-03d6-d5ac-11e221b1840e/mzaf_6486082331373439501.plus.aac.p.m4a",
       "cover": "covers/were-gonna-be-alright.jpg",
       "coverStamped": true,
-      "accent": "#bc895d",
+      "accent": "#9d7355",
       "preview": {
         "src": "previews/were-gonna-be-alright.m4a",
         "start": 204.29,
@@ -449,7 +449,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f3/d9/09/f3d9097e-b733-2b3c-f8e2-01deb7b0471b/mzaf_6405366575046978655.plus.aac.p.m4a",
       "cover": "covers/set-your-heart-ablaze.jpg",
       "coverStamped": true,
-      "accent": "#70518c",
+      "accent": "#7c528c",
       "preview": {
         "src": "previews/set-your-heart-ablaze.m4a",
         "start": 311.33,
@@ -473,7 +473,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c1/cb/b2/c1cbb2a8-2566-42cb-a709-b7b1ea2e8fef/mzaf_289783986528499734.plus.aac.p.m4a",
       "cover": "covers/pretty-lights.jpg",
       "coverStamped": true,
-      "accent": "#a32f58",
+      "accent": "#be426d",
       "preview": {
         "src": "previews/pretty-lights.m4a",
         "start": 166.29,
@@ -497,7 +497,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9a/13/23/9a1323d7-afd6-95d6-1573-d09cf6378593/mzaf_1523620770440729192.plus.aac.p.m4a",
       "cover": "covers/high-then-higher.jpg",
       "coverStamped": true,
-      "accent": "#3d488c",
+      "accent": "#3e498c",
       "preview": {
         "src": "previews/high-then-higher.m4a",
         "start": 282.23,
@@ -545,7 +545,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d7/9a/39/d79a3906-4073-a987-76de-bac91b1d430e/mzaf_2403379091378365954.plus.aac.p.m4a",
       "cover": "covers/bass-bumpin.jpg",
       "coverStamped": true,
-      "accent": "#58708c",
+      "accent": "#58718c",
       "preview": {
         "src": "previews/bass-bumpin.m4a",
         "start": 204.81,
@@ -593,7 +593,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/78/f0/00/78f00014-b575-dcb8-ca26-d33c4fd9bdf9/mzaf_12641365259065957429.plus.aac.p.m4a",
       "cover": "covers/you-aint-ready-baby.jpg",
       "coverStamped": true,
-      "accent": "#472e8c",
+      "accent": "#462e8c",
       "preview": {
         "src": "previews/you-aint-ready-baby.m4a",
         "start": 41.83,
@@ -641,7 +641,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview114/v4/77/a5/c7/77a5c79b-90c2-579b-564d-cdede05a83bb/mzaf_890921725967290729.plus.aac.p.m4a",
       "cover": "covers/dont-screw-with-me.jpg",
       "coverStamped": true,
-      "accent": "#8c0305",
+      "accent": "#8c0304",
       "preview": {
         "src": "previews/dont-screw-with-me.m4a",
         "start": 80.29,
