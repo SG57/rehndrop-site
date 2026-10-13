@@ -114,8 +114,12 @@ html:not(.lens-on) .velvet { inset: -24px; width: auto; height: auto; animation:
 }
 
 /* ---------- welcome ---------- */
+/* glows pulse well past their boxes during playback; no section may widen the page.
+   mobile browsers zoom out to fit any overflow, and body's overflow-x doesn't stop that */
+main { overflow-x: clip; }
 .welcome {
   position: relative;
+  overflow-x: clip;
   min-height: 100svh;
   display: grid;
   grid-template-rows: auto auto;

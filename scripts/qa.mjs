@@ -115,9 +115,12 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   const b = await page.evaluate(() => ({
     p: Number(getComputedStyle(document.querySelector('[data-mini]')).getPropertyValue('--p') || 0),
     kicked: document.documentElement.classList.contains('kick'),
+    overflow: document.documentElement.scrollWidth - innerWidth,
   }));
+  // glows and covers pulse with the bass; at full pulse nothing may widen the page
+  if (b.overflow > 1) problems.push(`playback: page overflows by ${b.overflow}px mid-song`);
   await page.screenshot({ path: join(OUT, 'playback-wobble.png') });
-  console.log('playback', JSON.stringify({ ...a, p2: b.p, kicked: b.kicked }));
+  console.log('playback', JSON.stringify({ ...a, p2: b.p, kicked: b.kicked, overflow: b.overflow }));
   if (!a.playing || !a.mini || a.title !== slug) problems.push('playback: tap did not start the preview');
   if (!(b.p > a.p)) problems.push('playback: progress did not advance');
   if (!b.kicked) problems.push('playback: the hit never landed (no kick at dropAt)');
