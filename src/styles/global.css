@@ -103,7 +103,8 @@ html:not(.lens-on) .velvet { inset: -24px; width: auto; height: auto; animation:
 }
 
 /* the hit: one heavy shove, then settle */
-.kick .lens, .kick .r-stage, .kick .spot.is-current .spot-cover, .kick .track-cover { animation: kick 0.7s var(--ease) 1; }
+/* the room (lens, R) reacts to any song; a cover only to its own (is-live, set by player.ts) */
+.kick .lens, .kick .r-stage, .kick .spot-cover.is-live, .kick .track-cover.is-live { animation: kick 0.7s var(--ease) 1; }
 @keyframes kick {
   0% { transform: translate3d(0, 0, 0) scale(1) rotate(0); }
   10% { transform: translate3d(0, 16px, 0) scale(1.04) rotate(0.35deg); }
@@ -352,7 +353,8 @@ main { overflow-x: clip; }
   transform: translateY(10px) scale(0.985);
   transition: transform 1.4s var(--ease);
 }
-.spot.is-current .spot-cover { transform: none; scale: calc(1 + var(--pulse) * 0.05); }
+.spot.is-current .spot-cover { transform: none; }
+.spot-cover.is-live, .track-cover.is-live { scale: calc(1 + var(--pulse) * 0.05); }
 .spot-cover img { width: 100%; height: 100%; object-fit: cover; }
 .spot-info { display: grid; justify-items: center; gap: 8px; max-width: 34ch; }
 .spot-title {
@@ -519,7 +521,6 @@ main { overflow-x: clip; }
 .card-art.is-active { box-shadow: 0 22px 50px -18px color-mix(in srgb, var(--card-accent) 80%, transparent), 0 0 0 1px color-mix(in srgb, var(--card-accent) 60%, transparent); }
 .card-art.is-active .card-img { filter: saturate(1.15) brightness(1.06); }
 .card-art.is-active { scale: calc(1 + var(--pulse) * 0.09); }
-.track-cover { scale: calc(1 + var(--pulse) * 0.05); }
 .mini::before {
   content: '';
   position: absolute;

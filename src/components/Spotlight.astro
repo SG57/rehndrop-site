@@ -17,7 +17,7 @@ const ambient = await Promise.all(
     {tracks.map((t, i) => (
       <article class:list={['spot', { 'is-current': i === 0 }]} data-slide data-accent={t.accent} aria-roledescription="slide" aria-label={`${i + 1} of ${tracks.length}`} aria-hidden={i === 0 ? 'false' : 'true'} inert={i !== 0} style={`--slide-accent:${t.accent}`}>
         {ambient[i] && <img class="spot-ambient" src={ambient[i]!.src} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} />}
-        <div class="spot-cover">
+        <div class="spot-cover" data-cover={t.slug}>
           {t.cover && <Cover src={t.cover} size={720} widths={[360, 540, 720]} sizes="(min-width: 900px) 420px, (orientation: landscape) 46vh, 78vw" alt={`${t.title} cover`} eager={i === 0} quality={85} />}
         </div>
         <div class="spot-info">

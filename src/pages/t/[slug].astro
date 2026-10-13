@@ -41,7 +41,7 @@ const jsonLd = {
 
     <section class="track-hero">
       {ambient && <img class="spot-ambient" src={ambient.src} alt="" aria-hidden="true" />}
-      <div class="track-cover">
+      <div class="track-cover" data-cover={track.slug}>
         {track.cover && <Cover src={track.cover} size={900} widths={[420, 640, 900]} sizes="(min-width: 900px) 460px, (orientation: landscape) 60vh, 82vw" alt={`${track.title} cover`} eager quality={86} />}
       </div>
       <div class="track-info">

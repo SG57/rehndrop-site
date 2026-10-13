@@ -73,6 +73,10 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
       b.setAttribute('aria-pressed', String(on && !audio.paused));
       if (!on) b.style.removeProperty('--p');
     });
+    // only the covers of the song that is actually playing may bounce or kick
+    document.querySelectorAll<HTMLElement>('[data-cover]').forEach((c) => {
+      c.classList.toggle('is-live', !!current && !audio.paused && c.dataset.cover === current.slug);
+    });
     if (bar) {
       bar.hidden = !current;
       bar.classList.toggle('is-playing', !!current && !audio.paused);

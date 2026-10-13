@@ -155,6 +155,48 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   await ctx.close();
 }
 
+// only the playing song's cover may bounce: spotlight on one song, play another from picks
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
+  await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
+  const liveState = () => page.evaluate(() => {
+    const spot = document.querySelector('.spot.is-current .spot-cover');
+    return { spotSlug: spot.dataset.cover, spotLive: spot.classList.contains('is-live'), spotScale: getComputedStyle(spot).scale };
+  });
+  await page.locator('[data-tick]').nth(1).click(); // spotlight -> the second slide
+  await page.waitForTimeout(400);
+  await page.locator('#picks [data-play="whats-my-name"]').click();
+  await page.waitForTimeout(8000); // past the hit, pulse high
+  const other = await liveState();
+  const pickActive = await page.evaluate(() => document.querySelector('#picks [data-play="whats-my-name"]').classList.contains('is-active'));
+  await page.locator(`#picks [data-play="${other.spotSlug}"]`).click().catch(() => {});
+  await page.waitForTimeout(1500);
+  const same = await liveState();
+  console.log('cover-isolation', JSON.stringify({ other, pickActive, same }));
+  if (other.spotSlug === 'whats-my-name') problems.push('isolation: test setup failed, spotlight already on the played song');
+  if (other.spotLive || (other.spotScale !== 'none' && other.spotScale !== '1')) problems.push(`isolation: spotlight cover (${other.spotSlug}) bounced to another song`);
+  if (!pickActive) problems.push('isolation: the played pick card was not marked active');
+  if (!same.spotLive) problems.push('isolation: the spotlight cover did not go live for its own song');
+  await ctx.close();
+}
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(origin + 't/wild-beauty/?lens', { waitUntil: 'networkidle' });
+  await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
+  await page.locator('.row [data-play]').first().click();
+  await page.waitForTimeout(3000);
+  const cover = await page.evaluate(() => {
+    const c = document.querySelector('.track-cover');
+    return { live: c.classList.contains('is-live'), scale: getComputedStyle(c).scale };
+  });
+  console.log('track-page-isolation', JSON.stringify(cover));
+  if (cover.live || (cover.scale !== 'none' && cover.scale !== '1')) problems.push('isolation: track page cover bounced to a related song');
+  await ctx.close();
+}
+
 await browser.close();
 server.close();
 console.log(problems.length ? `FAIL\n- ${problems.join('\n- ')}` : 'PASS: no overflow, no console errors, playback ok');
