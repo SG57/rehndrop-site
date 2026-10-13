@@ -1,6 +1,5 @@
 {
   "_note": "Hand-edited. Everything else in src/data is generated (catalog.json by scripts/export_catalog.py, apple-snapshot.json from Apple). Words follow D:/rehndrop/resources/brand/VOICE.md.",
-
   "spotlight": [
     "whats-my-name",
     "wild-beauty",
@@ -9,27 +8,133 @@
     "bitch-ass-bitch-ass-bitch",
     "back-to-that-feeling"
   ],
-
-  "picks": ["whats-my-name", "wild-beauty"],
-
+  "picks": [
+    "whats-my-name",
+    "wild-beauty"
+  ],
   "_shelves": "Hand-ordered, best first. A live track missing from every list still appears on its lane's shelf (from ig-plan lanes), at the end. done waiting sits in both pretty and detox on purpose.",
   "shelves": {
     "newCount": 6,
-    "heavy": ["mr-big-stuff", "wobble", "bass-bumpin", "bitch-ass-bitch-ass-bitch", "whats-my-name", "light-weight", "demons-in-my-ear", "can-you-hear-me", "you-aint-ready-baby", "meaningless", "something", "buzzin", "disconnect"],
-    "pretty": ["wild-beauty", "see-the-real-me", "back-to-that-feeling", "set-your-heart-ablaze", "were-gonna-be-alright", "high-then-higher", "pretty-lights", "waiting-for", "done-waiting"],
-    "detox": ["pop-the-trunk", "midnight", "disconnect-detox", "done-waiting"]
+    "heavy": [
+      "mr-big-stuff",
+      "wobble",
+      "bass-bumpin",
+      "bitch-ass-bitch-ass-bitch",
+      "whats-my-name",
+      "light-weight",
+      "demons-in-my-ear",
+      "can-you-hear-me",
+      "you-aint-ready-baby",
+      "meaningless",
+      "something",
+      "buzzin",
+      "disconnect"
+    ],
+    "pretty": [
+      "wild-beauty",
+      "see-the-real-me",
+      "back-to-that-feeling",
+      "set-your-heart-ablaze",
+      "were-gonna-be-alright",
+      "high-then-higher",
+      "pretty-lights",
+      "waiting-for",
+      "done-waiting"
+    ],
+    "detox": [
+      "pop-the-trunk",
+      "midnight",
+      "disconnect-detox",
+      "done-waiting"
+    ]
   },
-
   "notes": {
     "whats-my-name": {
-      "note": "heavy dubstep under a punk vocal, opened by a victorian tease. the one that says who this is."
+      "note": "polite at the door. not after."
     },
     "wild-beauty": {
       "quote": "if morning steals it all away, i'll find the beauty anyway.",
       "note": "to live a beautiful life, find the beauty in everything."
+    },
+    "bitch-ass-bitch-ass-bitch": {
+      "note": "a flag for the back of the field."
+    },
+    "pop-the-trunk": {
+      "note": "3am. parking lot. the good speakers."
+    },
+    "something": {
+      "note": "the ballroom didn't make it."
+    },
+    "buzzin": {
+      "note": "sting first. ask later."
+    },
+    "midnight": {
+      "note": "a bedtime story for people who don't sleep."
+    },
+    "light-weight": {
+      "note": "lift with your neck."
+    },
+    "back-to-that-feeling": {
+      "note": "windows down, sun going, nowhere to be."
+    },
+    "done-waiting": {
+      "note": "no more checking the time."
+    },
+    "waiting-for": {
+      "note": "the sand's almost out."
+    },
+    "disconnect": {
+      "note": "the cable's cut. the signal isn't."
+    },
+    "disconnect-detox": {
+      "note": "same cut, slower bleed."
+    },
+    "meaningless": {
+      "note": "nothing to prove, and it shows."
+    },
+    "demons-in-my-ear": {
+      "note": "backseat, black highway, someone else driving."
+    },
+    "wobble": {
+      "note": "make it fn wobble."
+    },
+    "see-the-real-me": {
+      "note": "the palace is the cover story."
+    },
+    "were-gonna-be-alright": {
+      "note": "two people, one skyline, zero plans."
+    },
+    "set-your-heart-ablaze": {
+      "note": "a slow fuse, then everything."
+    },
+    "pretty-lights": {
+      "note": "the encore, the kiss, the lights still on."
+    },
+    "high-then-higher": {
+      "note": "chains off. altitude unknown."
+    },
+    "mr-big-stuff": {
+      "note": "small package. big problem."
+    },
+    "bass-bumpin": {
+      "note": "the floor gave out first."
+    },
+    "can-you-hear-me": {
+      "note": "every channel open. someone's listening."
+    },
+    "you-aint-ready-baby": {
+      "note": "lights off. volume up."
+    },
+    "marauder": {
+      "note": "from the vault. still dangerous."
+    },
+    "dont-screw-with-me": {
+      "note": "fair warning."
+    },
+    "now-die": {
+      "note": "the early stuff. no mercy then either."
     }
   },
-
   "answers": {
     "what's my name": "now you know.",
     "can you hear me?": "a little too well.",
@@ -46,26 +151,28 @@
     "set your heart ablaze": "careful.",
     "demons in my ear": "headphones."
   },
-
   "stores": {
     "spotify": "https://open.spotify.com/artist/6TVCS8UyGDvQOeSjqet4Ok",
     "apple": "https://music.apple.com/us/artist/rehndrop/1545317806",
     "soundcloud": "https://soundcloud.com/rehndrop",
     "youtube": "https://www.youtube.com/channel/UCWxLvrR1nz7rWBBarDhTW3A"
   },
-
   "socials": {
     "instagram": "https://www.instagram.com/rehndrop",
     "facebook": "https://www.facebook.com/rehndrop"
   },
-
   "contact": "rehndrop@sg57.dev",
   "studio": "https://sg57.dev/services",
-
   "youtube": {
     "channel": "UCWxLvrR1nz7rWBBarDhTW3A",
-    "topicChannels": ["UCjCaEu8luyGYIpTy4VQVa7w", "UCoWGa9hFsSo57Js8JgU0G-Q"],
-    "hide": ["2oPsc1lHiys", "Zld23plT8MY"],
+    "topicChannels": [
+      "UCjCaEu8luyGYIpTy4VQVa7w",
+      "UCoWGa9hFsSo57Js8JgU0G-Q"
+    ],
+    "hide": [
+      "2oPsc1lHiys",
+      "Zld23plT8MY"
+    ],
     "topicSnapshot": {
       "bitch ass bitch ass bitch": "5pJF42qaWlw",
       "pop the trunk": "02hS3EgkXlc",
@@ -93,10 +200,26 @@
       "can you hear me?": "LwE7zWVHLNk"
     },
     "videoSnapshot": [
-      { "id": "b9PD6ZmQIu0", "title": "rehndrop - marauder (Music Video)", "published": "2021-09-15" },
-      { "id": "rJ1yxP_bdmI", "title": "lil aaron - DRUGS (rehndrop remix)", "published": "2021-03-12" },
-      { "id": "74uxNb8OU3o", "title": "rehndrop - now die (Official Music Video)", "published": "2021-02-10" },
-      { "id": "ekixx40b_qM", "title": "rehndrop - don't screw with me (Official Music Video)", "published": "2021-01-27" }
+      {
+        "id": "b9PD6ZmQIu0",
+        "title": "rehndrop - marauder (Music Video)",
+        "published": "2021-09-15"
+      },
+      {
+        "id": "rJ1yxP_bdmI",
+        "title": "lil aaron - DRUGS (rehndrop remix)",
+        "published": "2021-03-12"
+      },
+      {
+        "id": "74uxNb8OU3o",
+        "title": "rehndrop - now die (Official Music Video)",
+        "published": "2021-02-10"
+      },
+      {
+        "id": "ekixx40b_qM",
+        "title": "rehndrop - don't screw with me (Official Music Video)",
+        "published": "2021-01-27"
+      }
     ]
   }
 }

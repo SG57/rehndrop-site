@@ -47,6 +47,7 @@ const jsonLd = {
       <div class="track-info">
         <h1 class="track-title">{track.title}</h1>
         {track.answer && <p class="spot-answer">{track.answer}</p>}
+        {track.story?.note && <p class="spot-note">{track.story.note}</p>}
         {(date || track.explicit) && (
           <p class="track-meta">
             {date}{track.explicit && <span class="badge" aria-label="explicit" title="explicit">e</span>}
@@ -59,10 +60,9 @@ const jsonLd = {
       </div>
     </section>
 
-    {track.story && (
-      <section class="liner" aria-label="notes">
-        {track.story.quote && <blockquote class="pick-quote">“{track.story.quote}”</blockquote>}
-        {track.story.note && <p class="pick-note">{track.story.note}</p>}
+    {track.story?.quote && (
+      <section class="liner" aria-label="lyric">
+        <blockquote class="pick-quote">“{track.story.quote}”</blockquote>
       </section>
     )}
 
