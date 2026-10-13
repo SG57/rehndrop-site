@@ -1,8 +1,10 @@
 ---
+// Four brand marks, no words: everyone knows what they are. Names stay in the tooltip and
+// the accessible label.
 import Icon from './Icon.astro';
 import { curation } from '../lib/data';
 const s = curation.stores;
-const pills = [
+const marks = [
   { name: 'spotify', label: 'spotify', href: s.spotify },
   { name: 'apple', label: 'apple music', href: s.apple },
   { name: 'soundcloud', label: 'soundcloud', href: s.soundcloud },
@@ -10,10 +12,9 @@ const pills = [
 ] as const;
 ---
 <nav class="stores" aria-label="listen">
-  {pills.map((p) => (
-    <a class="pill" href={p.href} rel="noopener" target="_blank">
-      <Icon name={p.name} size={17} />
-      <span>{p.label}</span>
+  {marks.map((m, i) => (
+    <a class="store" href={m.href} rel="noopener" target="_blank" aria-label={m.label} title={m.label} style={`--i:${i}`}>
+      <Icon name={m.name} size={26} />
     </a>
   ))}
 </nav>

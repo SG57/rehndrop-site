@@ -147,7 +147,7 @@ void main() {
   col += col * light * 0.5 + light * 0.01;
 
   vec2 g = (vUv - vec2(0.5, -0.08)) * vec2(1.0, 1.5);
-  col += uTint * 0.11 * (1.0 - smoothstep(0.0, 1.05, length(g))) * (0.45 + uRain);
+  col += uTint * 0.16 * (1.0 - smoothstep(0.0, 1.05, length(g))) * (0.3 + uRain * 1.3);
   col += vec3(0.72, 0.78, 0.9) * uFlash * 0.2 * smoothstep(0.15, 1.0, vUv.y);
 
   col = col * 1.18 + 0.008;
@@ -300,7 +300,10 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     gl.uniform4f(u.lights,
       0.5 + 0.42 * Math.cos(t * 0.071), 0.55 + 0.36 * Math.sin(t * 0.053),
       0.5 + 0.4 * Math.cos(t * 0.047 + 2.6), 0.45 + 0.38 * Math.sin(t * 0.061 + 1.1));
-    gl.uniform2f(u.lightAmp, 0.75 + 0.25 * Math.sin(t * 0.55), 0.75 + 0.25 * Math.sin(t * 0.41 + 1.3));
+    // the light pools breathe on their own and swell with the low end while music plays
+    gl.uniform2f(u.lightAmp,
+      0.8 + 0.25 * Math.sin(t * 0.55) + drive.pulse * 1.1,
+      0.8 + 0.25 * Math.sin(t * 0.41 + 1.3) + drive.pulse * 1.4);
 
     const scrollMax = Math.max(1, document.documentElement.scrollHeight - innerHeight);
     gl.uniform1f(u.time, wall);

@@ -12,6 +12,14 @@
 
   "picks": ["whats-my-name", "wild-beauty"],
 
+  "_shelves": "Hand-ordered, best first. A live track missing from every list still appears on its lane's shelf (from ig-plan lanes), at the end. done waiting sits in both pretty and detox on purpose.",
+  "shelves": {
+    "newCount": 6,
+    "heavy": ["mr-big-stuff", "wobble", "bass-bumpin", "bitch-ass-bitch-ass-bitch", "whats-my-name", "light-weight", "demons-in-my-ear", "can-you-hear-me", "you-aint-ready-baby", "meaningless", "something", "buzzin", "disconnect"],
+    "pretty": ["wild-beauty", "see-the-real-me", "back-to-that-feeling", "set-your-heart-ablaze", "were-gonna-be-alright", "high-then-higher", "pretty-lights", "waiting-for", "done-waiting"],
+    "detox": ["pop-the-trunk", "midnight", "disconnect-detox", "done-waiting"]
+  },
+
   "notes": {
     "whats-my-name": {
       "note": "heavy dubstep under a punk vocal, opened by a victorian tease. the one that says who this is."

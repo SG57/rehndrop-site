@@ -135,7 +135,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
     nextDrizzle -= dt;
     if (nextDrizzle <= 0) {
       add(rand(0, w), rand(0, h * 0.85), Math.random() < 0.8 ? rand(2, 6) : rand(7, 12));
-      nextDrizzle = small ? rand(2.5, 6) : rand(1.6, 4.5);
+      nextDrizzle = small ? rand(1.2, 3.2) : rand(0.7, 2.2);
     }
 
     for (let i = drops.length - 1; i >= 0; i--) {
@@ -218,7 +218,23 @@ export function startDrops(canvas: HTMLCanvasElement) {
   size();
   window.addEventListener('resize', size, { passive: true });
   document.addEventListener('visibilitychange', () => (document.hidden ? sleep() : wake()));
-  document.addEventListener('rehndrop:hit', () => splash(1));
+  document.addEventListener('rehndrop:hit', () => {
+    splash(1.8);
+    setTimeout(() => splash(0.8), 260); // the wave behind the first one
+  });
+  // every beat flicks a few drops at the lens
+  document.addEventListener('rehndrop:beat', () => {
+    if (drops.length > MAX - 6) return;
+    const n = small ? 2 : 4;
+    for (let i = 0; i < n; i++) add(rand(0, w), rand(0, h * 0.9), Math.random() < 0.7 ? rand(2, 6) : rand(7, 12), rand(0.4, 2));
+    wake();
+  });
+  // now and then, even in silence, a gust
+  const gust = () => {
+    if (!document.hidden) splash(0.35);
+    setTimeout(gust, rand(18000, 34000));
+  };
+  setTimeout(gust, rand(14000, 22000));
   canvas.classList.add('is-on');
   wake();
   setTimeout(() => splash(0.6), 1200); // a light splash as you arrive

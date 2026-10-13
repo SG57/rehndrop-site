@@ -43,7 +43,6 @@ const jsonLd = {
       </div>
       <div class="welcome-copy">
         <p class="bio">the heavy stuff and the pretty stuff.</p>
-        <p class="pick">pick one.</p>
         <StorePills />
       </div>
       <a class="scroll-cue" href="#spotlight" aria-label="more"><span></span></a>
@@ -63,6 +62,11 @@ const jsonLd = {
       <Row title="the pretty stuff." id="pretty">
         {r.pretty.map((t) => <Card track={t} />)}
       </Row>
+      {r.detox.length > 0 && (
+        <Row title="the detox stuff." id="detox">
+          {r.detox.map((t) => <Card track={t} />)}
+        </Row>
+      )}
       {r.videos.length > 0 && (
         <Row title="videos." id="videos">
           {r.videos.map((v) => <VideoCard video={v} />)}

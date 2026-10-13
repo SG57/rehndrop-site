@@ -2,8 +2,8 @@
 // Per-track store links. Apple is the exact track; the rest open the artist or a search.
 import Icon from './Icon.astro';
 import type { Track } from '../lib/data';
-interface Props { track: Track; labels?: boolean }
-const { track: t, labels = false } = Astro.props;
+interface Props { track: Track; labels?: boolean; big?: boolean }
+const { track: t, labels = false, big = false } = Astro.props;
 const links = [
   t.links.apple && { name: 'apple', label: 'apple music', href: t.links.apple },
   { name: 'spotify', label: 'spotify', href: t.links.spotify },
@@ -11,11 +11,11 @@ const links = [
   { name: 'soundcloud', label: 'soundcloud', href: t.links.soundcloud },
 ].filter(Boolean) as { name: 'apple' | 'spotify' | 'ytmusic' | 'soundcloud'; label: string; href: string }[];
 ---
-<ul class:list={['listen', { 'listen--labels': labels }]} aria-label={`listen to ${t.title}`}>
+<ul class:list={['listen', { 'listen--labels': labels, 'listen--big': big }]} aria-label={`listen to ${t.title}`}>
   {links.map((l) => (
     <li>
-      <a href={l.href} rel="noopener" target="_blank" aria-label={labels ? undefined : `${t.title} on ${l.label}`}>
-        <Icon name={l.name} size={labels ? 16 : 18} />
+      <a href={l.href} rel="noopener" target="_blank" aria-label={labels ? undefined : `${t.title} on ${l.label}`} title={labels ? undefined : l.label}>
+        <Icon name={l.name} size={labels ? 16 : big ? 22 : 18} />
         {labels && <span>{l.label}</span>}
       </a>
     </li>

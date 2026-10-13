@@ -255,12 +255,18 @@ async function load() {
 export const data = await load();
 
 export const rows = () => {
-  const { tracks, videos } = data;
+  const { tracks, videos, bySlug } = data;
   const current = tracks.filter((t) => t.era === 'current');
+  const sh = curation.shelves;
+  const listed = (slugs: string[]) => slugs.map((s) => bySlug.get(s)).filter((t): t is Track => !!t && t.era === 'current');
+  const placed = new Set([...sh.heavy, ...sh.pretty, ...sh.detox]);
+  // anything live that no list mentions yet (a fresh release) lands on its lane's shelf
+  const unplaced = (pred: (t: Track) => boolean) => current.filter((t) => !placed.has(t.slug) && pred(t));
   return {
-    newest: current.slice(0, 10),
-    heavy: current.filter((t) => t.lane === 'heavy' || t.lane === 'hybrid'),
-    pretty: current.filter((t) => t.lane === 'melodic'),
+    newest: current.slice(0, sh.newCount),
+    heavy: [...listed(sh.heavy), ...unplaced((t) => t.lane === 'heavy' || t.lane === 'hybrid')],
+    pretty: [...listed(sh.pretty), ...unplaced((t) => t.lane === 'melodic' || t.lane === null)],
+    detox: listed(sh.detox),
     early: tracks.filter((t) => t.era === '2021'),
     videos,
   };

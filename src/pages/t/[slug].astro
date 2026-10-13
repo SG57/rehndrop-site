@@ -35,9 +35,8 @@ const jsonLd = {
 ---
 <Base title={`${track.title} · rehndrop`} description={description} image={og?.src} type="music.song" tracks={[track, ...more]} jsonLd={jsonLd}>
   <main class="track-page" style={`--accent-page:${track.accent}`}>
-    <a class="back" href={u()} aria-label="rehndrop home">
+    <a class="back" href={u()} aria-label="rehndrop home" title="rehndrop">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
-      <span>rehndrop</span>
     </a>
 
     <section class="track-hero">
@@ -48,13 +47,15 @@ const jsonLd = {
       <div class="track-info">
         <h1 class="track-title">{track.title}</h1>
         {track.answer && <p class="spot-answer">{track.answer}</p>}
-        <p class="track-meta">
-          single{date && <> <span aria-hidden="true">·</span> {date}</>}{track.explicit && <> <span class="badge" aria-label="explicit">e</span></>}
-        </p>
+        {(date || track.explicit) && (
+          <p class="track-meta">
+            {date}{track.explicit && <span class="badge" aria-label="explicit" title="explicit">e</span>}
+          </p>
+        )}
         <div class="spot-actions">
           {track.preview.src && <PlayButton slug={track.slug} title={track.title} size="lg" />}
         </div>
-        <Listen track={track} labels />
+        <Listen track={track} big />
       </div>
     </section>
 

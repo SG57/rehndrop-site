@@ -47,6 +47,7 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
   let raf = 0;
   let prevLo = 0;
   let kicked = false;
+  let lastBeat = 0;
   const envCache = new Map<string, Promise<Envelope | null>>();
 
   const loadEnv = (t: PlayerTrack) => {
@@ -127,12 +128,18 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
         }
       }
     }
-    const beat = lo - prevLo > 0.22 ? 0.3 : 0;
+    // beats move things (splashes, pulses); only the main hit flashes, so nothing strobes
+    const now = performance.now();
+    const isBeat = lo - prevLo > 0.2 && now - lastBeat > 280;
+    if (isBeat) {
+      lastBeat = now;
+      document.dispatchEvent(new CustomEvent('rehndrop:beat', { detail: { strength: lo } }));
+    }
     prevLo = lo;
 
-    drive.rain = IDLE.rain + 0.35 * lo + 0.1 * en + 0.35 * surge - 0.18 * pre;
-    drive.speed = IDLE.speed + 2.2 * lo + 2.4 * surge - 0.5 * pre;
-    drive.flash = Math.max(hit, beat * (0.4 + 0.6 * surge));
+    drive.rain = IDLE.rain + 0.5 * lo + 0.15 * en + 0.6 * surge - 0.25 * pre;
+    drive.speed = IDLE.speed + 3.4 * lo + 4 * surge - 0.6 * pre;
+    drive.flash = Math.max(hit, isBeat ? 0.12 : 0);
     drive.pulse = Math.max(0.001, lo);
     root.style.setProperty('--pulse', lo.toFixed(3));
   };
