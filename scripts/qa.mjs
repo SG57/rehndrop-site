@@ -23,6 +23,7 @@ const DEVICES = [
   { name: 'phone-land', width: 852, height: 393, dpr: 3, mobile: true },
   { name: 'ipad', width: 820, height: 1180, dpr: 2, mobile: true },
   { name: 'ipad-land', width: 1180, height: 820, dpr: 2, mobile: true },
+  { name: 'laptop-720', width: 1280, height: 720, dpr: 1, mobile: false },
   { name: 'laptop', width: 1440, height: 900, dpr: 1, mobile: false },
   { name: 'desktop', width: 1920, height: 1080, dpr: 1, mobile: false },
   { name: 'ultrawide', width: 2560, height: 1080, dpr: 1, mobile: false },
@@ -155,6 +156,24 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   await ctx.close();
 }
 
+// the water belongs to the page: scrolling moves the drop layer with the content
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
+  await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
+  await page.waitForTimeout(800);
+  const t0 = await page.evaluate(() => document.querySelector('[data-drops]').getBoundingClientRect().top);
+  await page.evaluate(() => window.scrollTo(0, 300));
+  await page.waitForTimeout(300);
+  const t1 = await page.evaluate(() => document.querySelector('[data-drops]').getBoundingClientRect().top);
+  const docGrowth = await page.evaluate(() => document.documentElement.scrollHeight - document.querySelector('main').getBoundingClientRect().bottom - scrollY);
+  console.log('drops-scroll', JSON.stringify({ t0, t1, moved: t0 - t1, docGrowth }));
+  if (Math.abs(t0 - t1 - 300) > 2) problems.push(`drops: layer did not scroll with the page (moved ${t0 - t1}px for 300px)`);
+  if (docGrowth > 2) problems.push(`drops: the water layer added ${docGrowth}px of scroll below the page`);
+  await ctx.close();
+}
+
 // only the playing song's cover may bounce: spotlight on one song, play another from picks
 {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -171,7 +190,8 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   await page.waitForTimeout(8000); // past the hit, pulse high
   const other = await liveState();
   const pickActive = await page.evaluate(() => document.querySelector('#picks [data-play="whats-my-name"]').classList.contains('is-active'));
-  await page.locator(`#picks [data-play="${other.spotSlug}"]`).click().catch(() => {});
+  // now play the spotlight's own song from its own button: that cover, and only it, goes live
+  await page.locator('.spot.is-current [data-play]').click();
   await page.waitForTimeout(1500);
   const same = await liveState();
   console.log('cover-isolation', JSON.stringify({ other, pickActive, same }));

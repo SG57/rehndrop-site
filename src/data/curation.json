@@ -1,12 +1,12 @@
 {
   "_note": "Hand-edited. Everything else in src/data is generated (catalog.json by scripts/export_catalog.py, apple-snapshot.json from Apple). Words follow D:/rehndrop/resources/brand/VOICE.md.",
   "spotlight": [
-    "whats-my-name",
-    "wild-beauty",
-    "see-the-real-me",
     "mr-big-stuff",
+    "see-the-real-me",
     "bitch-ass-bitch-ass-bitch",
-    "back-to-that-feeling"
+    "pop-the-trunk",
+    "back-to-that-feeling",
+    "wobble"
   ],
   "picks": [
     "whats-my-name",
@@ -221,5 +221,6 @@
         "published": "2021-01-27"
       }
     ]
-  }
+  },
+  "_spotlight": "The two picks (what's my name, wild beauty) live in picks., so the spotlight shows six other covers; the first screen never repeats a song."
 }

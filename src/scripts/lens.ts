@@ -27,6 +27,7 @@ uniform float uSlide;    // integrated slide clock (drops), so speed changes nev
 uniform float uRain;     // 0..1 density
 uniform float uFlash;    // 0..1 light hit
 uniform float uScroll;   // 0..1 page scroll, for a little parallax
+uniform float uDepth;    // page scroll in viewport heights x 0.35: the beads' parallax layer
 uniform vec3 uTint;
 uniform vec3 uWipe[6];   // pointer trail: xy uv, z strength
 uniform vec2 uSway;      // slow drift + cursor parallax of the scene behind the glass
@@ -96,12 +97,15 @@ vec4 sliders(vec2 q, float t, float scale, float density) {
 
 void main() {
   vec2 q = vec2(vUv.x * uAspect, vUv.y);
+  // the drop field rides the page at a third of its speed: in front of the velvet, behind the
+  // content. y is up in uv, so scrolling down moves the field up
+  vec2 qd = vec2(q.x, q.y - uDepth);
   float dens = 0.25 + 0.75 * uRain;
 
-  vec3 b1 = beads(q, uTime, 20.0, dens * 0.9);
-  vec3 b2 = beads(q + vec2(0.31, 0.17), uTime * 1.3, 38.0, dens * 0.8);
-  vec4 s1 = sliders(q, uSlide, 11.0, dens * 0.55);
-  vec4 s2 = sliders(q * 1.45 + vec2(0.53, 0.29), uSlide * 1.15, 11.0, dens * 0.4);
+  vec3 b1 = beads(qd, uTime, 20.0, dens * 0.9);
+  vec3 b2 = beads(qd + vec2(0.31, 0.17), uTime * 1.3, 38.0, dens * 0.8);
+  vec4 s1 = sliders(qd, uSlide, 11.0, dens * 0.55);
+  vec4 s2 = sliders(qd * 1.45 + vec2(0.53, 0.29), uSlide * 1.15, 11.0, dens * 0.4);
 
   float wipe = 0.0;
   for (int i = 0; i < 6; i++) {
@@ -192,7 +196,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   const U = (n: string) => gl.getUniformLocation(prog, n);
   const u = {
     sharp: U('uSharp'), fog: U('uFog'), cover: U('uCover'), aspect: U('uAspect'), time: U('uTime'),
-    slide: U('uSlide'), rain: U('uRain'), flash: U('uFlash'), scroll: U('uScroll'), tint: U('uTint'),
+    slide: U('uSlide'), rain: U('uRain'), flash: U('uFlash'), scroll: U('uScroll'), depth: U('uDepth'), tint: U('uTint'),
     wipe: U('uWipe'), sway: U('uSway'), lights: U('uLights'), lightAmp: U('uLightAmp'),
   };
   gl.uniform1i(u.sharp, 0);
@@ -247,6 +251,8 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
 
   let raf = 0;
   let running = false;
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => (lastScroll = performance.now()), { passive: true });
   let lost = false;
   let last = performance.now();
   let slide = 0;
@@ -261,7 +267,9 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     raf = requestAnimationFrame(frame);
     const dt = Math.min((now - last) / 1000, 0.1);
     // idle rain is calm enough for 30 fps; music gets every frame the device offers
-    const playing = drive.pulse > 0 || drive.flash > 0.01;
+    // idle rain is calm enough for 30 fps; music and scrolling get every frame on offer,
+    // so the parallax layer never judders against the page
+    const playing = drive.pulse > 0 || drive.flash > 0.01 || now - lastScroll < 250;
     if (!playing && now - last < 1000 / 32) return;
     last = now;
 
@@ -311,6 +319,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     gl.uniform1f(u.rain, Math.min(1, Math.max(0, drive.rain)));
     gl.uniform1f(u.flash, flash);
     gl.uniform1f(u.scroll, Math.min(1, scrollY / scrollMax));
+    gl.uniform1f(u.depth, (scrollY / innerHeight) * 0.35);
     gl.uniform3f(u.tint, tint[0], tint[1], tint[2]);
     gl.uniform3fv(u.wipe, wipes);
     gl.drawArrays(gl.TRIANGLES, 0, 3);

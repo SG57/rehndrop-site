@@ -82,7 +82,11 @@ img { display: block; max-width: 100%; }
 }
 .lens { z-index: -2; opacity: 0; transition: opacity 1.6s var(--ease); display: block; }
 /* water on the camera lens, in front of the page (drops.ts); below the player and dialogs */
-.drops { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 12; pointer-events: none; opacity: 0; transition: opacity 1.2s var(--ease); }
+/* water on the page (drops.ts): a document-sized, clipped layer, so the strip inside scrolls
+   with the content on the compositor and can never add scroll length */
+body { position: relative; }
+.drops-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 12; }
+.drops { position: absolute; top: 0; left: 0; width: 100%; opacity: 0; transition: opacity 1.2s var(--ease); will-change: transform; }
 .drops.is-on { opacity: 1; }
 /* without the shader, the velvet itself sways so the page is never static */
 html:not(.lens-on) .velvet { inset: -24px; width: auto; height: auto; animation: sway 28s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
@@ -120,8 +124,7 @@ html:not(.lens-on) .velvet { inset: -24px; width: auto; height: auto; animation:
 main { overflow-x: clip; }
 .welcome {
   position: relative;
-  overflow-x: clip;
-  min-height: 100svh;
+  min-height: 88svh; /* the spotlight peeks up from below on phones */
   display: grid;
   grid-template-rows: auto auto;
   align-content: center;
@@ -304,7 +307,6 @@ main { overflow-x: clip; }
 /* ---------- spotlight ---------- */
 .spotlight {
   position: relative;
-  overflow-x: clip;
   padding: clamp(24px, 6vh, 72px) var(--gutter) clamp(12px, 3vh, 28px);
 }
 .spot-slides { display: grid; }
@@ -442,8 +444,11 @@ main { overflow-x: clip; }
    and mobile browsers zoom the whole page out to fit */
 .shelves { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(30px, 6vh, 56px); padding: clamp(28px, 6vh, 64px) 0 clamp(20px, 4vh, 40px); }
 .row { min-width: 0; }
-.row-head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); margin-bottom: 14px; }
+.row-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); margin-bottom: 14px; }
 .row-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
   margin: 0;
   font-family: var(--font-display);
   font-weight: 400;
@@ -451,6 +456,7 @@ main { overflow-x: clip; }
   letter-spacing: 0.32em;
   color: var(--bone);
 }
+.row-title::after { content: ''; width: clamp(36px, 7vw, 120px); height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
 .row-nav { display: none; gap: 6px; }
 .row-btn {
   display: grid;
@@ -473,7 +479,10 @@ main { overflow-x: clip; }
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: var(--gutter);
-  padding: 6px var(--gutter) 18px;
+  /* a scroller clips both axes, so it carries the breathing room for covers that lift and
+     pulse with the bass; the negative margins keep the layout where it was */
+  padding: 28px var(--gutter) 52px;
+  margin: -22px 0 -34px;
   scrollbar-width: none;
   -webkit-mask: linear-gradient(90deg, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
   mask: linear-gradient(90deg, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
@@ -493,7 +502,7 @@ main { overflow-x: clip; }
   display: block;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   background: #0b0b10;
   box-shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -550,7 +559,7 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   background: #0b0b10;
   box-shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -598,14 +607,14 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
   border: 1px solid var(--line);
   background: linear-gradient(135deg, rgba(14, 14, 20, 0.72), rgba(4, 4, 8, 0.6));
   box-shadow: 0 30px 70px -40px color-mix(in srgb, var(--slide-accent) 70%, transparent);
-  overflow: hidden;
 }
 .pick-card::before {
   content: '';
   position: absolute;
-  inset: -40%;
+  inset: 0;
+  border-radius: inherit;
   z-index: -1;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--slide-accent) 30%, transparent), transparent 70%);
+  background: radial-gradient(farthest-side at 22% 50%, color-mix(in srgb, var(--slide-accent) 26%, transparent), transparent 80%);
   animation: ambient-breathe 12s ease-in-out infinite;
   pointer-events: none;
 }
@@ -733,7 +742,6 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
 .back svg { width: 18px; height: 18px; }
 .track-hero {
   position: relative;
-  overflow-x: clip;
   min-height: 100svh;
   display: grid;
   justify-items: center;
@@ -785,6 +793,9 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
 @media (min-width: 700px) and (min-height: 541px) {
   .card { width: clamp(170px, 22vw, 216px); }
 }
+@media (min-width: 700px) and (orientation: portrait) {
+  .welcome { min-height: 66svh; }
+}
 
 /* wide screens: the spotlight becomes a billboard */
 @media (min-width: 900px) and (min-height: 541px) {
@@ -799,6 +810,43 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
   .track-cover { width: min(100%, 480px); }
 }
 
+/* landscape screens with room (laptops, desktops, landscape tablets): the brand column and
+   the spotlight share the first screen, so the music is there without a scroll */
+@media (min-width: 900px) and (min-height: 560px) and (min-aspect-ratio: 5/4) {
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(250px, 0.7fr) minmax(0, 1.65fr);
+    align-items: center;
+    column-gap: clamp(32px, 4.5vw, 96px);
+    max-width: 1800px;
+    margin: 0 auto;
+    /* sized to its content, not the screen: the picks rise into the first view below it */
+    padding: max(32px, 7vh) var(--gutter) clamp(8px, 2vh, 20px);
+  }
+  .stage .welcome { min-height: 0; padding: 0; gap: clamp(16px, 3vh, 30px); }
+  .stage .r-stage { width: clamp(170px, min(18vw, 32vh), 290px); }
+  .stage .scroll-cue { display: none; }
+  .stage .store { width: clamp(48px, 3.6vw, 60px); }
+  .stage .spotlight { padding: 0; }
+  .stage .spotlight::before {
+    content: '';
+    position: absolute;
+    left: calc(-0.5 * clamp(32px, 4.5vw, 96px));
+    top: 8%;
+    bottom: 8%;
+    width: 1px;
+    background: linear-gradient(transparent, var(--line-2) 30%, var(--line-2) 70%, transparent);
+  }
+  .stage .spot {
+    grid-template-columns: minmax(0, min(46vh, 34vw, 440px)) minmax(0, 1fr);
+    justify-content: start;
+    column-gap: clamp(28px, 3.5vw, 64px);
+  }
+  .stage .spot-cover { width: 100%; }
+  .stage .spot-ambient { inset: -18% -10%; width: 120%; height: 136%; }
+  .stage .spot-ticks { margin-top: clamp(14px, 3vh, 26px); width: min(46vh, 34vw, 440px); justify-content: center; }
+}
+
 @media (min-width: 1600px) {
   :root { --gutter: clamp(64px, 8vw, 160px); }
   .card { width: 232px; }
@@ -807,6 +855,6 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
 /* ---------- motion preferences ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
-  .lens, .drops { display: none; }
+  .lens, .drops-layer { display: none; }
   .r { transform: none; }
 }

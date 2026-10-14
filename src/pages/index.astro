@@ -32,6 +32,7 @@ const jsonLd = {
 ---
 <Base title="rehndrop · bass music" description={BIO} tracks={data.tracks} jsonLd={jsonLd}>
   <main>
+    <div class="stage">
     <section class="welcome" aria-label="rehndrop">
       <h1 class="sr-only">rehndrop</h1>
       <div class="r-stage" data-tilt>
@@ -49,6 +50,7 @@ const jsonLd = {
     </section>
 
     <Spotlight tracks={data.spotlight} />
+    </div>
 
     {data.picks.length > 0 && <Picks tracks={data.picks} />}
 

@@ -70,7 +70,7 @@ const player = await Promise.all(
     <canvas class="lens" aria-hidden="true" data-lens></canvas>
     <div class="grain" aria-hidden="true"></div>
     <slot />
-    <canvas class="drops" aria-hidden="true" data-drops></canvas>
+    <div class="drops-layer" aria-hidden="true"><canvas class="drops" data-drops></canvas></div>
     <MiniPlayer />
     <VideoDialog />
     <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />

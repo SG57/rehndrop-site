@@ -1,7 +1,12 @@
-// Water on the camera lens, in front of everything: a light drizzle that beads, sits,
-// evaporates or runs down, and a splash when the music hits (player.ts dispatches
-// 'rehndrop:hit'). It refracts nothing; each drop is a pre-rendered sprite of rim shadow,
-// caustic and highlight, which is what reads as water on glass at a glance.
+// Water on the page, in front of everything: a light drizzle that beads, sits, evaporates
+// or runs down, and a splash when the music hits (player.ts dispatches 'rehndrop:hit').
+// It refracts nothing; each drop is a pre-rendered sprite of rim shadow, caustic and
+// highlight, which is what reads as water on glass at a glance.
+//
+// The drops belong to the page, not the screen: the canvas is an absolutely positioned
+// strip (taller than the viewport) that the browser scrolls with the content on the
+// compositor, so drops never lag a fast fling. When the reader travels far enough, the
+// strip re-anchors around the viewport while its edges are off screen.
 import { reducedMotion } from './drive';
 
 interface Drop {
@@ -22,22 +27,44 @@ const MASTER = 0.8;
 export function startDrops(canvas: HTMLCanvasElement) {
   if (reducedMotion()) return;
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  const layer = canvas.parentElement;
+  if (!ctx || !layer) return;
 
   const small = !matchMedia('(min-width: 700px)').matches;
   const MAX = small ? 48 : 80;
   const sprites = new Map<number, HTMLCanvasElement>();
   let dpr = 1;
   let w = 0;
-  let h = 0;
+  let h = 0; // viewport height
+  let H = 0; // strip height
+  let anchor = 0; // page y of the strip's top
+  const view = () => scrollY - anchor; // strip y of the viewport's top
 
   const size = () => {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // mobile URL bars nudge innerHeight while scrolling; only a real change re-allocates
+    if (Math.abs(innerWidth - w) < 1 && Math.abs(innerHeight - h) < 120 && H > 0) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     w = innerWidth;
     h = innerHeight;
+    H = Math.round(h * 1.8);
     canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.height = `${H}px`;
     sprites.clear();
+    reanchor(true);
+  };
+
+  // keep the strip around the viewport, clamped inside the document so it never adds scroll
+  const reanchor = (force = false) => {
+    const top = scrollY;
+    if (!force && top >= anchor + h * 0.05 && top + h <= anchor + H - h * 0.05) return;
+    const docH = layer.offsetHeight;
+    const next = Math.max(0, Math.min(top - h * 0.4, Math.max(0, docH - H)));
+    const shift = anchor - next;
+    if (shift) for (const d of drops) d.y += shift;
+    anchor = next;
+    canvas.style.transform = `translate3d(0, ${anchor}px, 0)`;
+    draw(); // same frame as the move, so no drop ever shows at a stale offset
   };
 
   // one sprite per whole-pixel radius, drawn once
@@ -110,7 +137,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
   const splash = (amount = 1) => {
     const side = Math.random();
     const cx = side < 0.5 ? rand(0, w * 0.35) : rand(w * 0.65, w);
-    const cy = rand(h * 0.05, h * 0.55);
+    const cy = view() + rand(h * 0.05, h * 0.55);
     const n = Math.round((small ? 12 : 20) * amount);
     for (let i = 0; i < n; i++) {
       const big = Math.random() < 0.14;
@@ -131,10 +158,11 @@ export function startDrops(canvas: HTMLCanvasElement) {
     const runningDrops = drops.some((d) => d.state === 2);
     if (!runningDrops && now - last < 1000 / 30) return;
     last = now;
+    reanchor();
 
     nextDrizzle -= dt;
     if (nextDrizzle <= 0) {
-      add(rand(0, w), rand(0, h * 0.85), Math.random() < 0.8 ? rand(2, 6) : rand(7, 12));
+      add(rand(0, w), view() + rand(0, h * 0.85), Math.random() < 0.8 ? rand(2, 6) : rand(7, 12));
       nextDrizzle = small ? rand(1.2, 3.2) : rand(0.7, 2.2);
     }
 
@@ -166,7 +194,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
             d.r *= 0.985;
           }
         }
-        if (d.r < 5 || d.y - d.r > h) d.state = 3;
+        if (d.r < 5 || d.y - d.r > H) d.state = 3;
       } else {
         d.a -= dt * 0.45;
         d.r *= 1 - dt * 0.05;
@@ -192,17 +220,21 @@ export function startDrops(canvas: HTMLCanvasElement) {
       }
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    draw();
+  };
+
+  function draw() {
+    ctx!.clearRect(0, 0, canvas.width, canvas.height);
     for (const d of drops) {
       const s = sprite(d.r);
       const stretch = d.state === 2 && d.pause <= 0 ? 1.14 : 1;
       const sw = (s.width / dpr) * (d.r / Math.max(2, Math.min(30, Math.round(d.r))));
       const sh = sw * stretch;
-      ctx.globalAlpha = d.a * MASTER;
-      ctx.drawImage(s, (d.x - sw / 2) * dpr, (d.y - sh / 2) * dpr, sw * dpr, sh * dpr);
+      ctx!.globalAlpha = d.a * MASTER;
+      ctx!.drawImage(s, (d.x - sw / 2) * dpr, (d.y - sh / 2) * dpr, sw * dpr, sh * dpr);
     }
-    ctx.globalAlpha = 1;
-  };
+    ctx!.globalAlpha = 1;
+  }
 
   const wake = () => {
     if (running || document.hidden) return;
@@ -217,6 +249,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
 
   size();
   window.addEventListener('resize', size, { passive: true });
+  window.addEventListener('scroll', () => reanchor(), { passive: true });
   document.addEventListener('visibilitychange', () => (document.hidden ? sleep() : wake()));
   document.addEventListener('rehndrop:hit', () => {
     splash(1.8);
@@ -226,7 +259,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
   document.addEventListener('rehndrop:beat', () => {
     if (drops.length > MAX - 6) return;
     const n = small ? 2 : 4;
-    for (let i = 0; i < n; i++) add(rand(0, w), rand(0, h * 0.9), Math.random() < 0.7 ? rand(2, 6) : rand(7, 12), rand(0.4, 2));
+    for (let i = 0; i < n; i++) add(rand(0, w), view() + rand(0, h * 0.9), Math.random() < 0.7 ? rand(2, 6) : rand(7, 12), rand(0.4, 2));
     wake();
   });
   // now and then, even in silence, a gust
