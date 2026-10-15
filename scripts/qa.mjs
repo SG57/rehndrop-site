@@ -174,6 +174,41 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   await ctx.close();
 }
 
+// reels open as stories: the shelf plays the newest and steps forward; a card's ring opens
+// only that track's reels and never starts the card's preview
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
+  await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
+  const story = () => page.evaluate(() => {
+    const d = document.querySelector('[data-story]'), v = d.querySelector('video');
+    return { open: d.open, title: d.querySelector('[data-story-title]').textContent, ig: d.querySelector('[data-story-ig]').href,
+      bars: d.querySelectorAll('.story-bar').length, t: v.currentTime, src: v.getAttribute('src') };
+  });
+  await page.locator('#reels .rcard-art').first().click();
+  await page.waitForTimeout(1500);
+  const a = await story();
+  await page.locator('[data-story-next]').click();
+  await page.waitForTimeout(800);
+  const b = await story();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  const c = await story();
+  await page.locator('.card-reel[data-story-track="wobble"]').first().click();
+  await page.waitForTimeout(1200);
+  const d = await story();
+  const previewStarted = await page.evaluate(() => !document.querySelector('[data-mini]').hidden);
+  console.log('stories', JSON.stringify({ first: { title: a.title, t: +a.t.toFixed(2), bars: a.bars, ig: a.ig }, next: b.title, closed: !c.open && !c.src, ring: { title: d.title, bars: d.bars }, previewStarted }));
+  if (!a.open || a.t <= 0.2) problems.push('stories: the shelf did not open and play a reel');
+  if (!a.ig.startsWith('https://www.instagram.com/reel/')) problems.push('stories: instagram link missing');
+  if (b.title === a.title) problems.push('stories: next did not advance');
+  if (c.open || c.src) problems.push('stories: escape did not close and unload');
+  if (!d.open || d.title !== 'wobble' || d.bars !== 1) problems.push('stories: the card ring did not open only that track');
+  if (previewStarted) problems.push('stories: the ring also started the card preview');
+  await ctx.close();
+}
+
 // only the playing song's cover may bounce: spotlight on one song, play another from picks
 {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });

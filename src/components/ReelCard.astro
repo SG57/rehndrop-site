@@ -1,0 +1,18 @@
+---
+// A posted reel, portrait. Opens the story viewer at this reel; the viewer then runs the
+// whole list (data-story-list) like stories do.
+import { Image } from 'astro:assets';
+import type { Reel } from '../lib/data';
+import { fmtDate } from '../lib/data';
+import { u } from '../lib/site';
+interface Props { reel: Reel; list: string }
+const { reel: r, list } = Astro.props;
+---
+<article class="rcard">
+  <button class="rcard-art" type="button" data-story-reel={r.id} data-story-list={list} aria-label={`watch the ${r.title} reel`}>
+    {r.poster ? <Image src={r.poster} width={360} height={640} widths={[200, 280, 360]} sizes="(min-width: 900px) 190px, 34vw" alt="" loading="lazy" format="webp" quality={78} /> : <span class="card-img--empty" />}
+    <span class="rcard-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg></span>
+  </button>
+  <a class="card-title" href={u(`t/${r.track}/`)}>{r.title}</a>
+  <span class="card-sub">{fmtDate(r.postedAt)}</span>
+</article>

@@ -1,0 +1,27 @@
+---
+import Icon from './Icon.astro';
+---
+<dialog class="story" data-story aria-label="reels">
+  <div class="story-frame">
+    <video class="story-video" data-story-video playsinline preload="none"></video>
+    <button class="story-zone story-zone--prev" type="button" data-story-prev aria-label="previous reel"></button>
+    <button class="story-zone story-zone--next" type="button" data-story-next aria-label="next reel"></button>
+    <div class="story-top">
+      <div class="story-bars" data-story-bars></div>
+      <div class="story-head">
+        <a class="story-title" data-story-title href="#"></a>
+        <span class="story-date" data-story-date></span>
+        <button class="story-btn" type="button" data-story-mute aria-label="mute">
+          <svg class="story-sound" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" fill="currentColor" /></svg>
+          <svg class="story-muted" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.6 3 2.2-2.2-1.1-1.1-2.2 2.2-2.2-2.2-1.1 1.1 2.2 2.2-2.2 2.2 1.1 1.1 2.2-2.2 2.2 2.2 1.1-1.1z" fill="currentColor" /></svg>
+        </button>
+        <button class="story-btn" type="button" data-story-close aria-label="close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" fill="none" /></svg>
+        </button>
+      </div>
+    </div>
+    <a class="story-ig" data-story-ig href="#" target="_blank" rel="noopener" aria-label="open on instagram" title="instagram">
+      <Icon name="instagram" size={22} />
+    </a>
+  </div>
+</dialog>

@@ -6,6 +6,7 @@ import Picks from '../components/Picks.astro';
 import Row from '../components/Row.astro';
 import Card from '../components/Card.astro';
 import VideoCard from '../components/VideoCard.astro';
+import ReelCard from '../components/ReelCard.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
 import { data, rows, curation } from '../lib/data';
@@ -59,6 +60,11 @@ const jsonLd = {
       <Row title="the new stuff." id="newest">
         {r.newest.map((t, i) => <Card track={t} eager={i < 3} />)}
       </Row>
+      {data.reels.length > 0 && (
+        <Row title="reels." id="reels">
+          {data.reels.map((rl) => <ReelCard reel={rl} list="all" />)}
+        </Row>
+      )}
       <Row title="the heavy stuff." id="heavy">
         {r.heavy.map((t) => <Card track={t} />)}
       </Row>

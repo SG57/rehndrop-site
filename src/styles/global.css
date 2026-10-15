@@ -657,6 +657,153 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
   .card-art:hover .card-play, .card-art:focus-visible .card-play, .card-art.is-active .card-play { opacity: 1; transform: none; }
 }
 
+/* ---------- reels ---------- */
+.rcard { flex: 0 0 auto; width: clamp(124px, 32vw, 184px); scroll-snap-align: start; display: grid; gap: 4px; align-content: start; }
+.rcard-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0b0b10;
+  box-shadow: 0 22px 46px -24px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  margin-bottom: 8px;
+  transition: transform 0.5s var(--ease), box-shadow 0.6s var(--ease);
+}
+.rcard-art img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
+.rcard-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2, 2, 4, 0.25), transparent 30%, transparent 62%, rgba(2, 2, 4, 0.55));
+  pointer-events: none;
+}
+.rcard-play {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 2, 4, 0.45);
+  border: 1px solid rgba(231, 233, 234, 0.55);
+  color: var(--bone);
+  transition: transform 0.4s var(--ease), background 0.4s;
+}
+.rcard-play svg { width: 40%; height: 40%; transform: translateX(6%); }
+@media (hover: hover) and (pointer: fine) {
+  .rcard-art:hover { transform: translateY(-4px); box-shadow: 0 28px 56px -22px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.14); }
+  .rcard-art:hover img { transform: scale(1.05); }
+  .rcard-art:hover .rcard-play { background: rgba(231, 233, 234, 0.92); color: var(--void); transform: scale(1.06); }
+}
+.shelves--tight { padding-top: 0; }
+
+/* a track with reels wears a slowly turning ring, the brand's take on a story ring */
+.card { position: relative; }
+.card-reel {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(2, 2, 4, 0.72);
+  color: var(--bone);
+  transition: transform 0.35s var(--ease);
+}
+.card-reel svg { width: 18px; height: 18px; position: relative; }
+.card-reel-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--card-accent, #c9ced6), rgba(231, 233, 234, 0.9), color-mix(in srgb, var(--card-accent, #c9ced6) 40%, transparent), var(--card-accent, #c9ced6));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  animation: ring-turn 6s linear infinite;
+}
+@keyframes ring-turn { to { rotate: 360deg; } }
+.card-reel:hover { transform: scale(1.08); }
+.card-reel:active { transform: scale(0.94); }
+
+/* the story viewer: phone-shaped on big screens, the whole screen on phones */
+.story {
+  /* fit-content + auto margins keep the modal centred; width:auto would stretch it */
+  width: fit-content;
+  height: fit-content;
+  margin: auto;
+  max-width: 100vw;
+  max-height: 100dvh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bone);
+  overflow: visible;
+}
+.story::backdrop { background: rgba(2, 2, 4, 0.9); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.story[open] { animation: rise 0.45s var(--ease); }
+.story-frame {
+  position: relative;
+  height: min(92dvh, 960px);
+  aspect-ratio: 9 / 16;
+  max-width: 100vw;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 50px 140px -30px rgba(0, 0, 0, 1), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.story-video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+.story-zone { position: absolute; top: 76px; bottom: 76px; z-index: 1; }
+.story-zone--prev { left: 0; width: 32%; }
+.story-zone--next { right: 0; width: 68%; }
+.story-zone:focus-visible { outline-offset: -4px; }
+.story-top {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  padding: 10px 10px 26px;
+  background: linear-gradient(180deg, rgba(2, 2, 4, 0.7), transparent);
+}
+.story-bars { display: flex; gap: 4px; }
+.story-bar { position: relative; flex: 1; height: 2px; border-radius: 2px; background: rgba(231, 233, 234, 0.3); overflow: hidden; }
+.story-bar::after { content: ''; position: absolute; inset: 0; background: var(--bone); transform: scaleX(var(--p, 0)); transform-origin: left; }
+.story-head { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-left: 4px; }
+.story-title { font-family: var(--font-brand); font-size: 16px; letter-spacing: 0.02em; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); }
+.story-date { font-size: 12px; font-weight: 500; color: var(--ink-3); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); margin-right: auto; }
+.story-btn { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: var(--bone); }
+.story-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.story-btn svg { width: 20px; height: 20px; }
+.story .story-muted, .story.is-muted .story-sound { display: none; }
+.story.is-muted .story-muted { display: block; }
+.story-ig {
+  position: absolute;
+  right: 14px;
+  bottom: calc(14px + var(--safe-b));
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: rgba(2, 2, 4, 0.6);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--bone);
+  transition: transform 0.35s var(--ease), background 0.35s;
+}
+.story-ig:hover { transform: scale(1.06); background: rgba(231, 233, 234, 0.9); color: var(--void); }
+@media (max-width: 600px) {
+  .story-frame { height: 100dvh; width: 100vw; aspect-ratio: auto; border-radius: 0; }
+  .story-top { padding-top: max(10px, env(safe-area-inset-top)); }
+}
+
 /* ---------- picks + liner notes ---------- */
 .picks { padding: clamp(24px, 5vh, 48px) 0 0; }
 .picks-grid { display: grid; gap: clamp(18px, 3vw, 28px); padding: 0 var(--gutter); }

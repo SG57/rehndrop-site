@@ -7,6 +7,7 @@ import Listen from '../../components/Listen.astro';
 import Row from '../../components/Row.astro';
 import Card from '../../components/Card.astro';
 import VideoCard from '../../components/VideoCard.astro';
+import ReelCard from '../../components/ReelCard.astro';
 import Contact from '../../components/Contact.astro';
 import Footer from '../../components/Footer.astro';
 import { data, related, fmtDate, type Track } from '../../lib/data';
@@ -64,6 +65,14 @@ const jsonLd = {
       <section class="liner" aria-label="lyric">
         <blockquote class="pick-quote">“{track.story.quote}”</blockquote>
       </section>
+    )}
+
+    {track.reels.length > 0 && (
+      <div class="shelves shelves--tight">
+        <Row title="reels." id="reels">
+          {track.reels.map((rl) => <ReelCard reel={rl} list={`track:${track.slug}`} />)}
+        </Row>
+      </div>
     )}
 
     {track.video && (

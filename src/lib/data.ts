@@ -7,6 +7,7 @@ import catalog from '../data/catalog.json';
 import appleSnapshot from '../data/apple-snapshot.json';
 import curation from '../data/curation.json';
 import storeLinks from '../data/store-links.json';
+import reelsData from '../data/reels.json';
 
 export type Lane = 'heavy' | 'hybrid' | 'melodic' | null;
 
@@ -16,6 +17,16 @@ export interface Video {
   credit: string | null;
   published: string;
   trackSlug: string | null;
+}
+
+export interface Reel {
+  id: string;
+  track: string;
+  title: string;
+  url: string;
+  postedAt: string;
+  video: string | null;
+  poster: ImageMetadata | null;
 }
 
 export interface Track {
@@ -34,6 +45,7 @@ export interface Track {
   preview: { src: string | null; dropAt: number | null; env: string | null };
   links: { apple: string | null; spotify: string; youtube: string; soundcloud: string };
   video: Video | null;
+  reels: Reel[];
 }
 
 const APPLE_ARTIST = 1545317806;
@@ -184,6 +196,7 @@ async function load() {
       },
       links: linksFor(c.title, c.appleUrl ?? null),
       video: null,
+      reels: [],
     };
     bySlug.set(t.slug, t);
     byTitle.set(norm(t.title), t);
@@ -219,6 +232,7 @@ async function load() {
       preview: { src: s.previewUrl ?? null, dropAt: null, env: null },
       links: linksFor(title, appleUrl),
       video: null,
+      reels: [],
     };
     bySlug.set(slug, t);
     byTitle.set(norm(title), t);
@@ -246,10 +260,18 @@ async function load() {
     })
     .sort((a, b) => b.published.localeCompare(a.published));
 
+  // posted reels (scripts/export_reels.py, newest first); a reel with no hosted video still links out
+  const posters = import.meta.glob<{ default: ImageMetadata }>('../assets/reels/*.jpg', { eager: true });
+  const reels: Reel[] = (reelsData.reels as Array<Omit<Reel, 'poster'> & { poster: string | null }>).map((r) => ({
+    ...r,
+    poster: r.poster ? posters[`../assets/${r.poster}`]?.default ?? null : null,
+  }));
+  for (const r of reels) bySlug.get(r.track)?.reels.push(r);
+
   const spotlight = curation.spotlight.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
   const picks = curation.picks.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
 
-  return { tracks, bySlug, videos, spotlight, picks };
+  return { tracks, bySlug, videos, spotlight, picks, reels };
 }
 
 export const data = await load();
