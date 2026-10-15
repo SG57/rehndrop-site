@@ -900,6 +900,7 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
 @keyframes mini-in { from { opacity: 0; transform: translate(-50%, 20px); } }
 .mini-bar { position: absolute; left: 14px; right: 14px; top: 0; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
 .mini-bar span { position: absolute; inset: 0; background: linear-gradient(90deg, var(--bone), color-mix(in srgb, var(--accent) 70%, var(--bone))); transform: scaleX(var(--p, 0)); transform-origin: left; }
+.mini-turn { position: absolute; top: -1px; bottom: -1px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--void); box-shadow: 0 0 0 1px rgba(231, 233, 234, 0.25); }
 .mini-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #111; }
 .mini-title { font-size: 14px; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 10px 0; }
 .mini-actions { display: flex; align-items: center; gap: 2px; }

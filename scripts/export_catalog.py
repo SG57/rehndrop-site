@@ -709,7 +709,7 @@ def read_wav_segment_mono(wav_path: Path, start: float, duration: float = PREVIE
     return data, sr
 
 
-def compute_envelope(segment: np.ndarray, sr: int):
+def compute_envelope(segment: np.ndarray, sr: int, n_frames: int = ENV_FRAMES):
     hop = ENV_HOP_SAMPLES
     win = ENV_WIN_SAMPLES
     half = win // 2
@@ -719,9 +719,9 @@ def compute_envelope(segment: np.ndarray, sr: int):
     band = (freqs >= 20) & (freqs <= 150)
     eps = 1e-12
 
-    energy = np.zeros(ENV_FRAMES)
-    low = np.zeros(ENV_FRAMES)
-    for i in range(ENV_FRAMES):
+    energy = np.zeros(n_frames)
+    low = np.zeros(n_frames)
+    for i in range(n_frames):
         center = i * hop + half
         frame = padded[center - half:center + half]
         if len(frame) < win:
@@ -735,7 +735,7 @@ def compute_envelope(segment: np.ndarray, sr: int):
     return energy, low
 
 
-def normalize_quantize(curve: np.ndarray):
+def normalize_quantize(curve: np.ndarray, n_frames: int = ENV_FRAMES):
     p5 = np.percentile(curve, 5)
     p99 = np.percentile(curve, 99)
     if p99 - p5 < 1e-9:
@@ -744,18 +744,140 @@ def normalize_quantize(curve: np.ndarray):
         norm = (curve - p5) / (p99 - p5)
     norm = np.clip(norm, 0.0, 1.0)
     q = np.clip(np.round(norm * 255), 0, 255).astype(int).tolist()
-    if len(q) < ENV_FRAMES:
-        q = q + [q[-1] if q else 0] * (ENV_FRAMES - len(q))
+    if len(q) < n_frames:
+        q = q + [q[-1] if q else 0] * (n_frames - len(q))
     else:
-        q = q[:ENV_FRAMES]
+        q = q[:n_frames]
     return q
 
 
-def write_env(slug, drop_at, energy_q, low_q):
+def write_env(slug, drop_at, energy_q, low_q, hits=None, turns=None):
     ENV_DIR.mkdir(parents=True, exist_ok=True)
     out = ENV_DIR / f"{slug}.json"
-    doc = {"rate": ENV_RATE_HZ, "dropAt": drop_at, "energy": energy_q, "low": low_q}
+    doc = {"rate": ENV_RATE_HZ, "dropAt": drop_at,
+           "hits": hits if hits is not None else ([drop_at] if drop_at is not None else []),
+           "turns": turns or [], "energy": energy_q, "low": low_q}
     out.write_text(json.dumps(doc), encoding="utf-8")
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Teasers: several moments and several hits in one seamless preview
+# ---------------------------------------------------------------------------
+# preview-overrides.json, per slug:
+#   {"segments": [{"start": s, "hits": [h, ...]}, ...]}   played in the listed order
+#   {"start": s, "hits": [h1, h2]}                       one 30 s window, several hits
+# Every teaser but the last ends on the measured downbeat nearest 30 s; the next starts
+# where Cord set it, and they meet in a short equal-power crossfade (a DJ's cut, not a gap).
+# The envelope comes from the exact joined audio, so every hit stays in sync.
+
+TEASER_XFADE = 0.5
+HIT_SNAP = 0.4  # seconds either side of a by-ear hit to search for the real transient
+
+
+def snap_hit(energy_q, low_q, rate: int, t: float) -> float:
+    """Move a hit Cord gave by ear onto the strongest onset within HIT_SNAP seconds: the
+    largest rise from the 0.3 s before to the 0.3 s after, summed over full band and sub-bass."""
+    w = max(1, int(round(0.3 * rate)))
+    lo = max(w, int(round((t - HIT_SNAP) * rate)))
+    hi = min(len(low_q) - w, int(round((t + HIT_SNAP) * rate)))
+    best, best_i = None, None
+    for i in range(lo, hi + 1):
+        rise = (sum(energy_q[i:i + w]) - sum(energy_q[i - w:i]) + sum(low_q[i:i + w]) - sum(low_q[i - w:i])) / w
+        if best is None or rise > best:
+            best, best_i = rise, i
+    # only move onto a clearly strong onset found inside the search, never onto a weak bump or
+    # the search's edge (the real hit is then further away; keep Cord's time and say so)
+    if best_i is None or best < 60 or best_i in (lo, hi):
+        return t
+    return round(best_i / rate, 3)
+
+
+def teaser_segments(override):
+    """Normalise an override to a list of {start, hits}; None when it is a plain single window."""
+    if not override:
+        return None
+    if override.get("segments"):
+        segs = override["segments"]
+    elif "hits" in override and "start" in override:
+        segs = [override]
+    else:
+        return None
+    return [{"start": float(g["start"]),
+             "hits": [float(h) for h in (g.get("hits") or ([g["hit"]] if g.get("hit") is not None else []))]}
+            for g in segs]
+
+
+def read_wav_stereo(wav_path: Path, start: float, duration: float):
+    with wave.open(str(wav_path), "rb") as w:
+        sr, n_ch, n_total = w.getframerate(), w.getnchannels(), w.getnframes()
+        s0 = max(0, min(int(round(start * sr)), n_total))
+        w.setpos(s0)
+        raw = w.readframes(int(round(duration * sr)))
+    data = np.frombuffer(raw, dtype="<i2").astype(np.float64) / 32768.0
+    data = data[: (len(data) // n_ch) * n_ch].reshape(-1, n_ch)
+    if n_ch == 1:
+        data = np.repeat(data, 2, axis=1)
+    return data[:, :2], sr
+
+
+def teaser_end(analysis, start: float, duration: float) -> float:
+    """End a non-final teaser on the downbeat nearest start + 30 s (searched +26 to +31 s)."""
+    target = start + PREVIEW_DURATION
+    downbeats = [d for d in (analysis or {}).get("downbeats") or [] if start + 26 <= d <= start + 31]
+    end = min(downbeats, key=lambda d: abs(d - target)) if downbeats else target
+    return min(end, duration)
+
+
+def build_teasers(wav_path: Path, analysis, duration: float, segments):
+    """Join the teasers. Returns (stereo float buffer, sr, hits, turns), times in clip seconds."""
+    parts, hits, turns = [], [], []
+    sr = 44100
+    pos = 0.0
+    for k, seg in enumerate(segments):
+        start = seg["start"]
+        last = k == len(segments) - 1
+        end = min(start + PREVIEW_DURATION, duration) if last else teaser_end(analysis, start, duration)
+        audio, sr = read_wav_stereo(wav_path, start, end - start)
+        if k > 0:
+            pos -= TEASER_XFADE
+            turns.append(round(pos + TEASER_XFADE / 2, 3))
+        for h in seg["hits"]:
+            if start <= h <= end:
+                hits.append(round(pos + h - start, 3))
+        parts.append(audio)
+        pos += len(audio) / sr
+    n_x = int(round(TEASER_XFADE * sr))
+    t = np.linspace(0, np.pi / 2, n_x)[:, None]
+    out = parts[0]
+    for nxt in parts[1:]:
+        mixed = out[-n_x:] * np.cos(t) + nxt[:n_x] * np.sin(t)  # equal power: no dip, no bump
+        out = np.concatenate([out[:-n_x], mixed, nxt[n_x:]])
+    out = out * 10 ** (-1 / 20)
+    fade_in, fade_out = int(0.25 * sr), int(2.0 * sr)
+    out[:fade_in] *= np.linspace(0, 1, fade_in)[:, None]
+    out[-fade_out:] *= np.linspace(1, 0, fade_out)[:, None]
+    return np.clip(out, -1, 1), sr, sorted(hits), turns
+
+
+def encode_teasers(buffer, sr, slug: str, signature: str, force: bool) -> Path:
+    out = PREVIEWS_DIR / f"{slug}.m4a"
+    stamp = CACHE_DIR / "preview-stamps" / f"{slug}.txt"
+    if not force and out.exists() and stamp.exists() and stamp.read_text(encoding="utf-8").strip() == signature:
+        return out
+    PREVIEWS_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = CACHE_DIR / "wav" / f"{slug}-teasers.wav"
+    with wave.open(str(tmp), "wb") as w:
+        w.setnchannels(2)
+        w.setsampwidth(2)
+        w.setframerate(sr)
+        w.writeframes((buffer * 32767).astype("<i2").tobytes())
+    proc = run_subprocess(["ffmpeg", "-y", "-i", str(tmp), "-c:a", "aac", "-b:a", "160k", "-ar", "44100",
+                           "-ac", "2", "-movflags", "+faststart", str(out)])
+    if proc.returncode != 0 or not out.exists():
+        raise RuntimeError(f"ffmpeg encode failed for {slug}: {proc.stderr[-800:]}")
+    stamp.parent.mkdir(parents=True, exist_ok=True)
+    stamp.write_text(signature, encoding="utf-8")
     return out
 
 
@@ -807,20 +929,47 @@ def process_track(spec, buckets, force, overrides, notes):
             wav_dur = wav_duration(wav_path)
             analysis = get_analysis(slug, wav_path, track_dir, arts, force, notes)
             override = overrides.get(slug)
-            start, drop_at, T, bar_seconds, duration = compute_preview_window(analysis, wav_dur, override)
-            encode_preview(wav_path, start, slug, force)
-            segment, sr = read_wav_segment_mono(wav_path, start, PREVIEW_DURATION)
-            energy_db, low_db = compute_envelope(segment, sr)
-            energy_q = normalize_quantize(energy_db)
-            low_q = normalize_quantize(low_db)
-            write_env(slug, drop_at, energy_q, low_q)
-            preview = {
-                "src": f"previews/{slug}.m4a",
-                "start": start,
-                "duration": int(PREVIEW_DURATION),
-                "dropAt": drop_at,
-                "env": f"env/{slug}.json",
-            }
+            segs = teaser_segments(override)
+            if segs:
+                buffer, sr, hits, turns = build_teasers(wav_path, analysis, wav_dur, segs)
+                encode_teasers(buffer, sr, slug, json.dumps(segs, sort_keys=True), force)
+                total = round(len(buffer) / sr, 3)
+                n_frames = int(round(total * ENV_RATE_HZ))
+                energy_db, low_db = compute_envelope(buffer.mean(axis=1), sr, n_frames)
+                energy_q = normalize_quantize(energy_db, n_frames)
+                low_q = normalize_quantize(low_db, n_frames)
+                hits = [snap_hit(energy_q, low_q, ENV_RATE_HZ, h) for h in hits]
+                drop_at = hits[0] if hits else None
+                write_env(slug, drop_at, energy_q, low_q, hits, turns)
+                preview = {
+                    "src": f"previews/{slug}.m4a",
+                    "start": round(segs[0]["start"], 2),
+                    "duration": total,
+                    "dropAt": drop_at,
+                    "hits": hits,
+                    "turns": turns,
+                    "env": f"env/{slug}.json",
+                }
+            else:
+                start, drop_at, T, bar_seconds, duration = compute_preview_window(analysis, wav_dur, override)
+                encode_preview(wav_path, start, slug, force)
+                segment, sr = read_wav_segment_mono(wav_path, start, PREVIEW_DURATION)
+                energy_db, low_db = compute_envelope(segment, sr)
+                energy_q = normalize_quantize(energy_db)
+                low_q = normalize_quantize(low_db)
+                if drop_at is not None:
+                    # by-ear hits and the analyzer's section-grid drops both land on the transient
+                    drop_at = snap_hit(energy_q, low_q, ENV_RATE_HZ, drop_at)
+                write_env(slug, drop_at, energy_q, low_q)
+                preview = {
+                    "src": f"previews/{slug}.m4a",
+                    "start": start,
+                    "duration": int(PREVIEW_DURATION),
+                    "dropAt": drop_at,
+                    "hits": [drop_at] if drop_at is not None else [],
+                    "turns": [],
+                    "env": f"env/{slug}.json",
+                }
             bpm = resolve_bpm(ty, analysis)
             if not (analysis and analysis.get("drops")):
                 notes.append(f"{slug}: no usable drop; preview falls back to 30% of track start")

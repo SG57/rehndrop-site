@@ -159,10 +159,12 @@ def main():
             fail(f"{slug}: preview file missing at {p}")
             continue
         dur = ffprobe_duration(p)
+        # a single window is 30 s; joined teasers declare their own length
+        expected = float(t["preview"].get("duration") or 30)
         if dur is None:
             fail(f"{slug}: ffprobe could not read duration of {p}")
-        elif not (29.9 <= dur <= 30.1):
-            fail(f"{slug}: preview duration {dur:.3f}s outside 29.9-30.1s")
+        elif abs(dur - expected) > 0.1:
+            fail(f"{slug}: preview duration {dur:.3f}s, catalog says {expected:.3f}s")
         else:
             ok(f"{slug}: preview duration {dur:.3f}s")
     print()
@@ -187,17 +189,18 @@ def main():
             continue
         env_cache[slug] = data
         problems = []
+        n_expected = int(round(float(t["preview"].get("duration") or 30) * data.get("rate", 20)))
         for key in ("energy", "low"):
             arr = data.get(key)
-            if not isinstance(arr, list) or len(arr) != 600:
-                problems.append(f"{key} length {len(arr) if isinstance(arr, list) else 'n/a'} != 600")
+            if not isinstance(arr, list) or abs(len(arr) - n_expected) > 1:
+                problems.append(f"{key} length {len(arr) if isinstance(arr, list) else 'n/a'} != {n_expected}")
                 continue
             if not all(isinstance(v, int) and 0 <= v <= 255 for v in arr):
                 problems.append(f"{key} has values outside int 0-255")
         if problems:
             fail(f"{slug}: env problems: {'; '.join(problems)}")
         else:
-            ok(f"{slug}: env energy/low both 600 ints in [0,255]")
+            ok(f"{slug}: env energy/low both {n_expected} ints in [0,255]")
     print()
 
     # --- dropAt bounds + 4-bar lead-in sanity print -----------------------
@@ -208,8 +211,9 @@ def main():
         drop_at = t["preview"].get("dropAt")
         if drop_at is None:
             continue
-        if not (0 <= drop_at <= 30):
-            fail(f"{slug}: dropAt {drop_at} outside [0,30]")
+        limit = float(t["preview"].get("duration") or 30)
+        if not (0 <= drop_at <= limit):
+            fail(f"{slug}: dropAt {drop_at} outside [0,{limit}]")
             continue
         bar_sec, source = bar_seconds_for(t)
         lead = 4 * bar_sec if bar_sec else None
@@ -239,26 +243,28 @@ def main():
     print("-- envelope 'low' rises near dropAt (sync spot-check) ----------------")
     for t in tracks:
         slug = t["slug"]
-        drop_at = t["preview"].get("dropAt")
-        if drop_at is None or slug not in env_cache:
+        if slug not in env_cache:
             continue
+        hits = t["preview"].get("hits") or ([t["preview"]["dropAt"]] if t["preview"].get("dropAt") is not None else [])
         data = env_cache[slug]
         rate = data["rate"]
         low = data["low"]
-        idx = int(round(drop_at * rate))
-        window = int(round(2 * rate))
-        before = low[max(0, idx - window):idx]
-        after = low[idx:min(len(low), idx + window)]
-        if not before or not after:
-            warn(f"{slug}: not enough samples around dropAt to spot-check")
-            continue
-        mean_before = sum(before) / len(before)
-        mean_after = sum(after) / len(after)
-        verdict = "OK (rises)" if mean_after > mean_before else "FLAG (does not rise)"
-        print(f"{slug:<28}before={mean_before:7.2f}  after={mean_after:7.2f}  {verdict}")
-        if mean_after <= mean_before:
-            warn(f"{slug}: low-band mean does not rise across dropAt "
-                 f"(before={mean_before:.2f}, after={mean_after:.2f})")
+        for n, hit in enumerate(hits, 1):
+            idx = int(round(hit * rate))
+            window = int(round(0.3 * rate))  # a hit is a transient: compare the 0.3 s either side
+            before = low[max(0, idx - window):idx]
+            after = low[idx:min(len(low), idx + window)]
+            label = slug if len(hits) == 1 else f"{slug} hit {n}"
+            if not before or not after:
+                warn(f"{label}: not enough samples around the hit to spot-check")
+                continue
+            mean_before = sum(before) / len(before)
+            mean_after = sum(after) / len(after)
+            verdict = "OK (rises)" if mean_after > mean_before else "FLAG (does not rise)"
+            print(f"{label:<28}before={mean_before:7.2f}  after={mean_after:7.2f}  {verdict}")
+            if mean_after <= mean_before:
+                warn(f"{label}: low-band mean does not rise across the hit "
+                     f"(before={mean_before:.2f}, after={mean_after:.2f})")
     print()
 
     print("=" * 70)

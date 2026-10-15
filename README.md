@@ -37,6 +37,13 @@ drop that leaves 24 s of song after it. Cord can override any track in `scripts/
 land. Without `hit`, the strongest measured drop inside the new window is used, so the surge and
 camera kick still fire. Then run `export_catalog.py --only <slug>` and `check_catalog.py`.
 
+Several hits in one window: `{"start": 184, "hits": [189, 203]}`. Several moments in one preview
+("teasers"): `{"segments": [{"start": 270, "hits": [288.5]}, {"start": 90, "hits": [100]}]}`, played
+in that order. Every teaser but the last ends on the measured downbeat nearest 30 s and they meet in
+a 0.5 s equal-power crossfade; the seam gets a splash on the lens and a notch on the player bar.
+By-ear hits snap to the strongest onset within 0.4 s, and only when it is clearly strong; otherwise
+the given time stands.
+
 ## Moving to the custom domain
 
 Commit `public/CNAME` containing the domain (e.g. `rehndrop.sg57.dev`) after the DNS record exists

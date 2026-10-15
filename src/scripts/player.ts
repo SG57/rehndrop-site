@@ -10,6 +10,9 @@ export interface PlayerTrack {
   src: string | null;
   env: string | null;
   dropAt: number | null;
+  hits: number[]; // seconds into the clip; each gets the calm before, the surge and the kick
+  turns: number[]; // seams where one teaser hands to the next
+  duration: number;
   bpm: number | null;
   accent: string;
   thumb: string;
@@ -46,7 +49,8 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
   let env: Envelope | null = null;
   let raf = 0;
   let prevLo = 0;
-  let kicked = false;
+  const fired = new Set<number>();
+  const turned = new Set<number>();
   let lastBeat = 0;
   const envCache = new Map<string, Promise<Envelope | null>>();
 
@@ -92,7 +96,8 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
     drive.pulse = 0;
     drive.tint = [...NEUTRAL];
     root.style.setProperty('--pulse', '0');
-    kicked = false;
+    fired.clear();
+    turned.clear();
   };
 
   const tick = () => {
@@ -115,23 +120,29 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
     let surge = 0;
     let pre = 0;
     let hit = 0;
-    if (current.dropAt != null) {
-      const d = t - current.dropAt;
-      if (d < 0 && d > -4 * barLen) pre = 1 - -d / (4 * barLen); // the calm before
-      if (d >= 0) {
-        surge = d < barLen ? 1 : Math.exp(-(d - barLen) * 0.9);
-        hit = Math.exp(-d * 4.5);
-        if (!kicked && d < 0.25) {
-          kicked = true;
-          document.dispatchEvent(new CustomEvent('rehndrop:hit'));
-          if (!reducedMotion()) {
-            root.classList.remove('kick');
-            void root.offsetWidth;
-            root.classList.add('kick');
-          }
+    current.hits.forEach((h, k) => {
+      const d = t - h;
+      if (d < 0 && d > -4 * barLen) pre = Math.max(pre, 1 - -d / (4 * barLen)); // the calm before
+      if (d < 0) return;
+      surge = Math.max(surge, d < barLen ? 1 : Math.exp(-(d - barLen) * 0.9));
+      hit = Math.max(hit, Math.exp(-d * 4.5));
+      if (!fired.has(k) && d < 0.25) {
+        fired.add(k);
+        document.dispatchEvent(new CustomEvent('rehndrop:hit'));
+        if (!reducedMotion()) {
+          root.classList.remove('kick');
+          void root.offsetWidth;
+          root.classList.add('kick');
         }
       }
-    }
+    });
+    // the seam between teasers: a wipe across the lens, so the cut reads as intent
+    current.turns.forEach((u, j) => {
+      if (!turned.has(j) && t >= u && t - u < 0.3) {
+        turned.add(j);
+        document.dispatchEvent(new CustomEvent('rehndrop:turn'));
+      }
+    });
     // beats move things (splashes, pulses); only the main hit flashes, so nothing strobes
     const now = performance.now();
     const isBeat = lo - prevLo > 0.2 && now - lastBeat > 280;
@@ -158,7 +169,18 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
     }
     current = t;
     env = null;
-    kicked = false;
+    fired.clear();
+    turned.clear();
+    if (bar) {
+      bar.querySelectorAll('.mini-turn').forEach((m) => m.remove());
+      const track = bar.querySelector('.mini-bar');
+      for (const u of t.turns) {
+        const m = document.createElement('i');
+        m.className = 'mini-turn';
+        m.style.left = `${((u / (t.duration || 30)) * 100).toFixed(2)}%`;
+        track?.append(m);
+      }
+    }
     prevLo = 0;
     audio.src = t.src.startsWith('http') ? t.src : base + t.src;
     // play() inside the tap handler, before any await: iOS only honours it here

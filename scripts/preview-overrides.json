@@ -2,5 +2,32 @@
   "bitch-ass-bitch-ass-bitch": {
     "start": 120.0,
     "hit": 138.5
+  },
+  "pop-the-trunk": {
+    "start": 172.0,
+    "hit": 191.0
+  },
+  "whats-my-name": {
+    "segments": [
+      {
+        "start": 270.0,
+        "hits": [
+          288.5
+        ]
+      },
+      {
+        "start": 90.0,
+        "hits": [
+          100.0
+        ]
+      }
+    ]
+  },
+  "something": {
+    "start": 184.0,
+    "hits": [
+      189.0,
+      203.0
+    ]
   }
 }

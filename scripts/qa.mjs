@@ -224,6 +224,31 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   await ctx.close();
 }
 
+// teasers: what's my name joins two moments; both hits fire on time and the seam is marked
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(origin + 't/whats-my-name/?lens', { waitUntil: 'networkidle' });
+  const expected = await page.evaluate(() => JSON.parse(document.getElementById('player-data').textContent).find((t) => t.slug === 'whats-my-name'));
+  await page.evaluate(() => {
+    window.__ev = [];
+    const t0 = { v: 0 };
+    document.addEventListener('click', () => (t0.v = performance.now()), true);
+    for (const k of ['rehndrop:hit', 'rehndrop:turn']) document.addEventListener(k, () => window.__ev.push([k.slice(9), (performance.now() - t0.v) / 1000]));
+  });
+  await page.locator('.track-hero .play').click();
+  await page.waitForTimeout(42000);
+  const r = await page.evaluate(() => ({ ev: window.__ev, marks: document.querySelectorAll('[data-mini] .mini-turn').length }));
+  console.log('teasers', JSON.stringify({ expected: { hits: expected.hits, turns: expected.turns, duration: expected.duration }, fired: r.ev.map(([k, t]) => [k, +t.toFixed(2)]), marks: r.marks }));
+  const hitsFired = r.ev.filter(([k]) => k === 'hit').map(([, t]) => t);
+  const turnsFired = r.ev.filter(([k]) => k === 'turn').map(([, t]) => t);
+  if (hitsFired.length !== expected.hits.length) problems.push(`teasers: ${hitsFired.length} hits fired, expected ${expected.hits.length}`);
+  expected.hits.forEach((h, i) => { if (hitsFired[i] === undefined || Math.abs(hitsFired[i] - h) > 0.8) problems.push(`teasers: hit ${i + 1} at ${hitsFired[i]}, expected ~${h}`); });
+  if (turnsFired.length !== expected.turns.length) problems.push(`teasers: ${turnsFired.length} seams fired, expected ${expected.turns.length}`);
+  if (r.marks !== expected.turns.length) problems.push('teasers: the seam is not marked on the player bar');
+  await ctx.close();
+}
+
 // only the playing song's cover may bounce: spotlight on one song, play another from picks
 {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });

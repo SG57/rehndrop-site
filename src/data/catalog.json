@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-15T18:06:35Z",
+  "generated": "2026-10-15T18:18:35Z",
   "appleArtistId": 1545317806,
   "tracks": [
     {
@@ -22,7 +22,11 @@
         "src": "previews/bitch-ass-bitch-ass-bitch.m4a",
         "start": 120.0,
         "duration": 30,
-        "dropAt": 18.5,
+        "dropAt": 18.85,
+        "hits": [
+          18.85
+        ],
+        "turns": [],
         "env": "env/bitch-ass-bitch-ass-bitch.json"
       }
     },
@@ -44,9 +48,13 @@
       "accent": "#518c80",
       "preview": {
         "src": "previews/pop-the-trunk.m4a",
-        "start": 25.15,
+        "start": 172.0,
         "duration": 30,
-        "dropAt": 6.96,
+        "dropAt": 19.25,
+        "hits": [
+          19.25
+        ],
+        "turns": [],
         "env": "env/pop-the-trunk.json"
       }
     },
@@ -65,12 +73,19 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c2/4f/73/c24f73d0-fb08-6b02-e657-866f1c9f9fdb/mzaf_11547983323071773864.plus.aac.p.m4a",
       "cover": "covers/whats-my-name.jpg",
       "coverStamped": false,
-      "accent": "#703e8c",
+      "accent": "#5c3e8c",
       "preview": {
         "src": "previews/whats-my-name.m4a",
-        "start": 234.92,
-        "duration": 30,
-        "dropAt": 6.612,
+        "start": 270.0,
+        "duration": 58.89,
+        "dropAt": 18.65,
+        "hits": [
+          18.65,
+          39.05
+        ],
+        "turns": [
+          29.14
+        ],
         "env": "env/whats-my-name.json"
       }
     },
@@ -92,9 +107,14 @@
       "accent": "#85858c",
       "preview": {
         "src": "previews/something.m4a",
-        "start": 142.52,
-        "duration": 30,
-        "dropAt": 6.862,
+        "start": 184.0,
+        "duration": 30.0,
+        "dropAt": 5.0,
+        "hits": [
+          5.0,
+          19.35
+        ],
+        "turns": [],
         "env": "env/something.json"
       }
     },
@@ -119,6 +139,10 @@
         "start": 50.18,
         "duration": 30,
         "dropAt": 6.863,
+        "hits": [
+          6.863
+        ],
+        "turns": [],
         "env": "env/buzzin.json"
       }
     },
@@ -142,7 +166,11 @@
         "src": "previews/midnight.m4a",
         "start": 33.85,
         "duration": 30,
-        "dropAt": 6.654,
+        "dropAt": 7.0,
+        "hits": [
+          7.0
+        ],
+        "turns": [],
         "env": "env/midnight.json"
       }
     },
@@ -167,6 +195,10 @@
         "start": 185.68,
         "duration": 30,
         "dropAt": 6.49,
+        "hits": [
+          6.49
+        ],
+        "turns": [],
         "env": "env/light-weight.json"
       }
     },
@@ -191,6 +223,10 @@
         "start": 138.34,
         "duration": 30,
         "dropAt": 8.407,
+        "hits": [
+          8.407
+        ],
+        "turns": [],
         "env": "env/back-to-that-feeling.json"
       }
     },
@@ -214,7 +250,11 @@
         "src": "previews/done-waiting.m4a",
         "start": 231.34,
         "duration": 30,
-        "dropAt": 7.553,
+        "dropAt": 7.75,
+        "hits": [
+          7.75
+        ],
+        "turns": [],
         "env": "env/done-waiting.json"
       }
     },
@@ -238,7 +278,11 @@
         "src": "previews/waiting-for.m4a",
         "start": 354.42,
         "duration": 30,
-        "dropAt": 7.802,
+        "dropAt": 7.95,
+        "hits": [
+          7.95
+        ],
+        "turns": [],
         "env": "env/waiting-for.json"
       }
     },
@@ -262,7 +306,11 @@
         "src": "previews/disconnect.m4a",
         "start": 204.88,
         "duration": 30,
-        "dropAt": 5.854,
+        "dropAt": 5.85,
+        "hits": [
+          5.85
+        ],
+        "turns": [],
         "env": "env/disconnect.json"
       }
     },
@@ -287,6 +335,10 @@
         "start": 37.49,
         "duration": 30,
         "dropAt": 5.803,
+        "hits": [
+          5.803
+        ],
+        "turns": [],
         "env": "env/disconnect-detox.json"
       }
     },
@@ -311,6 +363,10 @@
         "start": 107.32,
         "duration": 30,
         "dropAt": 7.569,
+        "hits": [
+          7.569
+        ],
+        "turns": [],
         "env": "env/meaningless.json"
       }
     },
@@ -334,7 +390,11 @@
         "src": "previews/demons-in-my-ear.m4a",
         "start": 342.54,
         "duration": 30,
-        "dropAt": 6.86,
+        "dropAt": 6.7,
+        "hits": [
+          6.7
+        ],
+        "turns": [],
         "env": "env/demons-in-my-ear.json"
       }
     },
@@ -358,7 +418,11 @@
         "src": "previews/wobble.m4a",
         "start": 161.99,
         "duration": 30,
-        "dropAt": 6.857,
+        "dropAt": 6.9,
+        "hits": [
+          6.9
+        ],
+        "turns": [],
         "env": "env/wobble.json"
       }
     },
@@ -382,7 +446,11 @@
         "src": "previews/see-the-real-me.m4a",
         "start": 136.13,
         "duration": 30,
-        "dropAt": 9.854,
+        "dropAt": 9.65,
+        "hits": [
+          9.65
+        ],
+        "turns": [],
         "env": "env/see-the-real-me.json"
       }
     },
@@ -406,7 +474,11 @@
         "src": "previews/wild-beauty.m4a",
         "start": 191.18,
         "duration": 30,
-        "dropAt": 6.399,
+        "dropAt": 6.65,
+        "hits": [
+          6.65
+        ],
+        "turns": [],
         "env": "env/wild-beauty.json"
       }
     },
@@ -430,7 +502,11 @@
         "src": "previews/were-gonna-be-alright.m4a",
         "start": 204.29,
         "duration": 30,
-        "dropAt": 6.492,
+        "dropAt": 6.85,
+        "hits": [
+          6.85
+        ],
+        "turns": [],
         "env": "env/were-gonna-be-alright.json"
       }
     },
@@ -454,7 +530,11 @@
         "src": "previews/set-your-heart-ablaze.m4a",
         "start": 311.33,
         "duration": 30,
-        "dropAt": 7.999,
+        "dropAt": 7.8,
+        "hits": [
+          7.8
+        ],
+        "turns": [],
         "env": "env/set-your-heart-ablaze.json"
       }
     },
@@ -478,7 +558,11 @@
         "src": "previews/pretty-lights.m4a",
         "start": 166.29,
         "duration": 30,
-        "dropAt": 6.663,
+        "dropAt": 6.75,
+        "hits": [
+          6.75
+        ],
+        "turns": [],
         "env": "env/pretty-lights.json"
       }
     },
@@ -502,7 +586,11 @@
         "src": "previews/high-then-higher.m4a",
         "start": 282.23,
         "duration": 30,
-        "dropAt": 6.866,
+        "dropAt": 7.05,
+        "hits": [
+          7.05
+        ],
+        "turns": [],
         "env": "env/high-then-higher.json"
       }
     },
@@ -518,7 +606,7 @@
       "appleTitle": "mr. big stuff",
       "released": "2026-08-26",
       "appleUrl": "https://music.apple.com/us/album/mr-big-stuff/6804445652?i=6804445653",
-      "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b2/26/ee/b226eea1-7840-64fb-8e76-f4a39cd2ef91/mzaf_372885815871622549.plus.aac.p.m4a",
+      "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/52/6b/17/526b175b-8c4e-d210-e3f8-0532dd73512d/mzaf_4952558575113323222.plus.aac.p.m4a",
       "cover": "covers/mr-big-stuff.jpg",
       "coverStamped": true,
       "accent": "#9a3b47",
@@ -527,6 +615,10 @@
         "start": 102.92,
         "duration": 30,
         "dropAt": 6.863,
+        "hits": [
+          6.863
+        ],
+        "turns": [],
         "env": "env/mr-big-stuff.json"
       }
     },
@@ -551,6 +643,10 @@
         "start": 204.81,
         "duration": 30,
         "dropAt": 6.862,
+        "hits": [
+          6.862
+        ],
+        "turns": [],
         "env": "env/bass-bumpin.json"
       }
     },
@@ -574,7 +670,11 @@
         "src": "previews/can-you-hear-me.m4a",
         "start": 143.53,
         "duration": 30,
-        "dropAt": 6.496,
+        "dropAt": 6.3,
+        "hits": [
+          6.3
+        ],
+        "turns": [],
         "env": "env/can-you-hear-me.json"
       }
     },
@@ -599,6 +699,10 @@
         "start": 41.83,
         "duration": 30,
         "dropAt": 6.867,
+        "hits": [
+          6.867
+        ],
+        "turns": [],
         "env": "env/you-aint-ready-baby.json"
       }
     },
@@ -623,6 +727,10 @@
         "start": 172.25,
         "duration": 30,
         "dropAt": 8.351,
+        "hits": [
+          8.351
+        ],
+        "turns": [],
         "env": "env/marauder.json"
       }
     },
@@ -647,6 +755,8 @@
         "start": 80.29,
         "duration": 30,
         "dropAt": null,
+        "hits": [],
+        "turns": [],
         "env": "env/dont-screw-with-me.json"
       }
     },
@@ -670,7 +780,11 @@
         "src": "previews/now-die.m4a",
         "start": 68.01,
         "duration": 30,
-        "dropAt": 5.802,
+        "dropAt": 5.6,
+        "hits": [
+          5.6
+        ],
+        "turns": [],
         "env": "env/now-die.json"
       }
     },
@@ -695,6 +809,8 @@
         "start": 73.55,
         "duration": 30,
         "dropAt": null,
+        "hits": [],
+        "turns": [],
         "env": "env/drugs.json"
       }
     }

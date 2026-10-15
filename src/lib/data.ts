@@ -42,7 +42,7 @@ export interface Track {
   answer: string | null;
   // liner notes in Cord's words (curation.json "notes"); the start of per-track stories
   story: { note?: string; quote?: string } | null;
-  preview: { src: string | null; dropAt: number | null; env: string | null };
+  preview: { src: string | null; dropAt: number | null; env: string | null; hits: number[]; turns: number[]; duration: number };
   links: { apple: string | null; spotify: string | null; youtube: string; soundcloud: string };
   video: Video | null;
   reels: Reel[];
@@ -195,6 +195,9 @@ async function load() {
         src: c.preview?.src ?? c.applePreview ?? null,
         dropAt: c.preview?.src ? c.preview.dropAt ?? null : null,
         env: c.preview?.src ? c.preview.env ?? null : null,
+        hits: c.preview?.src ? ((c.preview as { hits?: number[] }).hits ?? (c.preview.dropAt != null ? [c.preview.dropAt] : [])) : [],
+        turns: c.preview?.src ? (c.preview as { turns?: number[] }).turns ?? [] : [],
+        duration: c.preview?.src ? Number(c.preview.duration) || 30 : 30,
       },
       links: linksFor(c.title, c.appleUrl ?? null),
       video: null,
@@ -231,7 +234,7 @@ async function load() {
       accent: '#c9ced6',
       answer: answers.get(norm(title)) ?? null,
       story: notes[slug] ?? null,
-      preview: { src: s.previewUrl ?? null, dropAt: null, env: null },
+      preview: { src: s.previewUrl ?? null, dropAt: null, env: null, hits: [], turns: [], duration: 30 },
       links: linksFor(title, appleUrl),
       video: null,
       reels: [],

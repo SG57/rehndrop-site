@@ -255,6 +255,8 @@ export function startDrops(canvas: HTMLCanvasElement) {
     splash(1.8);
     setTimeout(() => splash(0.8), 260); // the wave behind the first one
   });
+  // the seam between two teasers: one clean sweep of water across the lens
+  document.addEventListener('rehndrop:turn', () => splash(0.7));
   // every beat flicks a few drops at the lens
   document.addEventListener('rehndrop:beat', () => {
     if (drops.length > MAX - 6) return;
