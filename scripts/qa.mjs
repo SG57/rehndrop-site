@@ -195,10 +195,25 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(400);
   const c = await story();
-  await page.locator('.card-reel[data-story-track="wobble"]').first().click();
+  await page.locator('.card .reel-ring[data-story-track="wobble"]').first().click();
   await page.waitForTimeout(1200);
   const d = await story();
   const previewStarted = await page.evaluate(() => !document.querySelector('[data-mini]').hidden);
+  await page.keyboard.press('Escape');
+  // the hero covers carry it too: the picks card, and the track page's own cover
+  await page.locator('#picks .reel-ring[data-story-track="whats-my-name"]').click();
+  await page.waitForTimeout(1200);
+  const e = await story();
+  await page.keyboard.press('Escape');
+  await page.goto(origin + 't/whats-my-name/?lens', { waitUntil: 'networkidle' });
+  await page.locator('.track-cover .reel-ring').click();
+  await page.waitForTimeout(1200);
+  const f = await story();
+  const previewStarted2 = await page.evaluate(() => !document.querySelector('[data-mini]').hidden);
+  console.log('story-rings', JSON.stringify({ picks: { title: e.title, bars: e.bars }, trackPage: { title: f.title, bars: f.bars }, previewStarted2 }));
+  if (!e.open || e.title !== "what's my name" || e.bars !== 1) problems.push('stories: the picks ring did not open its reels');
+  if (!f.open || f.title !== "what's my name" || f.bars !== 1) problems.push("stories: the track page cover's ring did not open its reels");
+  if (previewStarted2) problems.push('stories: a hero ring started the preview');
   console.log('stories', JSON.stringify({ first: { title: a.title, t: +a.t.toFixed(2), bars: a.bars, ig: a.ig }, next: b.title, closed: !c.open && !c.src, ring: { title: d.title, bars: d.bars }, previewStarted }));
   if (!a.open || a.t <= 0.2) problems.push('stories: the shelf did not open and play a reel');
   if (!a.ig.startsWith('https://www.instagram.com/reel/')) problems.push('stories: instagram link missing');

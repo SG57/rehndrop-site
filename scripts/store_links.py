@@ -27,7 +27,12 @@ UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.3
 
 # Releases that predate ONCE; each link here was proven with Spotify oEmbed on 2026-10-09.
 EXTRA = {
-    "don't screw with me": {"spotify": "https://open.spotify.com/track/38ru8iH6h5aZIFTzzjhuZm"},
+    "don't screw with me": {"spotify": "https://open.spotify.com/track/38ru8iH6h5aZIFTzzjhuZm",
+                            "soundcloud": "https://soundcloud.com/rehndrop/dont-screw-with-me"},
+    "marauder": {"soundcloud": "https://soundcloud.com/rehndrop/marauder"},
+    "now die": {"soundcloud": "https://soundcloud.com/rehndrop/now-die"},
+    # the lil aaron remix was never on Spotify or Apple: only these stores get a button
+    "DRUGS": {"soundcloud": "https://soundcloud.com/rehndrop/drugs", "stores": ["soundcloud", "youtube"]},
 }
 
 
@@ -70,6 +75,7 @@ def oembed_title(kind: str, url: str) -> str | None:
     endpoint = {
         "spotify": "https://open.spotify.com/oembed?url=",
         "youtube": "https://www.youtube.com/oembed?format=json&url=",
+        "soundcloud": "https://soundcloud.com/oembed?format=json&url=",
     }[kind]
     try:
         return json.loads(get(endpoint + urllib.parse.quote(url, safe="")))["title"]
@@ -125,7 +131,7 @@ def main() -> int:
 
     # prove every link names the right song; drop what can't be proven
     for title, entry in tracks.items():
-        for field, kind in (("spotify", "spotify"), ("youtubeMusic", "youtube"), ("apple", "apple")):
+        for field, kind in (("spotify", "spotify"), ("youtubeMusic", "youtube"), ("apple", "apple"), ("soundcloud", "soundcloud")):
             url = entry.get(field)
             if not url:
                 continue
@@ -141,7 +147,7 @@ def main() -> int:
     DATA.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     n = len(tracks)
-    for field in ("spotify", "apple", "youtubeMusic"):
+    for field in ("spotify", "apple", "youtubeMusic", "soundcloud"):
         print(f"{field:<13} {sum(1 for e in tracks.values() if e.get(field))}/{n} proven")
     for p in problems:
         print("  !", p)

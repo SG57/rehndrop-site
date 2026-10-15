@@ -4,6 +4,7 @@ import type { Track } from '../lib/data';
 import { fmtDate } from '../lib/data';
 import { u } from '../lib/site';
 import Cover from './Cover.astro';
+import ReelRing from './ReelRing.astro';
 interface Props { track: Track; eager?: boolean }
 const { track: t, eager = false } = Astro.props;
 // the title answer if there is one, else the track's line; a date only as the last resort
@@ -26,12 +27,7 @@ const sizes = '(min-width: 1100px) 216px, (min-width: 700px) 190px, 40vw';
       {t.cover ? <Cover class="card-img" src={t.cover} size={420} widths={[210, 320, 420]} sizes={sizes} alt="" eager={eager} /> : <span class="card-img card-img--empty" />}
     </a>
   )}
-  {t.reels.length > 0 && (
-    <button class="card-reel" type="button" data-story-track={t.slug} aria-label={`reels for ${t.title}`} title="reels">
-      <span class="card-reel-ring" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3.5" width="10" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M10.5 9.5v5l4-2.5z" fill="currentColor" /></svg>
-    </button>
-  )}
+  <ReelRing track={t} />
   <a class="card-title" href={href}>{t.title}</a>
   {sub && <span class="card-sub">{sub}</span>}
 </article>

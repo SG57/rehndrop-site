@@ -26,7 +26,8 @@ PUBLIC_DIR = SITE_DIR / "public"
 ANALYSIS_CACHE = SITE_DIR / ".cache" / "analysis"
 
 MANIFEST_PATH = TRACKS_DIR / "once-manifest.json"
-ERA_2021_SLUGS = ("now-die", "dont-screw-with-me", "marauder")
+ERA_2021_SLUGS = ("now-die", "dont-screw-with-me", "marauder", "drugs")
+NOT_ON_APPLE = {"drugs"}  # released on SoundCloud and YouTube only
 EXCLUDED_SLUGS = {"drugs"}
 
 failures = []
@@ -218,7 +219,7 @@ def main():
 
     # --- apple ids ----------------------------------------------------
     print("-- apple ids --------------------------------------------------------")
-    misses = [t["slug"] for t in tracks if not t.get("appleTrackId")]
+    misses = [t["slug"] for t in tracks if not t.get("appleTrackId") and t["slug"] not in NOT_ON_APPLE]
     if misses:
         warn(f"{len(misses)} track(s) with no appleTrackId: {misses}")
     else:

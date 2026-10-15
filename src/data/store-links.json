@@ -292,6 +292,13 @@
     }
   },
   "tracks": {
+    "DRUGS": {
+      "soundcloud": "https://soundcloud.com/rehndrop/drugs",
+      "stores": [
+        "soundcloud",
+        "youtube"
+      ]
+    },
     "back to that feeling": {
       "spotify": "https://open.spotify.com/track/5JYa5EFhdpX62n2p26nqIZ",
       "apple": "https://music.apple.com/us/album/back-to-that-feeling-single/6811716046?uo=4",
@@ -333,7 +340,8 @@
       "youtubeMusic": null
     },
     "don't screw with me": {
-      "spotify": "https://open.spotify.com/track/38ru8iH6h5aZIFTzzjhuZm"
+      "spotify": "https://open.spotify.com/track/38ru8iH6h5aZIFTzzjhuZm",
+      "soundcloud": "https://soundcloud.com/rehndrop/dont-screw-with-me"
     },
     "done waiting": {
       "spotify": "https://open.spotify.com/track/56U06It4VUPYbSFpBFqBEa",
@@ -350,6 +358,9 @@
       "apple": "https://music.apple.com/us/album/light-weight-single/6811715252?uo=4",
       "youtubeMusic": "https://music.youtube.com/watch?v=bGmO9fzvkug"
     },
+    "marauder": {
+      "soundcloud": "https://soundcloud.com/rehndrop/marauder"
+    },
     "meaningless": {
       "spotify": "https://open.spotify.com/track/0tB5niQMy0KzQHmCfhZ4sQ",
       "apple": "https://music.apple.com/us/album/meaningless-single/6810393252?uo=4",
@@ -364,6 +375,9 @@
       "spotify": "https://open.spotify.com/track/1WaQ8RnIKgLNgMspYQpCtg",
       "apple": "https://music.apple.com/us/album/mr-big-stuff-single/6804445652?uo=4",
       "youtubeMusic": "https://music.youtube.com/watch?v=_Az56PT-Jzc"
+    },
+    "now die": {
+      "soundcloud": "https://soundcloud.com/rehndrop/now-die"
     },
     "pop the trunk": {
       "spotify": "https://open.spotify.com/track/1RjbiBHxiYi3N5p0fZnrKu",
@@ -421,5 +435,5 @@
       "youtubeMusic": "https://music.youtube.com/watch?v=1QiEbq7Or0c"
     }
   },
-  "verified": "2026-10-09T15:11:42"
+  "verified": "2026-10-15T10:33:28"
 }

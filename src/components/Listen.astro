@@ -6,7 +6,7 @@ interface Props { track: Track; labels?: boolean; big?: boolean }
 const { track: t, labels = false, big = false } = Astro.props;
 const links = [
   t.links.apple && { name: 'apple', label: 'apple music', href: t.links.apple },
-  { name: 'spotify', label: 'spotify', href: t.links.spotify },
+  t.links.spotify && { name: 'spotify', label: 'spotify', href: t.links.spotify },
   { name: 'ytmusic', label: 'youtube music', href: t.links.youtube },
   { name: 'soundcloud', label: 'soundcloud', href: t.links.soundcloud },
 ].filter(Boolean) as { name: 'apple' | 'spotify' | 'ytmusic' | 'soundcloud'; label: string; href: string }[];

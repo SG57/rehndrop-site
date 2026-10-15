@@ -1,0 +1,13 @@
+---
+// The story ring: any cover of a track with posted reels wears one; it opens that track's
+// reels in the story viewer (story.ts listens for data-story-track).
+import type { Track } from '../lib/data';
+interface Props { track: Track; size?: 'sm' | 'lg' }
+const { track: t, size = 'sm' } = Astro.props;
+---
+{t.reels.length > 0 && (
+  <button class:list={['reel-ring', `reel-ring--${size}`]} type="button" data-story-track={t.slug} aria-label={`reels for ${t.title}`} title="reels" style={`--ring-accent:${t.accent}`}>
+    <span class="reel-ring-halo" aria-hidden="true"></span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3.5" width="10" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M10.5 9.5v5l4-2.5z" fill="currentColor" /></svg>
+  </button>
+)}

@@ -68,8 +68,10 @@ APPLE_LOOKUP_URL = (
     f"https://itunes.apple.com/lookup?id={APPLE_ARTIST_ID}&entity=song&limit=200"
 )
 
-ERA_2021_SLUGS = ("now-die", "dont-screw-with-me", "marauder")
-EXCLUDED_SLUGS = {"drugs"}  # YouTube-only remix; the site handles it separately
+ERA_2021_SLUGS = ("now-die", "dont-screw-with-me", "marauder", "drugs")
+EXCLUDED_SLUGS: set[str] = set()
+# 2021 titles keep their original casing; Apple supplies it, except for releases Apple never had
+TITLE_OVERRIDES = {"drugs": "DRUGS"}  # the lil aaron remix: SoundCloud and YouTube only
 
 AUDIO_EXTS = {".wav", ".flac", ".mp3", ".m4a", ".aif", ".aiff"}
 LOSSLESS_EXTS = {".flac", ".wav"}
@@ -317,7 +319,7 @@ def resolve_display_title(spec):
     if spec["era"] == "2021" or spec.get("part") == "detox":
         if spec.get("apple"):
             return spec["apple"]["trackName"]
-        return spec["source_title"]
+        return TITLE_OVERRIDES.get(spec["slug"], spec["source_title"])
     return spec["source_title"]
 
 

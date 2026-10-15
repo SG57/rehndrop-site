@@ -43,7 +43,7 @@ export interface Track {
   // liner notes in Cord's words (curation.json "notes"); the start of per-track stories
   story: { note?: string; quote?: string } | null;
   preview: { src: string | null; dropAt: number | null; env: string | null };
-  links: { apple: string | null; spotify: string; youtube: string; soundcloud: string };
+  links: { apple: string | null; spotify: string | null; youtube: string; soundcloud: string };
   video: Video | null;
   reels: Reel[];
 }
@@ -159,20 +159,22 @@ async function load() {
   const byApple = new Map<number, Track>();
 
   // exact links, proven by scripts/store_links.py against each platform; search is the fallback
-  type StoreTrack = { spotify?: string | null; apple?: string | null; youtubeMusic?: string | null };
+  // `stores` limits a track to where it actually lives (the lil aaron remix: soundcloud, youtube)
+  type StoreTrack = { spotify?: string | null; apple?: string | null; youtubeMusic?: string | null; soundcloud?: string | null; stores?: string[] };
   const exact = new Map<string, StoreTrack>(
     Object.entries((storeLinks as { tracks?: Record<string, StoreTrack> }).tracks ?? {}).map(([k, v]) => [norm(k), v]),
   );
   const linksFor = (title: string, apple: string | null) => {
     const x = exact.get(norm(title));
     const q = encodeURIComponent(`rehndrop ${title}`);
+    const on = (store: string) => !x?.stores || x.stores.includes(store);
     return {
-      apple: apple ?? x?.apple ?? null,
-      spotify: x?.spotify ?? `https://open.spotify.com/search/${q}`,
+      apple: on('apple') ? apple ?? x?.apple ?? null : null,
+      spotify: on('spotify') ? x?.spotify ?? `https://open.spotify.com/search/${q}` : null,
       youtube:
         x?.youtubeMusic ??
         (topic.has(norm(title)) ? `https://music.youtube.com/watch?v=${topic.get(norm(title))}` : `https://music.youtube.com/search?q=${q}`),
-      soundcloud: curation.stores.soundcloud,
+      soundcloud: x?.soundcloud ?? curation.stores.soundcloud,
     };
   };
 
@@ -247,7 +249,8 @@ async function load() {
     .filter((v) => !hidden.has(v.id))
     .map((v) => {
       const { name, credit } = parseVideoTitle(v.title);
-      const track = credit ? undefined : byTitle.get(norm(name));
+      // a credited video only belongs to a track of the same name (the DRUGS remix does)
+      const track = byTitle.get(norm(name));
       const video: Video = {
         id: v.id,
         title: track ? track.title : name,

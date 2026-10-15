@@ -14,7 +14,7 @@ export interface PlayerTrack {
   accent: string;
   thumb: string;
   apple: string | null;
-  spotify: string;
+  spotify: string | null;
   youtube: string;
   href: string;
 }
@@ -178,7 +178,10 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
       barApple.hidden = !t.apple;
       if (t.apple) barApple.href = t.apple;
     }
-    if (barSpotify) barSpotify.href = t.spotify;
+    if (barSpotify) {
+      barSpotify.hidden = !t.spotify;
+      if (t.spotify) barSpotify.href = t.spotify;
+    }
     if (barYoutube) barYoutube.href = t.youtube;
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({

@@ -702,9 +702,11 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
 }
 .shelves--tight { padding-top: 0; }
 
-/* a track with reels wears a slowly turning ring, the brand's take on a story ring */
-.card { position: relative; }
-.card-reel {
+/* a track with reels wears a slowly turning ring on every cover of it: the brand's take on
+   a story ring. Covers are its positioning frame */
+.card, .pick-art, .spot-cover, .track-cover { position: relative; }
+.pick-art .pick-cover { width: 100%; }
+.reel-ring {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -716,21 +718,25 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
   border-radius: 50%;
   background: rgba(2, 2, 4, 0.72);
   color: var(--bone);
-  transition: transform 0.35s var(--ease);
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.9);
+  transition: transform 0.35s var(--ease), background 0.35s;
 }
-.card-reel svg { width: 18px; height: 18px; position: relative; }
-.card-reel-ring {
+.reel-ring svg { width: 18px; height: 18px; position: relative; }
+.reel-ring--lg { top: 12px; right: 12px; width: 46px; height: 46px; }
+.reel-ring--lg svg { width: 22px; height: 22px; }
+.reel-ring-halo {
   position: absolute;
   inset: -2px;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, var(--card-accent, #c9ced6), rgba(231, 233, 234, 0.9), color-mix(in srgb, var(--card-accent, #c9ced6) 40%, transparent), var(--card-accent, #c9ced6));
+  background: conic-gradient(from 0deg, var(--ring-accent, #c9ced6), rgba(231, 233, 234, 0.9), color-mix(in srgb, var(--ring-accent, #c9ced6) 40%, transparent), var(--ring-accent, #c9ced6));
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
   animation: ring-turn 6s linear infinite;
 }
+.reel-ring--lg .reel-ring-halo { inset: -3px; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); }
 @keyframes ring-turn { to { rotate: 360deg; } }
-.card-reel:hover { transform: scale(1.08); }
-.card-reel:active { transform: scale(0.94); }
+.reel-ring:hover { transform: scale(1.08); background: rgba(2, 2, 4, 0.85); }
+.reel-ring:active { transform: scale(0.94); }
 
 /* the story viewer: phone-shaped on big screens, the whole screen on phones */
 .story {

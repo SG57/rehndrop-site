@@ -8,6 +8,7 @@ import Row from '../../components/Row.astro';
 import Card from '../../components/Card.astro';
 import VideoCard from '../../components/VideoCard.astro';
 import ReelCard from '../../components/ReelCard.astro';
+import ReelRing from '../../components/ReelRing.astro';
 import Contact from '../../components/Contact.astro';
 import Footer from '../../components/Footer.astro';
 import { data, related, fmtDate, type Track } from '../../lib/data';
@@ -43,6 +44,7 @@ const jsonLd = {
     <section class="track-hero">
       {ambient && <img class="spot-ambient" src={ambient.src} alt="" aria-hidden="true" />}
       <div class="track-cover" data-cover={track.slug}>
+        <ReelRing track={track} size="lg" />
         {track.cover && <Cover src={track.cover} size={900} widths={[420, 640, 900]} sizes="(min-width: 900px) 460px, (orientation: landscape) 60vh, 82vw" alt={`${track.title} cover`} eager quality={86} />}
       </div>
       <div class="track-info">
