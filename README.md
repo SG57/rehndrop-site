@@ -25,6 +25,7 @@ python scripts/check_catalog.py               # verifies every exported file and
 python scripts/build_brand_assets.py          # chrome R, velvet textures, share card, icons
 npm run build                                 # static build into dist/
 node scripts/qa.mjs                           # 9 device viewports + a playback test, via the installed Edge
+node scripts/legibility.mjs <url>             # contrast of every floating text style vs the live velvet (AAA median, AA specks)
 ```
 
 The exporter reads `D:/rehndrop/tracks` and `D:/rehndrop/resources` read-only and writes temp
