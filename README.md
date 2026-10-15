@@ -31,6 +31,12 @@ node scripts/legibility.mjs <url>             # contrast of every floating text 
 The exporter reads `D:/rehndrop/tracks` and `D:/rehndrop/resources` read-only and writes temp
 files under `.cache/`.
 
+**Preview windows.** By default each preview is 30 s starting 4 bars before the strongest measured
+drop that leaves 24 s of song after it. Cord can override any track in `scripts/preview-overrides.json`:
+`{"<slug>": {"start": 105.0}}` (seconds), optionally with `"hit": 111.4` for where the surge should
+land. Without `hit`, the strongest measured drop inside the new window is used, so the surge and
+camera kick still fire. Then run `export_catalog.py --only <slug>` and `check_catalog.py`.
+
 ## Moving to the custom domain
 
 Commit `public/CNAME` containing the domain (e.g. `rehndrop.sg57.dev`) after the DNS record exists

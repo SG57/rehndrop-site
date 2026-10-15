@@ -643,7 +643,14 @@ def compute_preview_window(analysis, wav_dur, override):
         start = round(0.30 * duration, 2)
 
     if override and "start" in override:
+        # Cord's window wins; the hit follows it, so the surge still lands: his own hit time
+        # if he gave one, else the strongest measured drop inside the new window
         start = float(override["start"])
+        if "hit" in override:
+            T = float(override["hit"])
+        else:
+            inside = [d for d in drops if start + 1 <= d["time"] <= start + PREVIEW_DURATION - 4]
+            T = inside[0]["time"] if inside else None
 
     # dropAt is computed from the full-precision start (before it is rounded for
     # storage/encoding) so that T - start lands on the exact bar-aligned instant.
