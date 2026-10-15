@@ -9,7 +9,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "qa": "node scripts/qa.mjs",
-    "export": "python scripts/export_catalog.py && python scripts/check_catalog.py",
+    "export": "python scripts/export_catalog.py && python scripts/check_catalog.py && python scripts/verify_previews.py",
     "legibility": "node scripts/legibility.mjs https://rehndrop.sg57.dev/"
   },
   "dependencies": {

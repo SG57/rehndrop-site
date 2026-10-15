@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-15T18:18:35Z",
+  "generated": "2026-10-15T19:16:18Z",
   "appleArtistId": 1545317806,
   "tracks": [
     {
@@ -45,7 +45,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4c/52/46/4c524696-bae3-c190-da54-b4a0f0689476/mzaf_10793171601386342206.plus.aac.p.m4a",
       "cover": "covers/pop-the-trunk.jpg",
       "coverStamped": true,
-      "accent": "#518c80",
+      "accent": "#538c83",
       "preview": {
         "src": "previews/pop-the-trunk.m4a",
         "start": 172.0,
@@ -73,7 +73,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c2/4f/73/c24f73d0-fb08-6b02-e657-866f1c9f9fdb/mzaf_11547983323071773864.plus.aac.p.m4a",
       "cover": "covers/whats-my-name.jpg",
       "coverStamped": false,
-      "accent": "#5c3e8c",
+      "accent": "#703e8c",
       "preview": {
         "src": "previews/whats-my-name.m4a",
         "start": 270.0,
@@ -104,7 +104,7 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c6/dd/10/c6dd102f-a08c-bec4-a66f-8a49b5e05cc5/mzaf_6805497405017070828.plus.aac.p.m4a",
       "cover": "covers/something.jpg",
       "coverStamped": true,
-      "accent": "#85858c",
+      "accent": "#84838c",
       "preview": {
         "src": "previews/something.m4a",
         "start": 184.0,
@@ -133,14 +133,14 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f4/fc/89/f4fc892e-6cf5-81de-af8a-6e9625bf1112/mzaf_13937189551316965868.plus.aac.p.m4a",
       "cover": "covers/buzzin.jpg",
       "coverStamped": true,
-      "accent": "#6f6d8c",
+      "accent": "#6e6d8c",
       "preview": {
         "src": "previews/buzzin.m4a",
-        "start": 50.18,
+        "start": 89.0,
         "duration": 30,
-        "dropAt": 6.863,
+        "dropAt": 8.05,
         "hits": [
-          6.863
+          8.05
         ],
         "turns": [],
         "env": "env/buzzin.json"
@@ -161,14 +161,14 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/37/04/75/370475bc-88a2-2b71-5cea-b16819b03946/mzaf_11654989572359467089.plus.aac.p.m4a",
       "cover": "covers/midnight.jpg",
       "coverStamped": true,
-      "accent": "#3f658c",
+      "accent": "#41648c",
       "preview": {
         "src": "previews/midnight.m4a",
-        "start": 33.85,
+        "start": 96.0,
         "duration": 30,
-        "dropAt": 7.0,
+        "dropAt": 9.0,
         "hits": [
-          7.0
+          9.0
         ],
         "turns": [],
         "env": "env/midnight.json"
@@ -189,14 +189,14 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/16/67/58/1667588a-5068-0a46-06ed-4f0eafc0f0e0/mzaf_16062954852079582058.plus.aac.p.m4a",
       "cover": "covers/light-weight.jpg",
       "coverStamped": true,
-      "accent": "#596b8c",
+      "accent": "#5a688c",
       "preview": {
         "src": "previews/light-weight.m4a",
-        "start": 185.68,
+        "start": 241.0,
         "duration": 30,
-        "dropAt": 6.49,
+        "dropAt": 6.35,
         "hits": [
-          6.49
+          6.35
         ],
         "turns": [],
         "env": "env/light-weight.json"
@@ -220,11 +220,13 @@
       "accent": "#22698c",
       "preview": {
         "src": "previews/back-to-that-feeling.m4a",
-        "start": 138.34,
-        "duration": 30,
-        "dropAt": 8.407,
+        "start": 158.0,
+        "duration": 30.0,
+        "dropAt": 5.05,
         "hits": [
-          8.407
+          5.05,
+          5.5,
+          12.6
         ],
         "turns": [],
         "env": "env/back-to-that-feeling.json"
@@ -248,11 +250,11 @@
       "accent": "#c9ced6",
       "preview": {
         "src": "previews/done-waiting.m4a",
-        "start": 231.34,
+        "start": 132.0,
         "duration": 30,
-        "dropAt": 7.75,
+        "dropAt": 12.0,
         "hits": [
-          7.75
+          12.0
         ],
         "turns": [],
         "env": "env/done-waiting.json"
@@ -276,13 +278,19 @@
       "accent": "#a09abd",
       "preview": {
         "src": "previews/waiting-for.m4a",
-        "start": 354.42,
-        "duration": 30,
-        "dropAt": 7.95,
+        "start": 55.0,
+        "duration": 59.752,
+        "dropAt": 8.5,
         "hits": [
-          7.95
+          8.5,
+          20.85,
+          24.0,
+          39.252,
+          52.752
         ],
-        "turns": [],
+        "turns": [
+          30.002
+        ],
         "env": "env/waiting-for.json"
       }
     },
@@ -301,14 +309,14 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/98/d2/ed/98d2ed48-f557-2caa-2ca3-fd03215b8831/mzaf_18351716543553656305.plus.aac.p.m4a",
       "cover": "covers/disconnect.jpg",
       "coverStamped": true,
-      "accent": "#59598c",
+      "accent": "#59588c",
       "preview": {
         "src": "previews/disconnect.m4a",
-        "start": 204.88,
+        "start": 165.0,
         "duration": 30,
-        "dropAt": 5.85,
+        "dropAt": 7.7,
         "hits": [
-          5.85
+          7.7
         ],
         "turns": [],
         "env": "env/disconnect.json"
@@ -332,11 +340,12 @@
       "accent": "#566e8c",
       "preview": {
         "src": "previews/disconnect-detox.m4a",
-        "start": 37.49,
-        "duration": 30,
-        "dropAt": 5.803,
+        "start": 53.0,
+        "duration": 30.0,
+        "dropAt": 6.5,
         "hits": [
-          5.803
+          6.5,
+          13.5
         ],
         "turns": [],
         "env": "env/disconnect-detox.json"
@@ -357,14 +366,15 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/72/b7/b0/72b7b019-8687-18f2-2779-c0b3e01b0754/mzaf_7784529739647379586.plus.aac.p.m4a",
       "cover": "covers/meaningless.jpg",
       "coverStamped": true,
-      "accent": "#7a728c",
+      "accent": "#7a718c",
       "preview": {
         "src": "previews/meaningless.m4a",
-        "start": 107.32,
-        "duration": 30,
-        "dropAt": 7.569,
+        "start": 70.0,
+        "duration": 30.0,
+        "dropAt": 1.65,
         "hits": [
-          7.569
+          1.65,
+          17.85
         ],
         "turns": [],
         "env": "env/meaningless.json"
@@ -385,16 +395,21 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c5/95/c3/c595c3af-adf6-1ec4-d845-3561a40bf7df/mzaf_5430279960203149179.plus.aac.p.m4a",
       "cover": "covers/demons-in-my-ear.jpg",
       "coverStamped": true,
-      "accent": "#41548c",
+      "accent": "#434c8c",
       "preview": {
         "src": "previews/demons-in-my-ear.m4a",
-        "start": 342.54,
-        "duration": 30,
-        "dropAt": 6.7,
+        "start": 70.0,
+        "duration": 60.238,
+        "dropAt": 13.6,
         "hits": [
-          6.7
+          13.6,
+          20.0,
+          35.6,
+          47.55
         ],
-        "turns": [],
+        "turns": [
+          30.488
+        ],
         "env": "env/demons-in-my-ear.json"
       }
     },
@@ -413,14 +428,16 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9e/c0/6b/9ec06b2f-9b5b-9a85-13d2-e0ac4d38f54d/mzaf_13729884724389926070.plus.aac.p.m4a",
       "cover": "covers/wobble.jpg",
       "coverStamped": true,
-      "accent": "#7c9d0d",
+      "accent": "#7d9d11",
       "preview": {
         "src": "previews/wobble.m4a",
-        "start": 161.99,
-        "duration": 30,
-        "dropAt": 6.9,
+        "start": 120.0,
+        "duration": 30.0,
+        "dropAt": 5.0,
         "hits": [
-          6.9
+          5.0,
+          12.0,
+          19.45
         ],
         "turns": [],
         "env": "env/wobble.json"
@@ -444,13 +461,19 @@
       "accent": "#2e488c",
       "preview": {
         "src": "previews/see-the-real-me.m4a",
-        "start": 136.13,
-        "duration": 30,
-        "dropAt": 9.65,
+        "start": 43.0,
+        "duration": 58.577,
+        "dropAt": 12.0,
         "hits": [
-          9.65
+          12.0,
+          25.0,
+          34.2,
+          40.8,
+          53.577
         ],
-        "turns": [],
+        "turns": [
+          28.827
+        ],
         "env": "env/see-the-real-me.json"
       }
     },
@@ -469,16 +492,23 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a9/cb/3f/a9cb3f37-f2f2-79a9-8e7f-5e3c1e85f8f7/mzaf_4542050476284264862.plus.aac.p.m4a",
       "cover": "covers/wild-beauty.jpg",
       "coverStamped": true,
-      "accent": "#747a8c",
+      "accent": "#75798c",
       "preview": {
         "src": "previews/wild-beauty.m4a",
-        "start": 191.18,
-        "duration": 30,
-        "dropAt": 6.65,
+        "start": 65.0,
+        "duration": 59.695,
+        "dropAt": 7.0,
         "hits": [
-          6.65
+          7.0,
+          13.6,
+          20.1,
+          26.15,
+          43.695,
+          56.695
         ],
-        "turns": [],
+        "turns": [
+          29.945
+        ],
         "env": "env/wild-beauty.json"
       }
     },
@@ -500,13 +530,22 @@
       "accent": "#9d7355",
       "preview": {
         "src": "previews/were-gonna-be-alright.m4a",
-        "start": 204.29,
-        "duration": 30,
-        "dropAt": 6.85,
+        "start": 55.0,
+        "duration": 60.306,
+        "dropAt": 10.0,
         "hits": [
-          6.85
+          10.0,
+          13.8,
+          17.1,
+          20.3,
+          37.306,
+          44.306,
+          52.2,
+          58.806
         ],
-        "turns": [],
+        "turns": [
+          30.556
+        ],
         "env": "env/were-gonna-be-alright.json"
       }
     },
@@ -525,16 +564,21 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f3/d9/09/f3d9097e-b733-2b3c-f8e2-01deb7b0471b/mzaf_6405366575046978655.plus.aac.p.m4a",
       "cover": "covers/set-your-heart-ablaze.jpg",
       "coverStamped": true,
-      "accent": "#7c528c",
+      "accent": "#7b528c",
       "preview": {
         "src": "previews/set-your-heart-ablaze.m4a",
-        "start": 311.33,
-        "duration": 30,
-        "dropAt": 7.8,
+        "start": 58.0,
+        "duration": 58.871,
+        "dropAt": 7.85,
         "hits": [
-          7.8
+          7.85,
+          19.05,
+          32.1,
+          43.871
         ],
-        "turns": [],
+        "turns": [
+          29.121
+        ],
         "env": "env/set-your-heart-ablaze.json"
       }
     },
@@ -553,16 +597,22 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c1/cb/b2/c1cbb2a8-2566-42cb-a709-b7b1ea2e8fef/mzaf_289783986528499734.plus.aac.p.m4a",
       "cover": "covers/pretty-lights.jpg",
       "coverStamped": true,
-      "accent": "#be426d",
+      "accent": "#c54972",
       "preview": {
         "src": "previews/pretty-lights.m4a",
-        "start": 166.29,
-        "duration": 30,
-        "dropAt": 6.75,
+        "start": 97.0,
+        "duration": 58.81,
+        "dropAt": 15.6,
         "hits": [
-          6.75
+          15.6,
+          22.0,
+          35.95,
+          41.81,
+          48.81
         ],
-        "turns": [],
+        "turns": [
+          29.06
+        ],
         "env": "env/pretty-lights.json"
       }
     },
@@ -581,16 +631,24 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9a/13/23/9a1323d7-afd6-95d6-1573-d09cf6378593/mzaf_1523620770440729192.plus.aac.p.m4a",
       "cover": "covers/high-then-higher.jpg",
       "coverStamped": true,
-      "accent": "#3e498c",
+      "accent": "#3d488c",
       "preview": {
         "src": "previews/high-then-higher.m4a",
-        "start": 282.23,
-        "duration": 30,
-        "dropAt": 7.05,
+        "start": 63.0,
+        "duration": 59.915,
+        "dropAt": 9.05,
         "hits": [
-          7.05
+          9.05,
+          16.1,
+          22.0,
+          29.3,
+          38.915,
+          45.915,
+          56.915
         ],
-        "turns": [],
+        "turns": [
+          30.165
+        ],
         "env": "env/high-then-higher.json"
       }
     },
@@ -612,13 +670,24 @@
       "accent": "#9a3b47",
       "preview": {
         "src": "previews/mr-big-stuff.m4a",
-        "start": 102.92,
-        "duration": 30,
-        "dropAt": 6.863,
+        "start": 33.0,
+        "duration": 59.959,
+        "dropAt": 2.95,
         "hits": [
-          6.863
+          2.95,
+          10.75,
+          17.0,
+          35.4,
+          38.85,
+          42.25,
+          44.959,
+          48.959,
+          51.959,
+          55.459
         ],
-        "turns": [],
+        "turns": [
+          30.209
+        ],
         "env": "env/mr-big-stuff.json"
       }
     },
@@ -637,16 +706,25 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d7/9a/39/d79a3906-4073-a987-76de-bac91b1d430e/mzaf_2403379091378365954.plus.aac.p.m4a",
       "cover": "covers/bass-bumpin.jpg",
       "coverStamped": true,
-      "accent": "#58718c",
+      "accent": "#58708c",
       "preview": {
         "src": "previews/bass-bumpin.m4a",
-        "start": 204.81,
-        "duration": 30,
-        "dropAt": 6.862,
+        "start": 143.0,
+        "duration": 58.719,
+        "dropAt": 6.9,
         "hits": [
-          6.862
+          6.9,
+          10.0,
+          13.5,
+          17.0,
+          20.5,
+          30.75,
+          36.55,
+          43.719
         ],
-        "turns": [],
+        "turns": [
+          28.969
+        ],
         "env": "env/bass-bumpin.json"
       }
     },
@@ -668,13 +746,24 @@
       "accent": "#8c593e",
       "preview": {
         "src": "previews/can-you-hear-me.m4a",
-        "start": 143.53,
-        "duration": 30,
-        "dropAt": 6.3,
+        "start": 138.0,
+        "duration": 59.387,
+        "dropAt": 11.8,
         "hits": [
-          6.3
+          11.8,
+          18.0,
+          19.5,
+          26.0,
+          38.45,
+          41.55,
+          44.387,
+          48.25,
+          51.4,
+          57.65
         ],
-        "turns": [],
+        "turns": [
+          29.637
+        ],
         "env": "env/can-you-hear-me.json"
       }
     },
@@ -693,16 +782,27 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/78/f0/00/78f00014-b575-dcb8-ca26-d33c4fd9bdf9/mzaf_12641365259065957429.plus.aac.p.m4a",
       "cover": "covers/you-aint-ready-baby.jpg",
       "coverStamped": true,
-      "accent": "#462e8c",
+      "accent": "#472e8c",
       "preview": {
         "src": "previews/you-aint-ready-baby.m4a",
-        "start": 41.83,
-        "duration": 30,
-        "dropAt": 6.867,
+        "start": 29.0,
+        "duration": 59.493,
+        "dropAt": 1.85,
         "hits": [
-          6.867
+          1.85,
+          8.2,
+          15.05,
+          19.0,
+          31.65,
+          34.493,
+          37.493,
+          47.7,
+          52.493,
+          55.993
         ],
-        "turns": [],
+        "turns": [
+          29.743
+        ],
         "env": "env/you-aint-ready-baby.json"
       }
     },
@@ -724,13 +824,23 @@
       "accent": "#8c5745",
       "preview": {
         "src": "previews/marauder.m4a",
-        "start": 172.25,
-        "duration": 30,
-        "dropAt": 8.351,
+        "start": 51.0,
+        "duration": 58.888,
+        "dropAt": 7.2,
         "hits": [
-          8.351
+          7.2,
+          12.0,
+          16.0,
+          20.0,
+          23.95,
+          39.388,
+          41.9,
+          47.888,
+          56.15
         ],
-        "turns": [],
+        "turns": [
+          29.138
+        ],
         "env": "env/marauder.json"
       }
     },
@@ -749,13 +859,20 @@
       "applePreview": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview114/v4/77/a5/c7/77a5c79b-90c2-579b-564d-cdede05a83bb/mzaf_890921725967290729.plus.aac.p.m4a",
       "cover": "covers/dont-screw-with-me.jpg",
       "coverStamped": true,
-      "accent": "#8c0304",
+      "accent": "#8c0305",
       "preview": {
         "src": "previews/dont-screw-with-me.m4a",
-        "start": 80.29,
-        "duration": 30,
-        "dropAt": null,
-        "hits": [],
+        "start": 106.0,
+        "duration": 30.0,
+        "dropAt": 4.0,
+        "hits": [
+          4.0,
+          10.25,
+          15.0,
+          21.0,
+          24.0,
+          27.85
+        ],
         "turns": [],
         "env": "env/dont-screw-with-me.json"
       }
@@ -778,11 +895,15 @@
       "accent": "#328c8c",
       "preview": {
         "src": "previews/now-die.m4a",
-        "start": 68.01,
-        "duration": 30,
-        "dropAt": 5.6,
+        "start": 155.0,
+        "duration": 30.0,
+        "dropAt": 4.0,
         "hits": [
-          5.6
+          4.0,
+          14.95,
+          18.0,
+          23.0,
+          27.0
         ],
         "turns": [],
         "env": "env/now-die.json"
@@ -803,14 +924,26 @@
       "applePreview": null,
       "cover": "covers/drugs.jpg",
       "coverStamped": true,
-      "accent": "#f2d2bf",
+      "accent": "#f1d1bd",
       "preview": {
         "src": "previews/drugs.m4a",
-        "start": 73.55,
-        "duration": 30,
-        "dropAt": null,
-        "hits": [],
-        "turns": [],
+        "start": 88.0,
+        "duration": 58.988,
+        "dropAt": 5.1,
+        "hits": [
+          5.1,
+          14.3,
+          16.75,
+          22.25,
+          35.85,
+          42.2,
+          45.0,
+          47.988,
+          52.988
+        ],
+        "turns": [
+          29.238
+        ],
         "env": "env/drugs.json"
       }
     }

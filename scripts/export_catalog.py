@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import colorsys
+import hashlib
 import json
 import re
 import shutil
@@ -821,11 +822,13 @@ def read_wav_stereo(wav_path: Path, start: float, duration: float):
     return data[:, :2], sr
 
 
-def teaser_end(analysis, start: float, duration: float) -> float:
-    """End a non-final teaser on the downbeat nearest start + 30 s (searched +26 to +31 s)."""
+def teaser_end(analysis, start: float, duration: float, last_hit: float | None = None) -> float:
+    """End a non-final teaser on the downbeat nearest start + 30 s (searched +26 to +31 s), but
+    never before a second after its last hit: a cut must not swallow a hit Cord asked for."""
     target = start + PREVIEW_DURATION
-    downbeats = [d for d in (analysis or {}).get("downbeats") or [] if start + 26 <= d <= start + 31]
-    end = min(downbeats, key=lambda d: abs(d - target)) if downbeats else target
+    floor = max(start + 26, (last_hit + 1.0) if last_hit is not None else 0)
+    downbeats = [d for d in (analysis or {}).get("downbeats") or [] if floor <= d <= start + 31]
+    end = min(downbeats, key=lambda d: abs(d - target)) if downbeats else max(target, floor)
     return min(end, duration)
 
 
@@ -837,7 +840,8 @@ def build_teasers(wav_path: Path, analysis, duration: float, segments):
     for k, seg in enumerate(segments):
         start = seg["start"]
         last = k == len(segments) - 1
-        end = min(start + PREVIEW_DURATION, duration) if last else teaser_end(analysis, start, duration)
+        end = (min(start + PREVIEW_DURATION, duration) if last
+               else teaser_end(analysis, start, duration, max(seg["hits"]) if seg["hits"] else None))
         audio, sr = read_wav_stereo(wav_path, start, end - start)
         if k > 0:
             pos -= TEASER_XFADE
@@ -854,7 +858,10 @@ def build_teasers(wav_path: Path, analysis, duration: float, segments):
         mixed = out[-n_x:] * np.cos(t) + nxt[:n_x] * np.sin(t)  # equal power: no dip, no bump
         out = np.concatenate([out[:-n_x], mixed, nxt[n_x:]])
     out = out * 10 ** (-1 / 20)
-    fade_in, fade_out = int(0.25 * sr), int(2.0 * sr)
+    # the closing fade waits a second after the last hit, so a late hit is heard, not faded
+    # (it is never shorter than half a second)
+    fade_s = min(2.0, max(0.5, len(out) / sr - (max(hits) + 1.0))) if hits else 2.0
+    fade_in, fade_out = int(0.25 * sr), int(fade_s * sr)
     out[:fade_in] *= np.linspace(0, 1, fade_in)[:, None]
     out[-fade_out:] *= np.linspace(1, 0, fade_out)[:, None]
     return np.clip(out, -1, 1), sr, sorted(hits), turns
@@ -932,13 +939,21 @@ def process_track(spec, buckets, force, overrides, notes):
             segs = teaser_segments(override)
             if segs:
                 buffer, sr, hits, turns = build_teasers(wav_path, analysis, wav_dur, segs)
-                encode_teasers(buffer, sr, slug, json.dumps(segs, sort_keys=True), force)
+                # stamped with the exact audio, not the request: an engine change (fades, cuts)
+                # must re-encode, or the m4a goes stale while its envelope and hits move on
+                encode_teasers(buffer, sr, slug, hashlib.sha1(buffer.tobytes()).hexdigest(), force)
                 total = round(len(buffer) / sr, 3)
                 n_frames = int(round(total * ENV_RATE_HZ))
                 energy_db, low_db = compute_envelope(buffer.mean(axis=1), sr, n_frames)
                 energy_q = normalize_quantize(energy_db, n_frames)
                 low_q = normalize_quantize(low_db, n_frames)
-                hits = [snap_hit(energy_q, low_q, ENV_RATE_HZ, h) for h in hits]
+                snapped = []
+                for h in hits:
+                    t = snap_hit(energy_q, low_q, ENV_RATE_HZ, h)
+                    # two by-ear hits a beat apart must stay two hits: if snapping lands this one on
+                    # the previous one, it keeps Cord's own time
+                    snapped.append(h if snapped and abs(t - snapped[-1]) < 0.15 else t)
+                hits = snapped
                 drop_at = hits[0] if hits else None
                 write_env(slug, drop_at, energy_q, low_q, hits, turns)
                 preview = {

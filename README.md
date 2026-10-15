@@ -22,6 +22,7 @@ Every network fetch falls back to a committed snapshot, so a dead API never brea
 ```bash
 python scripts/export_catalog.py              # all tracks (idempotent; --force, --only <slug>)
 python scripts/check_catalog.py               # verifies every exported file and the drop sync
+python scripts/verify_previews.py             # proves each preview is its own song, at Cord's times (--only a,b)
 python scripts/build_brand_assets.py          # chrome R, velvet textures, share card, icons
 npm run build                                 # static build into dist/
 node scripts/qa.mjs                           # 9 device viewports + a playback test, via the installed Edge
@@ -42,7 +43,13 @@ Several hits in one window: `{"start": 184, "hits": [189, 203]}`. Several moment
 in that order. Every teaser but the last ends on the measured downbeat nearest 30 s and they meet in
 a 0.5 s equal-power crossfade; the seam gets a splash on the lens and a notch on the player bar.
 By-ear hits snap to the strongest onset within 0.4 s, and only when it is clearly strong; otherwise
-the given time stands.
+the given time stands. A cut never lands within a second of a hit, and the closing fade waits a
+second after the last one.
+
+`verify_previews.py` shares no code with the exporter: it decodes each finished preview and the
+song's own audio from its track folder and fails unless every teaser cross-correlates with its own
+song at the given start (and with no other song), every hit maps back to Cord's time, the length
+adds up, and the envelope the visuals run on was measured from that exact audio.
 
 ## Moving to the custom domain
 
