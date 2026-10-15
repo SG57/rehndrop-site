@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-15T17:32:30Z",
+  "generated": "2026-10-15T18:06:35Z",
   "appleArtistId": 1545317806,
   "tracks": [
     {
@@ -20,9 +20,9 @@
       "accent": "#8db1dc",
       "preview": {
         "src": "previews/bitch-ass-bitch-ass-bitch.m4a",
-        "start": 320.24,
+        "start": 120.0,
         "duration": 30,
-        "dropAt": 5.322,
+        "dropAt": 18.5,
         "env": "env/bitch-ass-bitch-ass-bitch.json"
       }
     },
