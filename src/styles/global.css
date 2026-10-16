@@ -26,6 +26,7 @@
   --font-display: 'Michroma', 'Eurostile', 'Bank Gothic', system-ui, sans-serif;
   --font-text: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-brand: 'rehndrop', 'Michroma', 'Eurostile', system-ui, sans-serif;
+  --font-lyric: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; /* lyrics only: a true italic */
   --gutter: clamp(18px, 5vw, 64px);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-heavy: cubic-bezier(0.65, 0, 0.35, 1);
@@ -858,7 +859,36 @@ a.card-title:hover { text-decoration: underline; text-underline-offset: 3px; tex
   color: var(--bone);
   text-wrap: balance;
 }
+/* a lyric reads as a lyric sheet, not a quotation: a true italic, one sung line per line, no
+   quote marks, hung off a hairline in the track's colour */
+.lyric {
+  position: relative;
+  padding: 2px 0 2px 18px;
+  font-family: var(--font-lyric);
+  font-style: italic;
+  font-size: clamp(19px, 2.7vw, 25px);
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  white-space: pre-line;
+  text-wrap: pretty;
+}
+.lyric::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  bottom: 0.2em;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--lyric-rule) 18%, var(--lyric-rule) 82%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--slide-accent, var(--accent)) 55%, transparent);
+}
+.lyric { --lyric-rule: color-mix(in srgb, var(--slide-accent, var(--accent)) 70%, var(--bone)); }
+/* centred on the track page: the hairline lies above it instead */
+.liner .lyric { padding: 20px 0 0; font-size: clamp(22px, 3.4vw, 32px); }
+.liner .lyric::before { left: 50%; top: 0; bottom: auto; width: 56px; height: 1px; margin-left: -28px;
+  background: linear-gradient(90deg, transparent, var(--lyric-rule), transparent); }
 .pick-note { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.55; max-width: 46ch; }
+.pick-line { color: var(--bone); }
 .pick-body .listen { justify-content: flex-start; margin-top: 4px; }
 .liner { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 0 var(--gutter) clamp(24px, 5vh, 48px); max-width: 720px; margin: 0 auto; }
 @media (min-width: 900px) {

@@ -25,6 +25,7 @@ const SELECTORS = [
   ['card caption', '.card .card-sub'],
   ['video caption', '.vcard .card-sub'],
   ['pick line', '.pick-note'],
+  ['lyric', '.lyric'],
   ['contact', '.contact-links a'],
   ['email', '.contact-mail'],
   ['footer', '.foot-line'],
@@ -38,7 +39,7 @@ const rows = [];
 for (const [dev, w, h, mobile] of [['phone', 393, 852, true], ['laptop', 1440, 900, false]]) {
   const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
   const page = await ctx.newPage();
-  for (const path of ['', 't/pop-the-trunk/']) {
+  for (const path of ['', 't/pop-the-trunk/', 't/whats-my-name/']) {
     await page.goto(url + path + lens + velvet, { waitUntil: 'networkidle' });
     await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
     await page.waitForTimeout(1500);
@@ -86,7 +87,7 @@ for (const [dev, w, h, mobile] of [['phone', 393, 852, true], ['laptop', 1440, 9
         }, { png, box, color });
         if (!worst || r.specks < worst.specks) worst = r;
       }
-      if (worst) rows.push({ dev, page: path ? 'track' : 'home', name, ...worst, ok: worst.med >= 7 && worst.specks >= 4.5 });
+      if (worst) rows.push({ dev, page: path ? path.split('/')[1].slice(0, 5) : 'home', name, ...worst, ok: worst.med >= 7 && worst.specks >= 4.5 });
     }
   }
   await ctx.close();

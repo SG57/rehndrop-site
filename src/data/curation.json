@@ -52,79 +52,100 @@
   },
   "notes": {
     "whats-my-name": {
-      "note": "polite at the door. not after."
+      "quote": "molly on the brain\ni can do this shit all day\nit's off the chain"
     },
     "wild-beauty": {
-      "quote": "if morning steals it all away, i'll find the beauty anyway.",
+      "quote": "if morning steals it all away\ni'll find the beauty anyway",
       "note": "to live a beautiful life, find the beauty in everything."
     },
     "bitch-ass-bitch-ass-bitch": {
-      "note": "a flag for the back of the field."
+      "line": "choo-choo, motha fucka.",
+      "note": "sun still shining. bassline nasty. everybody smilin'."
     },
     "pop-the-trunk": {
-      "note": "3am. parking lot. the good speakers."
+      "note": "the set ended hours ago. the campground didn't."
     },
     "something": {
+      "line": "here's a lil something.",
       "note": "the ballroom didn't make it."
     },
     "buzzin": {
+      "line": "are you.",
       "note": "sting first. ask later."
     },
     "midnight": {
       "note": "a bedtime story for people who don't sleep."
     },
     "light-weight": {
+      "line": "u mirin', brah.",
       "note": "lift with your neck."
     },
     "back-to-that-feeling": {
+      "line": "for a little while.",
       "note": "windows down, sun going, nowhere to be."
     },
     "done-waiting": {
+      "line": "you feel like a memory.",
       "note": "no more checking the time."
     },
     "waiting-for": {
+      "line": "i could get lost in you for days.",
       "note": "the sand's almost out."
     },
     "disconnect": {
+      "line": "reset.",
       "note": "the cable's cut. the signal isn't."
     },
     "disconnect-detox": {
+      "line": "hard reset.",
       "note": "same cut, slower bleed."
     },
     "meaningless": {
+      "line": "thrown to the wayside.",
       "note": "nothing to prove, and it shows."
     },
     "demons-in-my-ear": {
+      "line": "they talk slick. they talk mean.",
       "note": "backseat, black highway, someone else driving."
     },
     "wobble": {
+      "line": "lean into it.",
       "note": "make it fn wobble."
     },
     "see-the-real-me": {
-      "note": "the palace is the cover story."
+      "line": "maybe we're not so different.",
+      "note": "i'm not the person you think i can be."
     },
     "were-gonna-be-alright": {
+      "line": "through the highs and the lows.",
       "note": "two people, one skyline, zero plans."
     },
     "set-your-heart-ablaze": {
+      "line": "it's right here. only you can find it.",
       "note": "a slow fuse, then everything."
     },
     "pretty-lights": {
+      "line": "this is heaven, and we stole it.",
       "note": "the encore, the kiss, the lights still on."
     },
     "high-then-higher": {
+      "line": "stay with me now.",
       "note": "chains off. altitude unknown."
     },
     "mr-big-stuff": {
-      "note": "small package. big problem."
+      "line": "that's cute.",
+      "note": "chest puffed. so tough."
     },
     "bass-bumpin": {
+      "line": "spin that shit again.",
       "note": "the floor gave out first."
     },
     "can-you-hear-me": {
+      "line": "listen hard.",
       "note": "every channel open. someone's listening."
     },
     "you-aint-ready-baby": {
+      "line": "put me in my place.",
       "note": "lights off. volume up."
     },
     "marauder": {

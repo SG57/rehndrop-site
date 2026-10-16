@@ -7,7 +7,7 @@ import Cover from './Cover.astro';
 import ReelRing from './ReelRing.astro';
 interface Props { track: Track; eager?: boolean }
 const { track: t, eager = false } = Astro.props;
-// the title answer if there is one, else the track's line; a date only as the last resort
+// Cord's line (or the title answer) if there is one, else the note; a date only as the last resort
 const sub = t.answer ?? t.story?.note ?? fmtDate(t.released);
 const href = u(`t/${t.slug}/`);
 const sizes = '(min-width: 1100px) 216px, (min-width: 700px) 190px, 40vw';

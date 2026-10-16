@@ -40,8 +40,9 @@ export interface Track {
   cover: ImageMetadata | string;
   accent: string;
   answer: string | null;
-  // liner notes in Cord's words (curation.json "notes"); the start of per-track stories
-  story: { note?: string; quote?: string } | null;
+  // liner notes in Cord's words (curation.json "notes"); the start of per-track stories.
+  // line: his line under the title; note: the second line; quote: a lyric, one sung line per \n
+  story: { line?: string; note?: string; quote?: string } | null;
   preview: { src: string | null; dropAt: number | null; env: string | null; hits: number[]; turns: number[]; duration: number };
   links: { apple: string | null; spotify: string | null; youtube: string; soundcloud: string };
   video: Video | null;
@@ -152,7 +153,7 @@ async function load() {
 
   const answers = new Map(Object.entries(curation.answers).map(([k, v]) => [norm(k), v]));
   const hidden = new Set(curation.youtube.hide);
-  const notes = curation.notes as Record<string, { note?: string; quote?: string }>;
+  const notes = curation.notes as Record<string, { line?: string; note?: string; quote?: string }>;
 
   const bySlug = new Map<string, Track>();
   const byTitle = new Map<string, Track>();
@@ -189,7 +190,8 @@ async function load() {
       released: c.released ?? null,
       cover: coverFor(c.cover) ?? '',
       accent: c.accent || '#c9ced6',
-      answer: answers.get(norm(c.title)) ?? null,
+      // Cord's own line under the title wins over the title answer from VOICE.md
+      answer: notes[c.slug]?.line ?? answers.get(norm(c.title)) ?? null,
       story: notes[c.slug] ?? null,
       preview: {
         src: c.preview?.src ?? c.applePreview ?? null,
@@ -232,7 +234,7 @@ async function load() {
       released: s.releaseDate.slice(0, 10),
       cover: s.artworkUrl100.replace('100x100bb', '1200x1200bb'),
       accent: '#c9ced6',
-      answer: answers.get(norm(title)) ?? null,
+      answer: notes[slug]?.line ?? answers.get(norm(title)) ?? null,
       story: notes[slug] ?? null,
       preview: { src: s.previewUrl ?? null, dropAt: null, env: null, hits: [], turns: [], duration: 30 },
       links: linksFor(title, appleUrl),
