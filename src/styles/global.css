@@ -84,6 +84,17 @@ img { display: block; max-width: 100%; }
     radial-gradient(90% 80% at 50% 45%, transparent 35%, rgba(2, 2, 4, 0.72) 100%);
   transition: background 1.2s var(--ease);
 }
+/* the velvet takes the colour of what's playing when the shader is off (lens.ts does it on
+   the GPU otherwise): the color blend keeps the velvet's own luminance and takes the accent's hue */
+.velvet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  mix-blend-mode: color;
+  opacity: var(--dye, 0);
+  transition: opacity 1.2s var(--ease), background-color 1.2s var(--ease);
+}
 .lens { z-index: -2; opacity: 0; transition: opacity 1.6s var(--ease); display: block; }
 /* water on the camera lens, in front of the page (drops.ts); below the player and dialogs */
 /* water on the page (drops.ts): a document-sized, clipped layer, so the strip inside scrolls

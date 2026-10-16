@@ -2,7 +2,7 @@
 // Web Audio is muted by the iPhone ringer switch and has gone silent in WebKit before,
 // so the visuals read precomputed envelopes against audio.currentTime instead of
 // analysing live sound.
-import { drive, IDLE, hexToRgb, reducedMotion } from './drive';
+import { drive, IDLE, dyeLevel, hexToRgb, reducedMotion } from './drive';
 
 export interface PlayerTrack {
   slug: string;
@@ -30,7 +30,8 @@ interface Envelope {
 
 const NEUTRAL = hexToRgb('#c9ced6');
 
-export function startPlayer(tracks: PlayerTrack[], base: string) {
+export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'little') {
+  const dye = dyeLevel(velvet);
   const bySlug = new Map(tracks.map((t) => [t.slug, t]));
   const audio = new Audio();
   audio.preload = 'none';
@@ -95,7 +96,9 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
     drive.flash = 0;
     drive.pulse = 0;
     drive.tint = [...NEUTRAL];
+    drive.dye = 0;
     root.style.setProperty('--pulse', '0');
+    root.style.setProperty('--dye', '0');
     fired.clear();
     turned.clear();
   };
@@ -227,12 +230,17 @@ export function startPlayer(tracks: PlayerTrack[], base: string) {
   };
 
   audio.addEventListener('playing', () => {
+    // the velvet takes the track's colour only while it is actually heard
+    drive.dye = dye;
+    root.style.setProperty('--dye', String(dye));
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(tick);
     paint();
   });
   audio.addEventListener('pause', () => {
     cancelAnimationFrame(raf);
+    drive.dye = 0;
+    root.style.setProperty('--dye', '0');
     drive.pulse = 0;
     drive.flash = 0;
     drive.rain = IDLE.rain;

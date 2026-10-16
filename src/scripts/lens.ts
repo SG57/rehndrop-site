@@ -29,6 +29,7 @@ uniform float uFlash;    // 0..1 light hit
 uniform float uScroll;   // 0..1 page scroll, for a little parallax
 uniform float uDepth;    // page scroll in viewport heights x 0.35: the beads' parallax layer
 uniform vec3 uTint;
+uniform vec4 uDye;       // rgb: the playing track's colour, linear light, scaled to luminance 1; a: how far the velvet takes it
 uniform vec3 uWipe[6];   // pointer trail: xy uv, z strength
 uniform vec2 uSway;      // slow drift + cursor parallax of the scene behind the glass
 uniform vec4 uLights;    // two light pools orbiting the velvet: xy, xy in uv
@@ -129,6 +130,13 @@ void main() {
   vec3 glass = mix(bg, fog * 0.92, 0.62 * (1.0 - clamp(clear * 0.7 + wipe, 0.0, 1.0)));
   vec3 col = mix(glass, lens * 1.45 + 0.015, mask);
 
+  // the velvet takes the colour of what's playing, mixed in linear light so its luminance,
+  // the thing every text contrast is measured against, holds: the shadows stay black and the
+  // pile's sheen carries the hue (mixed in gamma space, a saturated red would read 3x brighter)
+  vec3 lin = pow(max(col, 0.0), vec3(2.2));
+  float lum = dot(lin, vec3(0.2126, 0.7152, 0.0722));
+  col = pow(mix(lin, min(lum * uDye.rgb, vec3(1.0)), uDye.a), vec3(1.0 / 2.2));
+
   float l2 = min(dot(nrm, nrm), 0.98);
   vec3 sn = normalize(vec3(nrm, sqrt(1.0 - l2)));
   float spec = pow(max(dot(sn, normalize(vec3(-0.45, 0.6, 0.66))), 0.0), 28.0) * mask;
@@ -196,7 +204,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   const U = (n: string) => gl.getUniformLocation(prog, n);
   const u = {
     sharp: U('uSharp'), fog: U('uFog'), cover: U('uCover'), aspect: U('uAspect'), time: U('uTime'),
-    slide: U('uSlide'), rain: U('uRain'), flash: U('uFlash'), scroll: U('uScroll'), depth: U('uDepth'), tint: U('uTint'),
+    slide: U('uSlide'), rain: U('uRain'), flash: U('uFlash'), scroll: U('uScroll'), depth: U('uDepth'), tint: U('uTint'), dye: U('uDye'),
     wipe: U('uWipe'), sway: U('uSway'), lights: U('uLights'), lightAmp: U('uLightAmp'),
   };
   gl.uniform1i(u.sharp, 0);
@@ -259,6 +267,8 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   let wall = 0;
   let flash = 0;
   const tint: [number, number, number] = [...drive.tint];
+  const dyeCol: [number, number, number] = [1, 1, 1];
+  let dye = 0;
   let probeFrames = 0;
   let probeTime = 0;
   let downgrades = 0;
@@ -299,6 +309,13 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     flash = Math.max(drive.flash, flash - dt * 3);
     for (let k = 0; k < 3; k++) tint[k] += (drive.tint[k] - tint[k]) * Math.min(1, dt * 2.5);
     for (let i = 0; i < 6; i++) wipes[i * 3 + 2] = Math.max(0, wipes[i * 3 + 2] - dt * 0.7);
+    // the dye bleeds in and drains slowly, like light soaking into fabric. Its colour only
+    // travels while it shows, so a new track never fades in through the last one's colour
+    const [r, g, b] = drive.tint.map((c) => c ** 2.2);
+    const l = Math.max(0.01, 0.2126 * r + 0.7152 * g + 0.0722 * b);
+    const target = [r / l, g / l, b / l];
+    for (let k = 0; k < 3; k++) dyeCol[k] = dye < 0.01 ? target[k] : dyeCol[k] + (target[k] - dyeCol[k]) * Math.min(1, dt * 1.2);
+    dye += (drive.dye - dye) * Math.min(1, dt * 0.9);
 
     // wall-clock orbit and sway, computed here in float64 so the GPU never sees a large time
     const t = now / 1000;
@@ -321,6 +338,8 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     gl.uniform1f(u.scroll, Math.min(1, scrollY / scrollMax));
     gl.uniform1f(u.depth, (scrollY / innerHeight) * 0.35);
     gl.uniform3f(u.tint, tint[0], tint[1], tint[2]);
+    // it breathes a little with the low end
+    gl.uniform4f(u.dye, dyeCol[0], dyeCol[1], dyeCol[2], Math.min(1, dye * (0.9 + 0.3 * drive.pulse)));
     gl.uniform3fv(u.wipe, wipes);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };

@@ -8,6 +8,8 @@
     "back-to-that-feeling",
     "wobble"
   ],
+  "_velvetTint": "How hard the velvet takes the playing track's cover colour: off, little, more or a lot. Try one live with ?velvet=more (sticks for the tab; ?velvet=default resets).",
+  "velvetTint": "little",
   "picks": [
     "whats-my-name",
     "wild-beauty"

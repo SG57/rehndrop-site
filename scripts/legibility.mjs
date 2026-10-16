@@ -1,5 +1,8 @@
 // Legibility audit for text that floats on the velvet (no surface behind it).
-//   node scripts/legibility.mjs <url> [--json]
+//   node scripts/legibility.mjs <url> [--json] [--play [slug]] [--velvet <level>]
+// --play audits with a track playing (the page's first, or <slug> where the page has it), so
+// the velvet carries that track's colour; --velvet picks the dye level (off|little|more|alot);
+// --no-lens audits the static CSS velvet (what reduced-motion and GPU-less visitors see).
 // For each text style: scroll it into view with the rain shader running, sample the
 // background in a ring just OUTSIDE the text box, and compute the text's contrast against
 // the median background (target >= 7:1, WCAG AAA) and against the bright specks, the 90th
@@ -7,6 +10,11 @@
 import { chromium } from 'playwright-core';
 
 const url = process.argv[2];
+const argAfter = (flag) => { const i = process.argv.indexOf(flag); const v = process.argv[i + 1]; return i > 0 && v && !v.startsWith('--') ? v : null; };
+const play = process.argv.includes('--play');
+const playSlug = argAfter('--play');
+const velvet = argAfter('--velvet') ? `&velvet=${argAfter('--velvet')}` : '';
+const lens = process.argv.includes('--no-lens') ? '?static' : '?lens';
 const SELECTORS = [
   ['bio', '.bio'],
   ['spot title', '.spot.is-current .spot-title'],
@@ -25,15 +33,19 @@ const SELECTORS = [
   ['track date', '.track-meta'],
 ];
 
-const b = await chromium.launch({ channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const b = await chromium.launch({ channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const rows = [];
 for (const [dev, w, h, mobile] of [['phone', 393, 852, true], ['laptop', 1440, 900, false]]) {
   const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
   const page = await ctx.newPage();
   for (const path of ['', 't/pop-the-trunk/']) {
-    await page.goto(url + path + '?lens', { waitUntil: 'networkidle' });
+    await page.goto(url + path + lens + velvet, { waitUntil: 'networkidle' });
     await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
     await page.waitForTimeout(1500);
+    if (play) {
+      await page.evaluate((s) => (document.querySelector(`[data-play="${s}"]`) ?? document.querySelector('[data-play]'))?.click(), playSlug);
+      await page.waitForTimeout(3000); // let the dye soak in
+    }
     for (const [name, sel] of SELECTORS) {
       const els = await page.$$(sel);
       if (!els.length) continue;

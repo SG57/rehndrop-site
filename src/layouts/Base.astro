@@ -8,6 +8,7 @@ import VideoDialog from '../components/VideoDialog.astro';
 import StoryViewer from '../components/StoryViewer.astro';
 import type { Track } from '../lib/data';
 import { data, fmtDate } from '../lib/data';
+import curation from '../data/curation.json';
 import { BASE, u } from '../lib/site';
 
 interface Props {
@@ -94,8 +95,8 @@ const stories = await Promise.all(
     <StoryViewer />
     <script type="application/json" id="story-data" set:html={JSON.stringify(stories)} />
     <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />
-    <script is:inline define:vars={{ base: BASE, sharp: u('brand/velvet.webp'), sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg') }}>
-      window.__rehndrop = { base, sharp, fog };
+    <script is:inline define:vars={{ base: BASE, sharp: u('brand/velvet.webp'), sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
+      window.__rehndrop = { base, sharp, fog, velvet };
       // retina laptops and 4K screens get the 3840px velvet for both the CSS layer and the lens
       if (innerWidth * (devicePixelRatio || 1) > 2600) {
         window.__rehndrop.sharp = sharp4k;
@@ -109,9 +110,9 @@ const stories = await Promise.all(
       import { startDrag, startRows, startSpotlight, startTilt, startVideos } from '../scripts/ui';
       import { startStories, type StoryReel } from '../scripts/story';
 
-      const cfg = (window as unknown as { __rehndrop: { base: string; sharp: string; fog: string } }).__rehndrop;
+      const cfg = (window as unknown as { __rehndrop: { base: string; sharp: string; fog: string; velvet: string } }).__rehndrop;
       const tracks = JSON.parse(document.getElementById('player-data')!.textContent || '[]') as PlayerTrack[];
-      startPlayer(tracks, cfg.base);
+      startPlayer(tracks, cfg.base, cfg.velvet);
       startStories(JSON.parse(document.getElementById('story-data')!.textContent || '[]') as StoryReel[], cfg.base);
       startSpotlight();
       startRows();
