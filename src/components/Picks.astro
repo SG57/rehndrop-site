@@ -26,9 +26,10 @@ const { tracks } = Astro.props;
         </div>
         <div class="pick-body">
           <a class="pick-title" href={u(`t/${t.slug}/`)}>{t.title}</a>
+          {/* title, then its caption (as on every card below), then the lyric, then any second line */}
+          {(t.answer ?? t.story?.note) && <p class="pick-note pick-line">{t.answer ?? t.story?.note}</p>}
           {t.story?.quote && <blockquote class="pick-quote lyric">{t.story.quote}</blockquote>}
-          {t.answer && <p class="pick-note pick-line">{t.answer}</p>}
-          {t.story?.note && <p class="pick-note">{t.story.note}</p>}
+          {t.answer && t.story?.note && <p class="pick-note">{t.story.note}</p>}
           <Listen track={t} />
         </div>
       </article>
