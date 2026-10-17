@@ -123,14 +123,18 @@ html:not(.lens-on) .velvet { inset: -24px; width: auto; height: auto; animation:
 }
 
 /* the hit: one heavy shove, then settle */
-/* the room (lens, R) reacts to any song; a cover only to its own (is-live, set by player.ts) */
+/* the room (lens, R) reacts to any song; a cover only to its own (is-live, set by player.ts).
+   This selector must match KICKS in player.ts */
 .kick .lens, .kick .r-stage, .kick .spot-cover.is-live, .kick .track-cover.is-live { animation: kick 0.7s var(--ease) 1; }
+/* the path is drawn along a unit vector (--ux, --uy) with a sideways wobble (mirrored by
+   --spin), which player.ts aims differently per element per hit; the fallbacks are the
+   original straight-down shove */
 @keyframes kick {
   0% { transform: translate3d(0, 0, 0) scale(1) rotate(0); }
-  10% { transform: translate3d(0, 16px, 0) scale(1.04) rotate(0.35deg); }
-  24% { transform: translate3d(-7px, -6px, 0) scale(1.022) rotate(-0.25deg); }
-  42% { transform: translate3d(4px, 3px, 0) scale(1.01) rotate(0.12deg); }
-  64% { transform: translate3d(-2px, -1px, 0) scale(1.004) rotate(0); }
+  10% { transform: translate3d(calc(16px * var(--ux, 0)), calc(16px * var(--uy, 1)), 0) scale(1.04) rotate(calc(0.35deg * var(--spin, 1))); }
+  24% { transform: translate3d(calc(-6px * var(--ux, 0) - 7px * var(--uy, 1) * var(--spin, 1)), calc(-6px * var(--uy, 1) + 7px * var(--ux, 0) * var(--spin, 1)), 0) scale(1.022) rotate(calc(-0.25deg * var(--spin, 1))); }
+  42% { transform: translate3d(calc(3px * var(--ux, 0) + 4px * var(--uy, 1) * var(--spin, 1)), calc(3px * var(--uy, 1) - 4px * var(--ux, 0) * var(--spin, 1)), 0) scale(1.01) rotate(calc(0.12deg * var(--spin, 1))); }
+  64% { transform: translate3d(calc(-1px * var(--ux, 0) - 2px * var(--uy, 1) * var(--spin, 1)), calc(-1px * var(--uy, 1) + 2px * var(--ux, 0) * var(--spin, 1)), 0) scale(1.004) rotate(0); }
   100% { transform: translate3d(0, 0, 0) scale(1) rotate(0); }
 }
 

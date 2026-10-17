@@ -29,6 +29,22 @@ interface Envelope {
 }
 
 const NEUTRAL = hexToRgb('#c9ced6');
+// what shoves on a hit; must match the `.kick ...` selector in global.css
+const KICKS = '.lens, .r-stage, .spot-cover.is-live, .track-cover.is-live';
+
+// Same force for everything, but each element shoves along its own angle: within 75 degrees
+// of straight down so it still lands like a hit, spread by the golden ratio from a fresh start
+// each time, with alternating twist, so nothing ever moves in unison
+const aimKicks = () => {
+  const seed = Math.random();
+  document.querySelectorAll<HTMLElement>(KICKS).forEach((el, i) => {
+    const deg = 90 + (((seed + i * 0.618034) % 1) * 150 - 75);
+    const a = (deg * Math.PI) / 180;
+    el.style.setProperty('--ux', Math.cos(a).toFixed(3));
+    el.style.setProperty('--uy', Math.sin(a).toFixed(3));
+    el.style.setProperty('--spin', (i + Math.round(seed * 10)) % 2 ? '-1' : '1');
+  });
+};
 
 export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'little') {
   const dye = dyeLevel(velvet);
@@ -133,6 +149,7 @@ export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'littl
         fired.add(k);
         document.dispatchEvent(new CustomEvent('rehndrop:hit'));
         if (!reducedMotion()) {
+          aimKicks();
           root.classList.remove('kick');
           void root.offsetWidth;
           root.classList.add('kick');
