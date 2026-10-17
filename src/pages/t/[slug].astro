@@ -50,7 +50,7 @@ const jsonLd = {
       <div class="track-info">
         <h1 class="track-title">{track.title}</h1>
         {track.answer && <p class="spot-answer">{track.answer}</p>}
-        {track.story?.note && <p class="spot-note">{track.story.note}</p>}
+        {track.story?.note && <blockquote class="spot-note lyric">{track.story.note.replace(/\. (?=\S)/g, '.\n')}</blockquote>}
         {(date || track.explicit) && (
           <p class="track-meta">
             {date}{track.explicit && <span class="badge" aria-label="explicit" title="explicit">e</span>}

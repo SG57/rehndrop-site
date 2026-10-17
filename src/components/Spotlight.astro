@@ -25,7 +25,8 @@ const ambient = await Promise.all(
         <div class="spot-info">
           <a class="spot-title" href={u(`t/${t.slug}/`)}>{t.title}</a>
           {t.answer ? <p class="spot-answer">{t.answer}</p> : !t.story?.note && <p class="spot-answer spot-answer--date">{fmtDate(t.released)}</p>}
-          {t.story?.note && <p class="spot-note">{t.story.note}</p>}
+          {/* a lyric sheet breaks at the phrase: one sentence per line */}
+          {t.story?.note && <blockquote class="spot-note lyric">{t.story.note.replace(/\. (?=\S)/g, '.\n')}</blockquote>}
           <div class="spot-actions">
             {t.preview.src && <PlayButton slug={t.slug} title={t.title} size="lg" />}
             <Listen track={t} />
