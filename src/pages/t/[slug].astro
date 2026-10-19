@@ -4,10 +4,8 @@ import Cover from '../../components/Cover.astro';
 import Base from '../../layouts/Base.astro';
 import PlayButton from '../../components/PlayButton.astro';
 import Listen from '../../components/Listen.astro';
-import Row from '../../components/Row.astro';
-import Card from '../../components/Card.astro';
-import VideoCard from '../../components/VideoCard.astro';
-import ReelCard from '../../components/ReelCard.astro';
+import IndexRow from '../../components/IndexRow.astro';
+import Poster from '../../components/Poster.astro';
 import ReelRing from '../../components/ReelRing.astro';
 import Contact from '../../components/Contact.astro';
 import Footer from '../../components/Footer.astro';
@@ -25,71 +23,105 @@ const og = track.cover ? await getImage({ src: track.cover, width: 1200, height:
 const ambient = track.cover ? await getImage({ src: track.cover, width: 96, height: 96, format: 'webp', quality: 60 }) : null;
 const description = `${track.title} by rehndrop. listen on spotify, apple music, soundcloud and youtube.`;
 const date = fmtDate(track.released);
+const url = new URL(u(`t/${track.slug}/`), site).href;
+const duration = track.preview.duration || 30;
+const pct = (s: number) => `${Math.min(100, Math.max(0, (s / duration) * 100)).toFixed(2)}%`;
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const reels = [...track.reels].sort((a, b) => b.postedAt.localeCompare(a.postedAt));
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'MusicRecording',
   name: track.title,
-  url: new URL(u(`t/${track.slug}/`), site).href,
+  url,
   byArtist: { '@type': 'MusicGroup', name: 'rehndrop', url: new URL(u(), site).href },
   ...(track.released ? { datePublished: track.released } : {}),
   ...(og ? { image: new URL(og.src, site).href } : {}),
 };
 ---
 <Base title={`${track.title} · rehndrop`} description={description} image={og?.src} type="music.song" tracks={[track, ...more]} jsonLd={jsonLd}>
-  <main class="track-page" style={`--accent-page:${track.accent}`}>
-    <a class="back" href={u()} aria-label="rehndrop home" title="rehndrop">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
-    </a>
+  <main class="track-page" id="main" style={`--accent-page:${track.accent};--slide-accent:${track.accent}`}>
+    <section class:list={['tv', { 'tv--side': reels.length > 0 || !!track.video }]} aria-labelledby="tv-title">
+      {ambient && <img class="spot-ambient tv-ambient" src={ambient.src} alt="" aria-hidden="true" />}
 
-    <section class="track-hero">
-      {ambient && <img class="spot-ambient" src={ambient.src} alt="" aria-hidden="true" />}
-      <div class="track-cover" data-cover={track.slug}>
-        <ReelRing track={track} size="lg" />
-        {track.cover && <Cover src={track.cover} size={900} widths={[420, 640, 900]} sizes="(min-width: 900px) 460px, (orientation: landscape) 60vh, 82vw" alt={`${track.title} cover`} eager quality={86} />}
+      <div class="tv-art">
+        <a class="back" href={u()} data-back aria-label="rehndrop home">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+        </a>
+        <div class="track-cover" data-cover={track.slug}>
+          <ReelRing track={track} size="lg" here />
+          {track.cover && <Cover src={track.cover} size={900} widths={[420, 640, 900]} sizes="(min-width: 1100px) 440px, (min-width: 900px) 36vw, (orientation: landscape) 60vh, 82vw" alt={`${track.title} cover`} eager quality={86} />}
+        </div>
       </div>
-      <div class="track-info">
-        <h1 class="track-title">{track.title}</h1>
+
+      <div class="tv-main track-info">
+        <h1 class="track-title" id="tv-title" tabindex="-1" data-focus-title>{track.title}</h1>
         {track.answer && <p class="spot-answer">{track.answer}</p>}
-        {track.story?.note && <blockquote class="spot-note lyric">{track.story.note.replace(/\. (?=\S)/g, '.\n')}</blockquote>}
+        {track.notes?.note && <blockquote class="spot-note lyric">{track.notes.note.replace(/\. (?=\S)/g, '.\n')}</blockquote>}
         {(date || track.explicit) && (
           <p class="track-meta">
             {date}{track.explicit && <span class="badge" aria-label="explicit" title="explicit">e</span>}
           </p>
         )}
-        <div class="spot-actions">
-          {track.preview.src && <PlayButton slug={track.slug} title={track.title} size="lg" />}
+
+        {track.preview.src && (
+          <div class="tv-player">
+            <PlayButton slug={track.slug} title={track.title} size="xl" />
+            <div class="scrub" data-scrub-wrap>
+              <div class="scrub-rail" aria-hidden="true">
+                <span class="scrub-fill"></span>
+                {track.preview.hits.map((h) => <i class="scrub-mark" style={`left:${pct(h)}`}></i>)}
+                {track.preview.turns.map((t) => <i class="scrub-seam" style={`left:${pct(t)}`}></i>)}
+              </div>
+              <input class="scrub-input" type="range" data-scrub={track.slug} min="0" max={duration} step="0.1" value="0" aria-label={`position in ${track.title}`} aria-valuetext={`0:00 of ${clock(duration)}`} />
+              <span class="scrub-time" data-scrub-time aria-hidden="true">0:00 / {clock(duration)}</span>
+            </div>
+          </div>
+        )}
+
+        <div class="tv-stores">
+          <p class="tv-label">pick one.</p>
+          <Listen track={track} labels />
         </div>
-        <Listen track={track} big />
+
+        {track.lyrics ? (
+          <section class="tv-lyrics" aria-labelledby="lyrics-title">
+            <h2 class="ix-h tv-h" id="lyrics-title">lyrics.</h2>
+            <div class="tv-lyrics-text lyric selectable">{track.lyrics}</div>
+          </section>
+        ) : track.notes?.quote && (
+          <blockquote class="tv-quote lyric">{track.notes.quote}</blockquote>
+        )}
+
+        <button class="tv-share" type="button" data-share data-share-url={url} data-share-title={`${track.title} · rehndrop`}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /><path d="M6 11v8.5h12V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /></svg>
+          <span>share</span>
+        </button>
       </div>
+
+      {reels.length > 0 ? (
+        <aside class="tv-side-col" id="reels" aria-labelledby="reels-title">
+          <h2 class="ix-h tv-h" id="reels-title">reels.</h2>
+          <ul class="tv-posters" role="list">
+            {reels.map((rl) => <Poster reel={rl} />)}
+          </ul>
+        </aside>
+      ) : track.video && (
+        <aside class="tv-side-col tv-side-col--video" aria-labelledby="video-title">
+          <h2 class="ix-h tv-h" id="video-title">video.</h2>
+          <div class="tv-posters">
+            <Poster video={track.video} tag="div" />
+          </div>
+        </aside>
+      )}
     </section>
 
-    {track.story?.quote && (
-      <section class="liner" aria-label="lyric">
-        <blockquote class="pick-quote lyric">{track.story.quote}</blockquote>
-      </section>
-    )}
-
-    {track.reels.length > 0 && (
-      <div class="shelves shelves--tight">
-        <Row title="reels." id="reels">
-          {track.reels.map((rl) => <ReelCard reel={rl} list={`track:${track.slug}`} />)}
-        </Row>
-      </div>
-    )}
-
-    {track.video && (
-      <section class="track-video" aria-label="video">
-        <h2 class="row-title">video.</h2>
-        <VideoCard video={track.video} wide />
-      </section>
-    )}
-
     {more.length > 0 && (
-      <div class="shelves">
-        <Row title="more.">
-          {more.map((t) => <Card track={t} />)}
-        </Row>
-      </div>
+      <section class="tv-more" aria-labelledby="more-title">
+        <h2 class="ix-h" id="more-title">more.</h2>
+        <ul class="ix-grid ix-grid--list" role="list">
+          {more.map((t) => <IndexRow track={t} />)}
+        </ul>
+      </section>
     )}
 
     <Contact />
