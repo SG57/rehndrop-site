@@ -4,12 +4,13 @@ import '@fontsource-variable/manrope';
 import '@fontsource/instrument-serif/latin-400-italic.css';
 import '../styles/global.css';
 import { getImage } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
 import MiniPlayer from '../components/MiniPlayer.astro';
-import VideoDialog from '../components/VideoDialog.astro';
-import StoryViewer from '../components/StoryViewer.astro';
+import ContactSheet from '../components/ContactSheet.astro';
 import type { Track } from '../lib/data';
-import { data, fmtDate } from '../lib/data';
 import curation from '../data/curation.json';
+import { PHONE_VELVET_MQ } from '../lib/config';
 import { BASE, u } from '../lib/site';
 
 interface Props {
@@ -19,8 +20,9 @@ interface Props {
   type?: 'website' | 'music.song';
   tracks: Track[];
   jsonLd?: Record<string, unknown>;
+  home?: boolean;
 }
-const { title, description, image, type = 'website', tracks, jsonLd } = Astro.props;
+const { title, description, image, type = 'website', tracks, jsonLd, home = false } = Astro.props;
 const site = Astro.site!;
 const canonical = new URL(Astro.url.pathname, site).href;
 const ogImage = new URL(image ?? u('og.jpg'), site).href;
@@ -44,19 +46,8 @@ const player = await Promise.all(
     href: u(`t/${t.slug}/`),
   })),
 );
-// every posted reel, for the story viewer; any page can open any track's reels
-const stories = await Promise.all(
-  data.reels.map(async (r) => ({
-    id: r.id,
-    track: r.track,
-    title: r.title,
-    date: fmtDate(r.postedAt) ?? '',
-    url: r.url,
-    video: r.video,
-    poster: r.poster ? (await getImage({ src: r.poster, width: 540, height: 960, format: 'webp', quality: 78 })).src : null,
-    href: u(`t/${r.track}/`),
-  })),
-);
+const velvet = u('brand/velvet.webp');
+const velvetPhone = u('brand/velvet-phone.webp');
 ---
 <!doctype html>
 <html lang="en">
@@ -81,25 +72,48 @@ const stories = await Promise.all(
     <link rel="icon" href={u('favicon.ico')} sizes="any" />
     <link rel="apple-touch-icon" href={u('apple-touch-icon.png')} />
     <link rel="manifest" href={u('site.webmanifest')} />
-    <link rel="preload" as="image" href={u('brand/velvet.webp')} type="image/webp" fetchpriority="high" />
+    <!-- portrait phones get the 1080w velvet; everything else the 2560w one (4K screens swap in the 3840w below) -->
+    <link rel="preload" as="image" href={velvetPhone} type="image/webp" media={PHONE_VELVET_MQ} fetchpriority="high" />
+    <link rel="preload" as="image" href={velvet} type="image/webp" media={`not all and ${PHONE_VELVET_MQ}`} fetchpriority="high" />
     <link rel="preconnect" href="https://i.ytimg.com" crossorigin />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('js');
+        try { if (localStorage.getItem('index-view') === 'list') d.dataset.view = 'list'; } catch (e) {}
+        if (/[?&]t=-?\d/.test(location.search)) d.classList.add('is-frozen');
+        // a popstate gate that runs ahead of the client router's own listener (this script runs
+        // before the router module loads); the contact sheet uses it so Back only closes the sheet
+        var r = (window.__rehndrop = window.__rehndrop || {});
+        addEventListener('popstate', function (e) {
+          if (r.popGate && r.popGate(e)) e.stopImmediatePropagation();
+        });
+      })();
+    </script>
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <ClientRouter />
   </head>
   <body>
-    <div class="velvet" aria-hidden="true" style={`--velvet:url(${u('brand/velvet.webp')})`}></div>
-    <canvas class="lens" aria-hidden="true" data-lens></canvas>
+    {home && <a class="skip" href="#index">skip to tracks</a>}
+    <div class="velvet" aria-hidden="true" transition:persist="velvet" style={`--velvet:url(${velvet});--velvet-phone:url(${velvetPhone})`}></div>
+    <canvas class="lens" aria-hidden="true" data-lens transition:persist="lens"></canvas>
+    <audio data-audio preload="none" playsinline transition:persist="audio"></audio>
     <div class="grain" aria-hidden="true"></div>
+    <Header home={home} />
     <slot />
-    <div class="drops-layer" aria-hidden="true"><canvas class="drops" data-drops></canvas></div>
+    <div class="drops-layer" aria-hidden="true" transition:persist="drops"><canvas class="drops" data-drops></canvas></div>
     <MiniPlayer />
-    <VideoDialog />
-    <StoryViewer />
-    <script type="application/json" id="story-data" set:html={JSON.stringify(stories)} />
+    <ContactSheet />
+    <p class="toast" data-toast role="status" aria-live="polite"></p>
     <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />
-    <script is:inline define:vars={{ base: BASE, sharp: u('brand/velvet.webp'), sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
-      window.__rehndrop = { base, sharp, fog, velvet };
-      // retina laptops and 4K screens get the 3840px velvet for both the CSS layer and the lens
-      if (innerWidth * (devicePixelRatio || 1) > 2600) {
+    <script is:inline define:vars={{ base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
+      window.__rehndrop = Object.assign(window.__rehndrop || {}, { base, sharp, fog, velvet, texAspect: 2560 / 1441 });
+      // portrait phones: the lens reads the same 1080w portrait velvet the CSS layer shows
+      if (matchMedia(phoneMq).matches) {
+        window.__rehndrop.sharp = phone;
+        window.__rehndrop.texAspect = 1080 / 1919;
+      } else if (innerWidth * (devicePixelRatio || 1) > 2600) {
+        // retina laptops and 4K screens get the 3840px velvet for both the CSS layer and the lens
         window.__rehndrop.sharp = sharp4k;
         document.querySelector('.velvet')?.style.setProperty('--velvet', 'url(' + sharp4k + ')');
       }
@@ -107,23 +121,42 @@ const stories = await Promise.all(
     <script>
       import { startLens } from '../scripts/lens';
       import { startDrops } from '../scripts/drops';
-      import { startPlayer, type PlayerTrack } from '../scripts/player';
-      import { startDrag, startRows, startSpotlight, startTilt, startVideos } from '../scripts/ui';
-      import { startStories, type StoryReel } from '../scripts/story';
+      import { startPlayer, type Player, type PlayerTrack } from '../scripts/player';
+      import { startSpotlight, startTilt } from '../scripts/ui';
+      import { startList } from '../scripts/list';
+      import { startSheet } from '../scripts/sheet';
+      import { focusTitle, startNav } from '../scripts/nav';
 
-      const cfg = (window as unknown as { __rehndrop: { base: string; sharp: string; fog: string; velvet: string } }).__rehndrop;
-      const tracks = JSON.parse(document.getElementById('player-data')!.textContent || '[]') as PlayerTrack[];
-      startPlayer(tracks, cfg.base, cfg.velvet);
-      startStories(JSON.parse(document.getElementById('story-data')!.textContent || '[]') as StoryReel[], cfg.base);
-      startSpotlight();
-      startRows();
-      startDrag();
-      startVideos();
-      startTilt();
-      const canvas = document.querySelector<HTMLCanvasElement>('[data-lens]');
-      if (canvas) startLens({ canvas, sharp: cfg.sharp, fog: cfg.fog, texAspect: 16 / 9 });
-      const lensWater = document.querySelector<HTMLCanvasElement>('[data-drops]');
-      if (lensWater) startDrops(lensWater);
+      type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number };
+      const cfg = (window as unknown as { __rehndrop: Cfg }).__rehndrop;
+
+      // Two kinds of setup. Once per visit: the player (its <audio> is a persisted element),
+      // the lens and the water (persisted canvases), and every document-level listener.
+      // Every page load, including the first: whatever lives in the page the router swapped in.
+      let player: Player | null = null;
+      let first = true;
+
+      const boot = () => {
+        const tracks = JSON.parse(document.getElementById('player-data')?.textContent || '[]') as PlayerTrack[];
+        if (!player) {
+          player = startPlayer(tracks, cfg.base, cfg.velvet);
+          startNav(player);
+          startSheet();
+          startTilt();
+          const canvas = document.querySelector<HTMLCanvasElement>('[data-lens]');
+          if (canvas) startLens({ canvas, sharp: cfg.sharp, fog: cfg.fog, texAspect: cfg.texAspect });
+          const water = document.querySelector<HTMLCanvasElement>('[data-drops]');
+          if (water) startDrops(water);
+        } else {
+          player.updateTracks(tracks);
+        }
+        startSpotlight();
+        startList();
+        if (!first) focusTitle();
+        first = false;
+      };
+
+      document.addEventListener('astro:page-load', boot);
     </script>
   </body>
 </html>

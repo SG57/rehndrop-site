@@ -2,7 +2,12 @@
 // Web Audio is muted by the iPhone ringer switch and has gone silent in WebKit before,
 // so the visuals read precomputed envelopes against audio.currentTime instead of
 // analysing live sound.
+//
+// The element is the real <audio data-audio> in Base.astro, marked transition:persist, so the
+// client router carries the same element (and whatever it is playing) from page to page. This
+// module starts once per visit; each page's player-data slice is folded in by updateTracks.
 import { drive, IDLE, dyeLevel, hexToRgb, reducedMotion } from './drive';
+import { hash32 } from './clock';
 
 export interface PlayerTrack {
   slug: string;
@@ -33,10 +38,11 @@ const NEUTRAL = hexToRgb('#c9ced6');
 const KICKS = '.lens, .r-stage, .spot-cover.is-live, .track-cover.is-live';
 
 // Same force for everything, but each element shoves along its own angle: within 75 degrees
-// of straight down so it still lands like a hit, spread by the golden ratio from a fresh start
-// each time, with alternating twist, so nothing ever moves in unison
-const aimKicks = () => {
-  const seed = Math.random();
+// of straight down so it still lands like a hit, spread by the golden ratio from a start that
+// is hashed from the song and the hit, with alternating twist, so nothing ever moves in unison
+// and the same hit always lands the same way
+const aimKicks = (key: string) => {
+  const seed = hash32(key) / 4294967296;
   document.querySelectorAll<HTMLElement>(KICKS).forEach((el, i) => {
     const deg = 90 + (((seed + i * 0.618034) % 1) * 150 - 75);
     const a = (deg * Math.PI) / 180;
@@ -46,10 +52,22 @@ const aimKicks = () => {
   });
 };
 
-export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'little') {
+export interface Player {
+  play: (slug: string) => void;
+  playing: () => boolean;
+  has: (slug: string) => boolean;
+  updateTracks: (next: PlayerTrack[]) => void;
+}
+
+const clockText = (s: number) => {
+  const v = Math.max(0, Math.floor(s));
+  return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`;
+};
+
+export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'little'): Player {
   const dye = dyeLevel(velvet);
   const bySlug = new Map(tracks.map((t) => [t.slug, t]));
-  const audio = new Audio();
+  const audio = document.querySelector<HTMLAudioElement>('[data-audio]') ?? new Audio();
   audio.preload = 'none';
 
   const bar = document.querySelector<HTMLElement>('[data-mini]');
@@ -85,6 +103,27 @@ export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'littl
   };
 
   const buttons = (slug: string) => document.querySelectorAll<HTMLElement>(`[data-play="${CSS.escape(slug)}"]`);
+  const scrubbers = () => document.querySelectorAll<HTMLInputElement>('input[data-scrub]');
+  let dragging: HTMLInputElement | null = null;
+  let lastSecond = -1;
+
+  // a scrubber is a native range input; its wrapper draws the fill from --p
+  const showScrub = (s: HTMLInputElement, t: number, total: number) => {
+    if (s !== dragging) s.value = String(t);
+    s.setAttribute('aria-valuetext', `${clockText(t)} of ${clockText(total)}`);
+    const wrap = s.closest<HTMLElement>('[data-scrub-wrap]');
+    wrap?.style.setProperty('--p', (total ? Math.min(1, t / total) : 0).toFixed(4));
+    const time = wrap?.querySelector<HTMLElement>('[data-scrub-time]');
+    if (time) time.textContent = `${clockText(t)} / ${clockText(total)}`;
+  };
+
+  const paintScrubbers = () => {
+    scrubbers().forEach((s) => {
+      const on = !!current && s.dataset.scrub === current.slug;
+      const total = Number(s.max) || 30;
+      showScrub(s, on ? audio.currentTime || 0 : 0, total);
+    });
+  };
 
   const paint = () => {
     document.querySelectorAll<HTMLElement>('[data-play]').forEach((b) => {
@@ -93,6 +132,7 @@ export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'littl
       b.classList.toggle('is-playing', on && !audio.paused);
       b.setAttribute('aria-pressed', String(on && !audio.paused));
       if (!on) b.style.removeProperty('--p');
+      else b.style.setProperty('--p', Math.min(1, audio.currentTime / (audio.duration || current!.duration || 30)).toFixed(4));
     });
     // only the covers of the song that is actually playing may bounce or kick
     document.querySelectorAll<HTMLElement>('[data-cover]').forEach((c) => {
@@ -102,7 +142,10 @@ export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'littl
       bar.hidden = !current;
       bar.classList.toggle('is-playing', !!current && !audio.paused);
     }
+    // the page keeps a band free at the bottom while the bar shows
+    root.classList.toggle('has-mini', !!current);
     if (barToggle) barToggle.setAttribute('aria-label', audio.paused ? 'play' : 'pause');
+    paintScrubbers();
   };
 
   const reset = () => {
@@ -126,6 +169,16 @@ export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'littl
     const progress = Math.min(1, t / (audio.duration || 30));
     buttons(current.slug).forEach((b) => b.style.setProperty('--p', progress.toFixed(4)));
     bar?.style.setProperty('--p', progress.toFixed(4));
+    const second = Math.floor(t);
+    scrubbers().forEach((s) => {
+      if (s.dataset.scrub !== current!.slug) return;
+      if (s !== dragging) s.value = String(t);
+      const wrap = s.closest<HTMLElement>('[data-scrub-wrap]');
+      wrap?.style.setProperty('--p', Math.min(1, t / (Number(s.max) || 30)).toFixed(4));
+      // words only change once a second; screen readers and layout both thank us
+      if (second !== lastSecond) showScrub(s, t, Number(s.max) || 30);
+    });
+    lastSecond = second;
 
     let lo = 0.35;
     let en = 0.35;
@@ -149,7 +202,7 @@ export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'littl
         fired.add(k);
         document.dispatchEvent(new CustomEvent('rehndrop:hit'));
         if (!reducedMotion()) {
-          aimKicks();
+          aimKicks(`${current!.slug}:${k}`);
           root.classList.remove('kick');
           void root.offsetWidth;
           root.classList.add('kick');
@@ -281,4 +334,76 @@ export function startPlayer(tracks: PlayerTrack[], base: string, velvet = 'littl
   document.addEventListener('rehndrop:pause', () => {
     if (!audio.paused) audio.pause();
   });
+
+  // a seek re-arms every hit and seam after the new position and settles the ones before it,
+  // so jumping back replays a hit and jumping past one never fires it late
+  audio.addEventListener('seeked', () => {
+    if (!current) return;
+    const t = audio.currentTime;
+    fired.clear();
+    turned.clear();
+    current.hits.forEach((h, k) => h < t - 0.05 && fired.add(k));
+    current.turns.forEach((u, j) => u < t - 0.05 && turned.add(j));
+    lastSecond = -1;
+    paintScrubbers();
+  });
+
+  const seek = (slug: string, to: number) => {
+    const t = bySlug.get(slug);
+    if (!t || !t.src) return;
+    const at = Math.max(0, Math.min(to, (t.duration || 30) - 0.25));
+    if (current?.slug !== slug) play(slug); // starts it, inside the same input event
+    else if (audio.paused) void audio.play().catch(() => {});
+    try {
+      audio.currentTime = at;
+    } catch {
+      /* not seekable yet: the preview starts from the top */
+    }
+    lastSecond = -1;
+  };
+
+  // the scrubber: drag or arrow by a second; PageUp and PageDown step between the hit marks
+  document.addEventListener('pointerdown', (e) => {
+    const s = (e.target as Element).closest<HTMLInputElement>('input[data-scrub]');
+    if (s) dragging = s;
+  });
+  document.addEventListener('pointerup', () => (dragging = null));
+  document.addEventListener('pointercancel', () => (dragging = null));
+  document.addEventListener('input', (e) => {
+    const s = (e.target as Element).closest<HTMLInputElement>('input[data-scrub]');
+    if (s) seek(s.dataset.scrub!, Number(s.value));
+  });
+  document.addEventListener('keydown', (e) => {
+    const s = (e.target as Element).closest?.<HTMLInputElement>('input[data-scrub]');
+    if (!s) return;
+    const slug = s.dataset.scrub!;
+    const t = bySlug.get(slug);
+    if (!t) return;
+    const now = current?.slug === slug ? audio.currentTime : Number(s.value) || 0;
+    let to: number | null = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') to = now + 1;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') to = now - 1;
+    else if (e.key === 'PageDown') to = t.hits.find((h) => h > now + 0.5) ?? (t.duration || 30);
+    else if (e.key === 'PageUp') to = [...t.hits].reverse().find((h) => h < now - 0.5) ?? 0;
+    else if (e.key === 'Home') to = 0;
+    else if (e.key === 'End') to = (t.duration || 30) - 0.25;
+    if (to === null) return;
+    e.preventDefault();
+    s.value = String(Math.max(0, to));
+    seek(slug, to);
+    showScrub(s, Math.max(0, to), Number(s.max) || 30);
+  });
+
+  return {
+    play,
+    playing: () => !!current && !audio.paused,
+    has: (slug) => !!bySlug.get(slug)?.src,
+    // each page ships only its own slice; folding it in keeps a track that started on an
+    // earlier page known, then the new page's buttons and scrubbers take the live state
+    updateTracks(next) {
+      for (const t of next) bySlug.set(t.slug, t);
+      lastSecond = -1;
+      paint();
+    },
+  };
 }

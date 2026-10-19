@@ -1,15 +1,20 @@
 ---
+// The bar at the bottom while a preview plays. transition:persist sits on the element itself:
+// the router doesn't forward transition directives through a component's props.
 import Icon from './Icon.astro';
 ---
-<aside class="mini" data-mini hidden aria-label="now playing">
+<aside class="mini" data-mini hidden aria-label="now playing" transition:persist="mini">
   <div class="mini-bar" aria-hidden="true"><span></span></div>
   <img class="mini-thumb" data-mini-thumb alt="" width="44" height="44" />
-  <a class="mini-title" data-mini-title href="#"></a>
+  <div class="mini-text">
+    <span class="mini-label" aria-hidden="true">now playing</span>
+    <a class="mini-title" data-mini-title href="#"></a>
+  </div>
   <div class="mini-actions">
-    <a class="mini-link" data-mini-apple href="#" target="_blank" rel="noopener" aria-label="open in apple music"><Icon name="apple" size={18} /></a>
-    <a class="mini-link" data-mini-spotify href="#" target="_blank" rel="noopener" aria-label="open in spotify"><Icon name="spotify" size={18} /></a>
-    <a class="mini-link" data-mini-youtube href="#" target="_blank" rel="noopener" aria-label="open in youtube music"><Icon name="ytmusic" size={18} /></a>
-    <button class="mini-btn" type="button" data-mini-toggle aria-label="pause">
+    <a class="mini-link" data-mini-apple data-external href="#" target="_blank" rel="noopener" aria-label="open in apple music"><Icon name="apple" size={18} /></a>
+    <a class="mini-link" data-mini-spotify data-external href="#" target="_blank" rel="noopener" aria-label="open in spotify"><Icon name="spotify" size={18} /></a>
+    <a class="mini-link" data-mini-youtube data-external href="#" target="_blank" rel="noopener" aria-label="open in youtube music"><Icon name="ytmusic" size={18} /></a>
+    <button class="mini-btn mini-toggle" type="button" data-mini-toggle aria-label="pause">
       <svg class="play-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
       <svg class="pause-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" /></svg>
     </button>

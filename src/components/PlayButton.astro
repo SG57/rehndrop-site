@@ -1,9 +1,9 @@
 ---
 // A round preview button. The ring fills from --p (set by player.ts while playing).
-interface Props { slug: string; title: string; size?: 'sm' | 'lg'; disabled?: boolean }
+interface Props { slug: string; title: string; size?: 'sm' | 'lg' | 'xl'; disabled?: boolean }
 const { slug, title, size = 'sm', disabled = false } = Astro.props;
 ---
-<button class:list={['play', `play--${size}`]} type="button" data-play={slug} aria-label={`preview ${title}`} aria-pressed="false" disabled={disabled}>
+<button class:list={['play', `play--${size}`]} type="button" data-play={slug} aria-label={`listen to ${title}`} aria-pressed="false" disabled={disabled}>
   <span class="play-ring" aria-hidden="true"></span>
   <svg class="play-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
   <svg class="pause-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" /></svg>

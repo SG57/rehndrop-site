@@ -1,0 +1,18 @@
+---
+// The chrome on every page: the R and the wordmark (home), `choose a track` (the index) and
+// `contact` (the contact sheet). On the home page the home link marks itself current and
+// does nothing (nav.ts).
+import { u } from '../lib/site';
+interface Props { home: boolean }
+const { home } = Astro.props;
+---
+<header class="top">
+  <a class="top-home" href={u()} data-home aria-current={home ? 'page' : undefined}>
+    <img class="top-mark" src={u('brand/r-chrome-160.webp')} width="160" height="167" alt="" decoding="async" />
+    <span class="top-word">rehndrop</span>
+  </a>
+  <nav class="top-nav" aria-label="site">
+    <a class="top-link" href={home ? '#index' : u('#index')}>choose a track</a>
+    <button class="top-link" type="button" data-contact-open aria-haspopup="dialog">contact</button>
+  </nav>
+</header>
