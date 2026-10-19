@@ -44,6 +44,14 @@ export function startNav(player: Player) {
     const target = jump && document.getElementById(decodeURIComponent(jump.getAttribute('href')!.slice(1)));
     if (jump && target) {
       e.preventDefault();
+      // a search or letter that filtered the target away clears first, so the jump lands
+      if (target.closest('[hidden]')) {
+        const search = document.querySelector<HTMLInputElement>('[data-search]');
+        if (search) {
+          search.value = '';
+          search.dispatchEvent(new Event('input'));
+        }
+      }
       target.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
       target.focus({ preventScroll: true });
@@ -106,7 +114,13 @@ export function startNav(player: Player) {
   });
 }
 
-// after a router navigation into a track view, focus its title so a screen reader starts there
+// after a router navigation into a track view, focus its title so a screen reader starts there;
+// into an in-page target (`choose a track` from a track view lands on /#index), focus that
 export function focusTitle() {
-  document.querySelector<HTMLElement>('[data-focus-title]')?.focus({ preventScroll: true });
+  const title = document.querySelector<HTMLElement>('[data-focus-title]');
+  const id = decodeURIComponent(location.hash.slice(1));
+  const target = title ?? (id ? document.getElementById(id) : null);
+  if (!target) return;
+  if (!title && !target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus({ preventScroll: true });
 }
