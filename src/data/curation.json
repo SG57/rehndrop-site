@@ -248,5 +248,11 @@
       }
     ]
   },
+  "_arrival": "A slug to lead the stage on arrival, or null. When null, the newest release leads while it is 14 days old or less, then the first spotlight track.",
+  "arrival": null,
+  "_room": "Overrides only: slug -> chrome, dawn or candle. Empty means every track takes its room from its shelf and lane.",
+  "room": {},
+  "_lyrics": "Slugs whose full lyrics may show on the site. scripts/export_lyrics.py copies them verbatim from the track's text/lyrics.txt.",
+  "lyrics": [],
   "_spotlight": "The two picks (what's my name, wild beauty) live in picks., so the spotlight shows six other covers; the first screen never repeats a song."
 }

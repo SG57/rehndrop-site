@@ -8,6 +8,8 @@ import appleSnapshot from '../data/apple-snapshot.json';
 import curation from '../data/curation.json';
 import storeLinks from '../data/store-links.json';
 import reelsData from '../data/reels.json';
+import lyricsData from '../data/lyrics.json';
+import { ARRIVAL_DAYS } from './config';
 
 export type Lane = 'heavy' | 'hybrid' | 'melodic' | null;
 
@@ -40,9 +42,11 @@ export interface Track {
   cover: ImageMetadata | string;
   accent: string;
   answer: string | null;
-  // liner notes in Cord's words (curation.json "notes"); the start of per-track stories.
+  // liner notes in Cord's words (curation.json "notes").
   // line: his line under the title; note: the second line; quote: a lyric, one sung line per \n
-  story: { line?: string; note?: string; quote?: string } | null;
+  notes: { line?: string; note?: string; quote?: string } | null;
+  // full lyrics, only for slugs in curation.lyrics (copied verbatim by scripts/export_lyrics.py)
+  lyrics: string | null;
   preview: { src: string | null; dropAt: number | null; env: string | null; hits: number[]; turns: number[]; duration: number };
   links: { apple: string | null; spotify: string | null; youtube: string; soundcloud: string };
   video: Video | null;
@@ -120,6 +124,9 @@ const decodeXml = (s: string) =>
 // "lil aaron - DRUGS (rehndrop remix)"        -> { name: "DRUGS",   credit: "lil aaron · rehndrop remix" }
 function parseVideoTitle(raw: string): { name: string; credit: string | null } {
   let t = raw.replace(/\((official )?(music video|video|visuali[sz]er|lyric video|audio)\)/gi, '').trim();
+  // "see the real me — rehndrop": the title first, the artist after a dash
+  const trailing = /^(.+?)\s+[—–-]\s+rehndrop$/i.exec(t);
+  if (trailing) return { name: trailing[1].trim(), credit: null };
   const dash = t.split(/\s+-\s+/);
   let artist = 'rehndrop';
   if (dash.length > 1) {
@@ -154,6 +161,10 @@ async function load() {
   const answers = new Map(Object.entries(curation.answers).map(([k, v]) => [norm(k), v]));
   const hidden = new Set(curation.youtube.hide);
   const notes = curation.notes as Record<string, { line?: string; note?: string; quote?: string }>;
+  // two gates: Cord lists the slug, and the exporter found its canonical lyric file
+  const cleared = new Set((curation as { lyrics?: string[] }).lyrics ?? []);
+  const exported = (lyricsData as { tracks?: Record<string, { text?: string }> }).tracks ?? {};
+  const lyricsFor = (slug: string) => (cleared.has(slug) && exported[slug]?.text?.trim() ? exported[slug].text!.trim() : null);
 
   const bySlug = new Map<string, Track>();
   const byTitle = new Map<string, Track>();
@@ -192,7 +203,8 @@ async function load() {
       accent: c.accent || '#c9ced6',
       // Cord's own line under the title wins over the title answer from VOICE.md
       answer: notes[c.slug]?.line ?? answers.get(norm(c.title)) ?? null,
-      story: notes[c.slug] ?? null,
+      notes: notes[c.slug] ?? null,
+      lyrics: lyricsFor(c.slug),
       preview: {
         src: c.preview?.src ?? c.applePreview ?? null,
         dropAt: c.preview?.src ? c.preview.dropAt ?? null : null,
@@ -235,7 +247,8 @@ async function load() {
       cover: s.artworkUrl100.replace('100x100bb', '1200x1200bb'),
       accent: '#c9ced6',
       answer: notes[slug]?.line ?? answers.get(norm(title)) ?? null,
-      story: notes[slug] ?? null,
+      notes: notes[slug] ?? null,
+      lyrics: lyricsFor(slug),
       preview: { src: s.previewUrl ?? null, dropAt: null, env: null, hits: [], turns: [], duration: 30 },
       links: linksFor(title, appleUrl),
       video: null,
@@ -276,10 +289,26 @@ async function load() {
   }));
   for (const r of reels) bySlug.get(r.track)?.reels.push(r);
 
-  const spotlight = curation.spotlight.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
+  const listedSpotlight = curation.spotlight.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
+  const front = arrival(tracks, bySlug, listedSpotlight);
+  const spotlight = front ? [front, ...listedSpotlight.filter((t) => t !== front)] : listedSpotlight;
   const picks = curation.picks.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
 
   return { tracks, bySlug, videos, spotlight, picks, reels };
+}
+
+// which track leads the stage on arrival: Cord's pin, else the newest current release while it
+// is ARRIVAL_DAYS old or less, else the first of his spotlight. Computed at build; the deploy
+// rebuilds every 6 hours, so the window closes on its own.
+function arrival(tracks: Track[], bySlug: Map<string, Track>, spotlight: Track[], now = Date.now()) {
+  const pinned = (curation as { arrival?: string | null }).arrival;
+  if (pinned && bySlug.has(pinned)) return bySlug.get(pinned)!;
+  const newest = tracks.find((t) => t.era === 'current' && t.released);
+  if (newest?.released) {
+    const age = (now - Date.parse(`${newest.released}T00:00:00Z`)) / 86400000;
+    if (age >= 0 && age <= ARRIVAL_DAYS) return newest;
+  }
+  return spotlight[0] ?? null;
 }
 
 export const data = await load();
