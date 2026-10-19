@@ -49,7 +49,9 @@ export function startList() {
       sec.classList.toggle('is-filtered', active);
       shown += n;
     }
-    if (empty) empty.hidden = !active || shown > 0;
+    // the live region stays rendered and only its text changes, so screen readers announce it
+    const none = active && shown === 0 ? 'nothing here.' : '';
+    if (empty && empty.textContent !== none) empty.textContent = none;
     root.classList.toggle('is-searching', active);
   };
 

@@ -40,7 +40,7 @@ const letters = total.length > LETTER_STRIP_AFTER ? [...new Set(total.map((t) =>
       </nav>
     )}
   </div>
-  <p class="ix-empty" data-empty role="status" hidden>nothing here.</p>
+  <p class="ix-empty" data-empty role="status"></p>
   {shown.map((s) => (
     <section class:list={['ix-sec', `ix-sec--${s.kind}`, { 'is-capped': s.items.length > INDEX_CAP }]} id={s.id} data-sec aria-labelledby={`${s.id}-title`}>
       <h2 class="ix-h" id={`${s.id}-title`}>{s.title}</h2>

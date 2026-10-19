@@ -158,7 +158,7 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   const state = () => page.evaluate(() => ({
     titles: [...new Set([...document.querySelectorAll('#index [data-title]')].filter((e) => !e.hidden && e.offsetParent).map((e) => e.dataset.title))],
     sections: [...document.querySelectorAll('[data-sec]')].filter((s) => !s.hidden).map((s) => s.id),
-    empty: !document.querySelector('[data-empty]').hidden,
+    empty: document.querySelector('[data-empty]').textContent === 'nothing here.',
   }));
   await search.fill('WOBBLE!');
   const a = await state();
