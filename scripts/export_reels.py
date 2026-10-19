@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Export posted Instagram reels for the site's story viewer.
+"""Export posted Instagram reels for the site's reel posters (each links out to its post).
 
     python scripts/export_reels.py            # idempotent; --force re-encodes
 
@@ -10,7 +10,8 @@ only. For each post it finds the exact video that was published:
      measured, so a track with several reel cuts still resolves to the right one.
 Writes a 540x960 web cut to public/reels/<item>.mp4, the cover as the poster to
 src/assets/reels/<item>.jpg, and src/data/reels.json. Only the newest KEEP reels are hosted;
-older posts stay in reels.json as links to Instagram, so the site never grows without bound.
+older posts stay in reels.json as links to Instagram, so the site never grows without limit.
+The pages no longer play the web cuts; they show the poster and link to Instagram.
 """
 import argparse
 import json
@@ -100,7 +101,7 @@ def main() -> int:
         if cover.is_file():
             poster = OUT_POSTER / f"{item}.jpg"
             if args.force or not poster.exists() or poster.stat().st_mtime < cover.stat().st_mtime:
-                Image.open(cover).convert("RGB").resize((720, 1280), Image.LANCZOS).save(poster, quality=84, progressive=True, optimize=True)
+                Image.open(cover).convert("RGB").resize((720, 1280), Image.LANCZOS).save(poster, quality=84, progressive=True, optimize=True, comment=b"")  # no encoder comment carried over from the cover
             entry["poster"] = f"reels/{item}.jpg"
         if i < KEEP:
             try:

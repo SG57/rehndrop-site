@@ -16,29 +16,53 @@ const playSlug = argAfter('--play');
 const velvet = argAfter('--velvet') ? `&velvet=${argAfter('--velvet')}` : '';
 const lens = process.argv.includes('--no-lens') ? '?static' : '?lens';
 const SELECTORS = [
+  ['header link', '.top-link'],
+  ['chip', '.chip'],
   ['bio', '.bio'],
   ['spot title', '.spot.is-current .spot-title'],
   ['spot answer', '.spot.is-current .spot-answer'],
   ['spot line', '.spot.is-current .spot-note'],
-  ['shelf title', '.row-title'],
-  ['card title', '.card .card-title'],
-  ['card caption', '.card .card-sub'],
-  ['video caption', '.vcard .card-sub'],
-  ['pick line', '.pick-note'],
+  ['stage contact', '.stage-contact'],
+  ['index heading', '.ix-h'],
+  ['pick one', '.ix-pick, .tv-label'],
+  ['item title', '.ix-item .ix-title'],
+  ['item line', '.ix-item .ix-sub'],
+  ['poster title', '.poster-title'],
+  ['poster date', '.poster-sub'],
   ['lyric', '.lyric'],
-  ['contact', '.contact-links a'],
+  ['contact', '.contact-links'],
   ['email', '.contact-mail'],
   ['footer', '.foot-line'],
   ['track title', '.track-title'],
   ['track line', '.track-info .spot-note'],
   ['track date', '.track-meta'],
+  ['scrub time', '.scrub-time'],
 ];
+// every image that sits behind text, and the device run below that renders it
+// (npm run assets:check reads this table)
+const BACKDROPS = { 'velvet.webp': 'laptop', 'velvet-phone.webp': 'phone', 'velvet-4k.webp': 'laptop-hd', 'velvet-fog.jpg': 'laptop' };
 
-const b = await chromium.launch({ channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
+// --gpu: a headed window on the real GPU (the renderer string is printed); default is SwiftShader
+const gpu = process.argv.includes('--gpu');
+const b = await chromium.launch(gpu
+  ? { channel: 'msedge', headless: false, args: ['--autoplay-policy=no-user-gesture-required'] }
+  : { channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
+const only = argAfter('--only')?.split(',');
 const rows = [];
-for (const [dev, w, h, mobile] of [['phone', 393, 852, true], ['laptop', 1440, 900, false]]) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
+const DEVICES = [
+  ['phone', 393, 852, true, 1],
+  ['laptop', 1440, 900, false, 1],
+  ['laptop-hd', 1440, 900, false, 2],
+];
+for (const [dev, w, h, mobile, dpr] of DEVICES.filter(([d]) => !only || only.includes(d))) {
+  const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: mobile, hasTouch: mobile });
   const page = await ctx.newPage();
+  await page.goto(url + lens, { waitUntil: 'networkidle' });
+  const used = await page.evaluate(() => ({
+    velvet: getComputedStyle(document.querySelector('.velvet')).backgroundImage.replace(/^.*\//, '').replace(/["')]+$/, ''),
+    renderer: (() => { const g = document.createElement('canvas').getContext('webgl'); const x = g?.getExtension('WEBGL_debug_renderer_info'); return x ? g.getParameter(x.UNMASKED_RENDERER_WEBGL) : 'no webgl'; })(),
+  }));
+  console.log(`${dev}: velvet ${used.velvet}, renderer ${used.renderer}`);
   for (const path of ['', 't/pop-the-trunk/', 't/whats-my-name/']) {
     await page.goto(url + path + lens + velvet, { waitUntil: 'networkidle' });
     await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
@@ -59,9 +83,9 @@ for (const [dev, w, h, mobile] of [['phone', 393, 852, true], ['laptop', 1440, 9
         const color = await el.evaluate((e) => getComputedStyle(e).color);
         // sample only what is BEHIND text: hide covers, buttons and every glyph's ink, but keep
         // halos and blooms, which are part of the real backdrop
-        const hide = await page.addStyleTag({ content: '.card-art,.vcard-art,.spot-cover,.track-cover,.store,.play,.listen,.r,.mini,.back,.row-btn,.spot-ticks{visibility:hidden!important} *{color:transparent!important}' });
+        const hide = await page.addStyleTag({ content: '.ix-cover,.poster-art,.spot-cover,.track-cover,.store,.play,.listen,.r,.mini,.back,.spot-ticks,.scrub-rail,.scrub-input,.top-mark,.ix-search,.ix-views,.tv-share{visibility:hidden!important} *{color:transparent!important}' });
         await page.waitForTimeout(60);
-        const png = (await page.screenshot()).toString('base64');
+        const png = (await page.screenshot({ scale: 'css' })).toString('base64'); // CSS pixels, so the box maps 1:1 at any DPR
         await hide.evaluate((n) => n.remove());
         const r = await page.evaluate(async ({ png, box, color }) => {
           const img = new Image(); img.src = 'data:image/png;base64,' + png; await img.decode();
