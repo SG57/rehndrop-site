@@ -25,8 +25,11 @@ python scripts/check_catalog.py               # verifies every exported file and
 python scripts/verify_previews.py             # proves each preview is its own song, at Cord's times (--only a,b)
 python scripts/build_brand_assets.py          # chrome R, velvet textures, share card, icons
 npm run build                                 # static build into dist/
-node scripts/qa.mjs                           # 9 device viewports + a playback test, via the installed Edge
-node scripts/legibility.mjs <url>             # contrast of every floating text style vs the live velvet (AAA median, AA specks)
+python scripts/export_lyrics.py               # full lyrics for the slugs in curation.json "lyrics" (part of npm run export)
+node scripts/build_web_assets.mjs             # the 1080w phone velvet and the header-sized R (npm run assets:web)
+npm run assets:check                          # fails on image metadata, editor SVG data, non-plain names, uncovered backdrops, source maps
+node scripts/qa.mjs [--gpu]                   # 10 device viewports + behaviour checks (index, search, router, sheet, scrubber), via the installed Edge
+node scripts/legibility.mjs <url> [--gpu]     # contrast of every floating text style vs the live velvet (AAA median, AA specks)
 ```
 
 The exporter reads `D:/rehndrop/tracks` and `D:/rehndrop/resources` read-only and writes temp
@@ -65,3 +68,10 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
 - `src/scripts/player.ts` is one plain `<audio>` element. The visuals read precomputed envelopes
   against `audio.currentTime`; no Web Audio, because the iPhone ringer switch mutes it.
 - Words follow `D:/rehndrop/resources/brand/VOICE.md`: lowercase, no hype, no asks.
+- The client router (`astro:transitions`) carries the `<audio>`, the lens and water canvases, the
+  velvet and the mini player across pages (`transition:persist`), so a preview keeps playing from
+  the home page into any track page and back. Page-local scripts bind on every `astro:page-load`;
+  everything document-level starts once (`Base.astro`).
+- Decorative code reads time through `src/scripts/clock.ts` and never calls `Math.random`; add
+  `?t=<unix ms>` to any URL for a still, reproducible frame.
+- Text doesn't select, except the contact address and full lyrics (`.selectable`).
