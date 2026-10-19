@@ -42,11 +42,14 @@ const SELECTORS = [
 // (npm run assets:check reads this table)
 const BACKDROPS = { 'velvet.webp': 'laptop', 'velvet-phone.webp': 'phone', 'velvet-4k.webp': 'laptop-hd', 'velvet-fog.jpg': 'laptop' };
 
-// --gpu: a headed window on the real GPU (the renderer string is printed); default is SwiftShader
+// Always muted and never on screen. --gpu: headless on the real GPU; --headed: an off-screen
+// window for when headless only gets SwiftShader (the renderer string is printed); default is SwiftShader
 const gpu = process.argv.includes('--gpu');
-const b = await chromium.launch(gpu
-  ? { channel: 'msedge', headless: false, args: ['--autoplay-policy=no-user-gesture-required'] }
-  : { channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
+const headed = process.argv.includes('--headed');
+const MUTED = ['--mute-audio', '--autoplay-policy=no-user-gesture-required'];
+const b = await chromium.launch(gpu || headed
+  ? { channel: 'msedge', headless: !headed, args: [...MUTED, '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...(headed ? ['--window-position=-2400,-2400'] : [])] }
+  : { channel: 'msedge', headless: true, args: [...MUTED, '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const only = argAfter('--only')?.split(',');
 const rows = [];
 const DEVICES = [

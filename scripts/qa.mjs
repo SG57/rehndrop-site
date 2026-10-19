@@ -1,8 +1,9 @@
 // Visual + behavioural QA across real device viewports, driving the installed Edge.
-//   npm run build && node scripts/qa.mjs [--only name,name] [--full] [--gpu] [--skip-long]
+//   npm run build && node scripts/qa.mjs [--only name,name] [--full] [--gpu] [--headed] [--skip-long]
 // Serves dist/ itself under the configured base path, writes screenshots to .cache/qa/,
 // and exits 1 on horizontal overflow, console errors, or any failed behaviour check.
-// --gpu runs a headed window on the real GPU (the WebGL renderer string is printed, so a
+// The browser is always muted. --gpu runs headless on the real GPU; --headed opens an off-screen
+// window for when headless only gets SwiftShader (the WebGL renderer string is printed, so a
 // SwiftShader run is never mistaken for a hardware one); the default is headless SwiftShader.
 import { createServer } from 'node:http';
 import { readFile, mkdir, stat } from 'node:fs/promises';
@@ -61,9 +62,13 @@ const server = createServer(async (req, res) => {
 const origin = `http://localhost:${server.address().port}${BASE}`;
 
 await mkdir(OUT, { recursive: true });
-const browser = await chromium.launch(gpu
-  ? { channel: 'msedge', headless: false, args: ['--autoplay-policy=no-user-gesture-required'] }
-  : { channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
+// Every launch is muted and never on screen: --gpu stays headless on the real GPU (d3d11); only
+// --headed opens a window, parked off screen, for a GPU that headless can't reach.
+const MUTED = ['--mute-audio', '--autoplay-policy=no-user-gesture-required'];
+const headed = args.includes('--headed');
+const browser = await chromium.launch(gpu || headed
+  ? { channel: 'msedge', headless: !headed, args: [...MUTED, '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...(headed ? ['--window-position=-2400,-2400'] : [])] }
+  : { channel: 'msedge', headless: true, args: [...MUTED, '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -84,7 +89,7 @@ const audioState = (page) => page.evaluate(() => {
     const x = g?.getExtension('WEBGL_debug_renderer_info');
     return x ? g.getParameter(x.UNMASKED_RENDERER_WEBGL) : g ? 'webgl, no renderer info' : 'no webgl';
   });
-  console.log('renderer', JSON.stringify(renderer), gpu ? '(headed, real GPU requested)' : '(headless SwiftShader)');
+  console.log('renderer', JSON.stringify(renderer), headed ? '(headed off screen, real GPU requested)' : gpu ? '(headless, real GPU requested)' : '(headless SwiftShader)');
   await ctx.close();
 }
 
