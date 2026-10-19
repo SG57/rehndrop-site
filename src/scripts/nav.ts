@@ -1,5 +1,5 @@
 // Behaviour that spans pages under the client router. Started once per visit; every listener
-// is document- or window-level, so nothing needs rebinding when a page is swapped in.
+// is document- or window-level, so nothing needs attaching again when a page is swapped in.
 import type { Player } from './player';
 import { reducedMotion } from './drive';
 import { TOAST_MS } from '../lib/config';
