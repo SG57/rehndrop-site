@@ -7,7 +7,13 @@
 // strip (taller than the viewport) that the browser scrolls with the content on the
 // compositor, so drops never lag a fast fling. When the reader travels far enough, the
 // strip re-anchors around the viewport while its edges are off screen.
+//
+// Variation comes from a generator seeded by the wall clock (clock.ts). Under ?t=<ms> the
+// water is simulated for a fixed number of fixed steps from that seed and drawn once, still.
 import { reducedMotion } from './drive';
+import { frozen, hash32, seeded, wallNow } from './clock';
+
+const STILL_STEPS = 150; // 5 s at 30 fps
 
 interface Drop {
   x: number;
@@ -126,7 +132,8 @@ export function startDrops(canvas: HTMLCanvasElement) {
   };
 
   const drops: Drop[] = [];
-  const rand = (a: number, b: number) => a + Math.random() * (b - a);
+  const rnd = seeded(hash32(wallNow()));
+  const rand =(a: number, b: number) => a + rnd() * (b - a);
 
   const add = (x: number, y: number, r: number, sit = rand(3, 10)) => {
     if (drops.length >= MAX) drops.shift();
@@ -135,14 +142,14 @@ export function startDrops(canvas: HTMLCanvasElement) {
 
   // a splash comes from one side, like water thrown at the camera
   const splash = (amount = 1) => {
-    const side = Math.random();
+    const side = rnd();
     const cx = side < 0.5 ? rand(0, w * 0.35) : rand(w * 0.65, w);
     const cy = view() + rand(h * 0.05, h * 0.55);
     const n = Math.round((small ? 12 : 20) * amount);
     for (let i = 0; i < n; i++) {
-      const big = Math.random() < 0.14;
-      const r = big ? rand(11, small ? 16 : 22) : Math.random() < 0.5 ? rand(2, 5) : rand(5, 10);
-      add(cx + rand(-w * 0.3, w * 0.3) * Math.random(), cy + rand(-h * 0.25, h * 0.35) * Math.random(), r, rand(0.4, 3));
+      const big = rnd() < 0.14;
+      const r = big ? rand(11, small ? 16 : 22) : rnd() < 0.5 ? rand(2, 5) : rand(5, 10);
+      add(cx + rand(-w * 0.3, w * 0.3) * rnd(), cy + rand(-h * 0.25, h * 0.35) * rnd(), r, rand(0.4, 3));
     }
     wake();
   };
@@ -159,10 +166,14 @@ export function startDrops(canvas: HTMLCanvasElement) {
     if (!runningDrops && now - last < 1000 / 30) return;
     last = now;
     reanchor();
+    step(dt);
+    draw();
+  };
 
+  function step(dt: number) {
     nextDrizzle -= dt;
     if (nextDrizzle <= 0) {
-      add(rand(0, w), view() + rand(0, h * 0.85), Math.random() < 0.8 ? rand(2, 6) : rand(7, 12));
+      add(rand(0, w), view() + rand(0, h * 0.85), rnd() < 0.8 ? rand(2, 6) : rand(7, 12));
       nextDrizzle = small ? rand(1.2, 3.2) : rand(0.7, 2.2);
     }
 
@@ -173,7 +184,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
         d.a = Math.min(1, d.a + dt * 7);
         if (d.a >= 1) d.state = 1;
       } else if (d.state === 1) {
-        if (d.age > d.sit) d.state = d.r >= 8 && Math.random() < 0.75 ? 2 : 3;
+        if (d.age > d.sit) d.state = d.r >= 8 && rnd() < 0.75 ? 2 : 3;
       } else if (d.state === 2) {
         // stick, then slip; heavier drops slip faster
         if (d.pause > 0) {
@@ -184,7 +195,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
           d.y += step;
           d.x += Math.sin(d.y * 0.05 + d.r) * 0.15;
           d.travelled += step;
-          if (Math.random() < dt * 1.4) {
+          if (rnd() < dt * 1.4) {
             d.vy = 0;
             d.pause = rand(0.05, 0.5);
           }
@@ -219,9 +230,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
         }
       }
     }
-
-    draw();
-  };
+  }
 
   function draw() {
     ctx!.clearRect(0, 0, canvas.width, canvas.height);
@@ -237,7 +246,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
   }
 
   const wake = () => {
-    if (running || document.hidden) return;
+    if (frozen || running || document.hidden) return;
     running = true;
     last = performance.now();
     raf = requestAnimationFrame(frame);
@@ -248,6 +257,14 @@ export function startDrops(canvas: HTMLCanvasElement) {
   };
 
   size();
+  if (frozen) {
+    splash(0.6);
+    for (let i = 0; i < STILL_STEPS; i++) step(1 / 30);
+    draw();
+    window.addEventListener('scroll', () => reanchor(), { passive: true });
+    canvas.classList.add('is-on');
+    return;
+  }
   window.addEventListener('resize', size, { passive: true });
   window.addEventListener('scroll', () => reanchor(), { passive: true });
   document.addEventListener('visibilitychange', () => (document.hidden ? sleep() : wake()));
@@ -261,7 +278,7 @@ export function startDrops(canvas: HTMLCanvasElement) {
   document.addEventListener('rehndrop:beat', () => {
     if (drops.length > MAX - 6) return;
     const n = small ? 2 : 4;
-    for (let i = 0; i < n; i++) add(rand(0, w), view() + rand(0, h * 0.9), Math.random() < 0.7 ? rand(2, 6) : rand(7, 12), rand(0.4, 2));
+    for (let i = 0; i < n; i++) add(rand(0, w), view() + rand(0, h * 0.9), rnd() < 0.7 ? rand(2, 6) : rand(7, 12), rand(0.4, 2));
     wake();
   });
   // now and then, even in silence, a gust

@@ -5,6 +5,7 @@
 // Failure is always graceful: no WebGL, a lost context, a slow device or reduced motion
 // all leave the static CSS velvet underneath, which is the same image.
 import { drive, reducedMotion } from './drive';
+import { frozen, wallNow } from './clock';
 
 const VERT = `
 attribute vec2 aPos;
@@ -247,7 +248,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   let sy = 0;
   if (matchMedia('(pointer: fine)').matches) {
     window.addEventListener('pointermove', (e) => {
-      if (e.pointerType !== 'mouse') return;
+      if (e.pointerType !== 'mouse' || frozen) return; // a pinned frame ignores the cursor
       px = e.clientX / innerWidth - 0.5;
       py = e.clientY / innerHeight - 0.5;
       const i = wipeHead++ % 6;
@@ -283,7 +284,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     if (!playing && now - last < 1000 / 32) return;
     last = now;
 
-    if (probeFrames < 90) {
+    if (!frozen && probeFrames < 90) {
       probeFrames++;
       probeTime += dt;
       if (probeFrames === 90) {
@@ -304,8 +305,13 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
       }
     }
 
-    wall = (wall + dt) % 2000;
-    slide = (slide + dt * drive.speed) % 2000;
+    if (frozen) {
+      // a still frame: every clock in the shader comes from the pinned time
+      wall = slide = (wallNow() / 1000) % 2000;
+    } else {
+      wall = (wall + dt) % 2000;
+      slide = (slide + dt * drive.speed) % 2000;
+    }
     flash = Math.max(drive.flash, flash - dt * 3);
     for (let k = 0; k < 3; k++) tint[k] += (drive.tint[k] - tint[k]) * Math.min(1, dt * 2.5);
     for (let i = 0; i < 6; i++) wipes[i * 3 + 2] = Math.max(0, wipes[i * 3 + 2] - dt * 0.7);
@@ -318,7 +324,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     dye += (drive.dye - dye) * Math.min(1, dt * 0.9);
 
     // wall-clock orbit and sway, computed here in float64 so the GPU never sees a large time
-    const t = now / 1000;
+    const t = wallNow() / 1000;
     sx += (px - sx) * Math.min(1, dt * 2);
     sy += (py - sy) * Math.min(1, dt * 2);
     gl.uniform2f(u.sway, 0.006 * Math.sin(t * 0.21) + 0.004 * Math.sin(t * 0.13) - sx * 0.012, 0.005 * Math.cos(t * 0.17) + sy * 0.01);
@@ -342,6 +348,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     gl.uniform4f(u.dye, dyeCol[0], dyeCol[1], dyeCol[2], Math.min(1, dye * (0.9 + 0.3 * drive.pulse)));
     gl.uniform3fv(u.wipe, wipes);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (frozen) stop();
   };
 
   const start = () => {
@@ -364,7 +371,10 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
     stop(true);
   });
   document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-  window.addEventListener('resize', size, { passive: true });
+  window.addEventListener('resize', () => {
+    size();
+    if (frozen) start(); // a resize clears the canvas; redraw the still frame
+  }, { passive: true });
 
   Promise.all([texture(gl, sharp, 0), texture(gl, fog, 1)])
     .then(() => {
