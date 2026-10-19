@@ -1,0 +1,23 @@
+---
+// The contact sheet (sheet.ts): the address as selectable text, copy, the three mailto links.
+import { curation } from '../lib/data';
+const mail = (subject: string) => `mailto:${curation.contact}?subject=${encodeURIComponent(subject)}`;
+---
+<dialog class="sheet" data-sheet aria-labelledby="sheet-title">
+  <div class="sheet-card">
+    <h2 class="sheet-title" id="sheet-title">contact</h2>
+    <p class="sheet-mail selectable" data-mail>{curation.contact}</p>
+    <div class="sheet-copy">
+      <button class="sheet-btn" type="button" data-copy autofocus>copy</button>
+      <p class="sheet-toast" role="status" aria-live="polite" data-copied></p>
+    </div>
+    <nav class="sheet-links" aria-label="email">
+      <a href={mail('booking')}>booking</a>
+      <span aria-hidden="true">·</span>
+      <a href={mail('press')}>press</a>
+      <span aria-hidden="true">·</span>
+      <a href={mail('management')}>management</a>
+    </nav>
+    <button class="sheet-close" type="button" data-sheet-close>close</button>
+  </div>
+</dialog>
