@@ -3,6 +3,8 @@
 // the accessible label.
 import Icon from './Icon.astro';
 import { curation } from '../lib/data';
+interface Props { size?: 'sm' | 'lg' }
+const { size = 'lg' } = Astro.props;
 const s = curation.stores;
 const marks = [
   { name: 'spotify', label: 'spotify', href: s.spotify },
@@ -11,10 +13,10 @@ const marks = [
   { name: 'youtube', label: 'youtube', href: s.youtube },
 ] as const;
 ---
-<nav class="stores" aria-label="listen">
+<nav class:list={['stores', `stores--${size}`]} aria-label="listen">
   {marks.map((m, i) => (
     <a class="store" href={m.href} rel="noopener" target="_blank" aria-label={m.label} title={m.label} style={`--i:${i}`}>
-      <Icon name={m.name} size={26} />
+      <Icon name={m.name} size={size === 'sm' ? 20 : 26} />
     </a>
   ))}
 </nav>

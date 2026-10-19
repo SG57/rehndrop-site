@@ -1,0 +1,31 @@
+---
+// A reel or a video as a poster that links out: the real still, a play mark, the title and
+// date. Tapping pauses any preview first (nav.ts, data-external). The 9:16 and 16:9 slots
+// keep their shape, so tap-to-play can return later without moving anything.
+import { Image } from 'astro:assets';
+import type { Reel, Video } from '../lib/data';
+import { fmtDate } from '../lib/data';
+import { fold } from '../lib/fold';
+import Icon from './Icon.astro';
+type Common = { tag?: 'li' | 'div'; eager?: boolean; extra?: boolean };
+type Props = ({ reel: Reel; video?: never } | { video: Video; reel?: never }) & Common;
+const { reel, video, tag = 'li', eager = false, extra = false } = Astro.props as { reel?: Reel; video?: Video } & Common;
+const Tag = tag;
+const title = reel ? reel.title : video!.title;
+const href = reel ? reel.url : `https://www.youtube.com/watch?v=${video!.id}`;
+const label = reel ? `${title} reel on instagram` : `${video!.credit ? `${title} (${video!.credit})` : title} on youtube`;
+const sub = reel ? fmtDate(reel.postedAt) : video!.credit ?? video!.published.slice(0, 4);
+---
+<Tag class:list={['poster', reel ? 'poster--reel' : 'poster--video']} data-title={fold(title)} data-extra={extra ? '' : undefined}>
+  <a class="poster-art" href={href} target="_blank" rel="noopener" data-external aria-label={label}>
+    {reel ? (
+      reel.poster ? <Image src={reel.poster} width={360} height={640} widths={[180, 270, 360]} sizes="auto, (min-width: 900px) 190px, 40vw" alt="" loading={eager ? 'eager' : 'lazy'} format="webp" quality={80} /> : <span class="poster-empty" />
+    ) : (
+      <img src={`https://i.ytimg.com/vi/${video!.id}/hqdefault.jpg`} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" width="480" height="360" />
+    )}
+    <span class="poster-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg></span>
+    <span class="poster-mark" aria-hidden="true"><Icon name={reel ? 'instagram' : 'youtube'} size={16} /></span>
+  </a>
+  <span class="poster-title">{title}</span>
+  {sub && <span class="poster-sub">{sub}</span>}
+</Tag>

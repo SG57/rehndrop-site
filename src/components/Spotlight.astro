@@ -23,10 +23,10 @@ const ambient = await Promise.all(
           {t.cover && <Cover src={t.cover} size={720} widths={[360, 540, 720]} sizes="(min-width: 900px) 420px, (orientation: landscape) 46vh, 78vw" alt={`${t.title} cover`} eager={i === 0} quality={85} />}
         </div>
         <div class="spot-info">
-          <a class="spot-title" href={u(`t/${t.slug}/`)}>{t.title}</a>
-          {t.answer ? <p class="spot-answer">{t.answer}</p> : !t.story?.note && <p class="spot-answer spot-answer--date">{fmtDate(t.released)}</p>}
+          <a class="spot-title" href={u(`t/${t.slug}/`)} data-open={t.slug}>{t.title}</a>
+          {t.answer ? <p class="spot-answer">{t.answer}</p> : !t.notes?.note && <p class="spot-answer spot-answer--date">{fmtDate(t.released)}</p>}
           {/* a lyric sheet breaks at the phrase: one sentence per line */}
-          {t.story?.note && <blockquote class="spot-note lyric">{t.story.note.replace(/\. (?=\S)/g, '.\n')}</blockquote>}
+          {t.notes?.note && <blockquote class="spot-note lyric">{t.notes.note.replace(/\. (?=\S)/g, '.\n')}</blockquote>}
           <div class="spot-actions">
             {t.preview.src && <PlayButton slug={t.slug} title={t.title} size="lg" />}
             <Listen track={t} />

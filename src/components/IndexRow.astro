@@ -1,0 +1,45 @@
+---
+// One track in the index, in both views: a cover tile (grid) or a dense row (list). The cover
+// plays; the title is a real link to the track page. Search reads data-title.
+import type { Track } from '../lib/data';
+import { fmtDate } from '../lib/data';
+import { fold } from '../lib/fold';
+import { u } from '../lib/site';
+import Cover from './Cover.astro';
+import ReelRing from './ReelRing.astro';
+interface Props { track: Track; extra?: boolean; eager?: boolean }
+const { track: t, extra = false, eager = false } = Astro.props;
+// Cord's line (or the title answer) if there is one, else the note; a date only as the last resort
+const sub = t.answer ?? t.notes?.note ?? fmtDate(t.released);
+const date = fmtDate(t.released);
+const href = u(`t/${t.slug}/`);
+const sizes = 'auto, (min-width: 1280px) 190px, (min-width: 900px) 17vw, (min-width: 600px) 30vw, 46vw';
+---
+<li class="ix-item" data-title={fold(t.title)} data-extra={extra ? '' : undefined} style={`--card-accent:${t.accent}`}>
+  <div class="ix-art">
+    {t.preview.src ? (
+      <button class="ix-cover" type="button" data-play={t.slug} aria-label={`listen to ${t.title}`} aria-pressed="false">
+        {t.cover ? <Cover class="ix-img" src={t.cover} size={360} widths={[160, 240, 360]} sizes={sizes} alt="" eager={eager} /> : <span class="ix-img ix-img--empty" />}
+        <span class="ix-play" aria-hidden="true">
+          <span class="play-ring"></span>
+          <svg class="play-glyph" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
+          <svg class="pause-glyph" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" /></svg>
+        </span>
+      </button>
+    ) : (
+      <a class="ix-cover" href={href} tabindex="-1" aria-hidden="true">
+        {t.cover ? <Cover class="ix-img" src={t.cover} size={360} widths={[160, 240, 360]} sizes={sizes} alt="" eager={eager} /> : <span class="ix-img ix-img--empty" />}
+      </a>
+    )}
+    <ReelRing track={t} />
+  </div>
+  <div class="ix-text">
+    <a class="ix-title" href={href} data-open={t.slug}>{t.title}</a>
+    {sub && <span class="ix-sub">{sub}</span>}
+    <span class="ix-meta">
+      {date && <span>{date}</span>}
+      {t.explicit && <span class="badge" aria-label="explicit" title="explicit">e</span>}
+      {t.lyrics && <span class="ix-lyrics">lyrics.</span>}
+    </span>
+  </div>
+</li>

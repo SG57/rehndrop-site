@@ -16,7 +16,7 @@ const links = [
     <li>
       <a href={l.href} rel="noopener" target="_blank" aria-label={labels ? undefined : `${t.title} on ${l.label}`} title={labels ? undefined : l.label}>
         <Icon name={l.name} size={labels ? 16 : big ? 22 : 18} />
-        {labels && <span>{l.label}</span>}
+        {labels && <span class="listen-label">{l.label}</span>}
       </a>
     </li>
   ))}

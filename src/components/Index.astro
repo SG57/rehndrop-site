@@ -1,0 +1,55 @@
+---
+// The index: every track, in Cord's sections and his order, as plain HTML (list.ts adds
+// search, the view toggle, `more.` and letters). It is the whole catalogue for anyone and
+// any machine; nothing decorative reaches it.
+import type { Track, Reel, Video } from '../lib/data';
+import { INDEX_CAP, LETTER_STRIP_AFTER } from '../lib/config';
+import { letterOf } from '../lib/fold';
+import IndexRow from './IndexRow.astro';
+import Poster from './Poster.astro';
+import StorePills from './StorePills.astro';
+
+type Section =
+  | { id: string; title: string; kind: 'tracks'; items: Track[] }
+  | { id: string; title: string; kind: 'reels'; items: Reel[] }
+  | { id: string; title: string; kind: 'videos'; items: Video[] };
+interface Props { sections: Section[]; total: Track[] }
+const { sections, total } = Astro.props;
+const shown = sections.filter((s) => s.items.length > 0);
+const letters = total.length > LETTER_STRIP_AFTER ? [...new Set(total.map((t) => letterOf(t.title)))].sort((a, b) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b))) : [];
+---
+<section class="index" id="index" data-index aria-label="tracks">
+  <div class="ix-head">
+    <form class="ix-tools" role="search" action="#index">
+      <label class="ix-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M15.2 15.2 20 20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+        <input type="search" name="q" data-search placeholder="find a track" aria-label="find a track" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" />
+      </label>
+      <div class="ix-views" role="group" aria-label="view">
+        <button class="ix-view" type="button" data-view-btn="grid" aria-pressed="true">grid</button>
+        <button class="ix-view" type="button" data-view-btn="list" aria-pressed="false">list</button>
+      </div>
+    </form>
+    <div class="ix-stores">
+      <p class="ix-pick">pick one.</p>
+      <StorePills size="sm" />
+    </div>
+    {letters.length > 0 && (
+      <nav class="ix-letters" aria-label="letters">
+        {letters.map((l) => <button class="ix-letter" type="button" data-letter={l} aria-pressed="false">{l}</button>)}
+      </nav>
+    )}
+  </div>
+  <p class="ix-empty" data-empty role="status" hidden>nothing here.</p>
+  {shown.map((s) => (
+    <section class:list={['ix-sec', `ix-sec--${s.kind}`, { 'is-capped': s.items.length > INDEX_CAP }]} id={s.id} data-sec aria-labelledby={`${s.id}-title`}>
+      <h2 class="ix-h" id={`${s.id}-title`}>{s.title}</h2>
+      <ul class="ix-grid" role="list">
+        {s.kind === 'tracks' && s.items.map((t, i) => <IndexRow track={t} extra={i >= INDEX_CAP} />)}
+        {s.kind === 'reels' && s.items.map((r, i) => <Poster reel={r} extra={i >= INDEX_CAP} />)}
+        {s.kind === 'videos' && s.items.map((v, i) => <Poster video={v} extra={i >= INDEX_CAP} />)}
+      </ul>
+      {s.items.length > INDEX_CAP && <button class="ix-more" type="button" data-more aria-controls={s.id}>more.</button>}
+    </section>
+  ))}
+</section>

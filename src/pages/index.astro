@@ -2,14 +2,10 @@
 import Base from '../layouts/Base.astro';
 import StorePills from '../components/StorePills.astro';
 import Spotlight from '../components/Spotlight.astro';
-import Picks from '../components/Picks.astro';
-import Row from '../components/Row.astro';
-import Card from '../components/Card.astro';
-import VideoCard from '../components/VideoCard.astro';
-import ReelCard from '../components/ReelCard.astro';
+import Index from '../components/Index.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
-import { data, rows, curation } from '../lib/data';
+import { data, rows, curation, type Track } from '../lib/data';
 import { BIO, u } from '../lib/site';
 
 const r = rows();
@@ -30,63 +26,61 @@ const jsonLd = {
     ...(t.released ? { datePublished: t.released } : {}),
   })),
 };
+
+// picks.: Cord's picks, then his spotlight, each track once
+const picks = [...new Set([...curation.picks, ...curation.spotlight])]
+  .map((s) => data.bySlug.get(s))
+  .filter((t): t is Track => !!t);
+const reels = [...data.reels].sort((a, b) => b.postedAt.localeCompare(a.postedAt));
+const sections = [
+  { id: 'picks', title: 'picks.', kind: 'tracks' as const, items: picks },
+  { id: 'newest', title: 'the new stuff.', kind: 'tracks' as const, items: r.newest },
+  { id: 'reels', title: 'reels.', kind: 'reels' as const, items: reels },
+  { id: 'heavy', title: 'the heavy stuff.', kind: 'tracks' as const, items: r.heavy },
+  { id: 'pretty', title: 'the pretty stuff.', kind: 'tracks' as const, items: r.pretty },
+  { id: 'detox', title: 'the detox stuff.', kind: 'tracks' as const, items: r.detox },
+  { id: 'videos', title: 'videos.', kind: 'videos' as const, items: r.videos },
+  { id: 'early', title: 'the old stuff.', kind: 'tracks' as const, items: r.early },
+];
+// the chip row: until the stage takes lenses, each chip is a plain jump to its section
+const chips = [
+  ['picks', 'picks'],
+  ['newest', 'new'],
+  ['reels', 'reels'],
+  ['heavy', 'heavy'],
+  ['pretty', 'pretty'],
+  ['detox', 'detox'],
+  ['early', 'old'],
+].filter(([id]) => sections.some((s) => s.id === id && s.items.length > 0));
 ---
-<Base title="rehndrop · bass music" description={BIO} tracks={data.tracks} jsonLd={jsonLd}>
-  <main>
+<Base title="rehndrop · bass music" description={BIO} tracks={data.tracks} jsonLd={jsonLd} home>
+  <main id="main">
+    <nav class="chips" aria-label="sections">
+      {chips.map(([id, label]) => <a class="chip" href={`#${id}`}>{label}</a>)}
+    </nav>
     <div class="stage">
-    <section class="welcome" aria-label="rehndrop">
-      <h1 class="sr-only">rehndrop</h1>
-      <div class="r-stage" data-tilt>
-        <div class="r">
-          <span class="r-shade" aria-hidden="true"></span>
-          <span class="r-glow" aria-hidden="true"></span>
-          <img class="r-img" src={u('brand/r-chrome-640.webp')} srcset={`${u('brand/r-chrome-640.webp')} 640w, ${u('brand/r-chrome-1200.webp')} 1200w`} sizes="(orientation: landscape) and (max-height: 520px) 34vh, (min-width: 900px) 300px, 46vw" width="640" height="669" alt="rehndrop" fetchpriority="high" />
-          <span class="r-sheen" aria-hidden="true" style={`--mask:url(${u('brand/r-mask-640.png')})`}></span>
+      <section class="welcome" aria-label="rehndrop">
+        <h1 class="sr-only">rehndrop</h1>
+        <div class="r-stage" data-tilt>
+          <div class="r">
+            <span class="r-shade" aria-hidden="true"></span>
+            <span class="r-glow" aria-hidden="true"></span>
+            <img class="r-img" src={u('brand/r-chrome-640.webp')} srcset={`${u('brand/r-chrome-640.webp')} 640w, ${u('brand/r-chrome-1200.webp')} 1200w`} sizes="(orientation: landscape) and (max-height: 520px) 34vh, (min-width: 900px) 300px, 46vw" width="640" height="669" alt="rehndrop" fetchpriority="high" />
+            <span class="r-sheen" aria-hidden="true" style={`--mask:url(${u('brand/r-mask-640.png')})`}></span>
+          </div>
         </div>
-      </div>
-      <div class="welcome-copy">
-        <p class="bio">the heavy stuff and the pretty stuff.</p>
-        <StorePills />
-      </div>
-      <a class="scroll-cue" href="#spotlight" aria-label="more"><span></span></a>
-    </section>
+        <div class="welcome-copy">
+          <p class="bio">the heavy stuff and the pretty stuff.</p>
+          <StorePills />
+        </div>
+        <a class="scroll-cue" href="#spotlight" aria-label="more"><span></span></a>
+      </section>
 
-    <Spotlight tracks={data.spotlight} />
+      <Spotlight tracks={data.spotlight} />
+      <button class="stage-contact" type="button" data-contact-open aria-haspopup="dialog">booking · press · management</button>
     </div>
 
-    {data.picks.length > 0 && <Picks tracks={data.picks} />}
-
-    <div class="shelves">
-      <Row title="the new stuff." id="newest">
-        {r.newest.map((t, i) => <Card track={t} eager={i < 3} />)}
-      </Row>
-      {data.reels.length > 0 && (
-        <Row title="reels." id="reels">
-          {data.reels.map((rl) => <ReelCard reel={rl} list="all" />)}
-        </Row>
-      )}
-      <Row title="the heavy stuff." id="heavy">
-        {r.heavy.map((t) => <Card track={t} />)}
-      </Row>
-      <Row title="the pretty stuff." id="pretty">
-        {r.pretty.map((t) => <Card track={t} />)}
-      </Row>
-      {r.detox.length > 0 && (
-        <Row title="the detox stuff." id="detox">
-          {r.detox.map((t) => <Card track={t} />)}
-        </Row>
-      )}
-      {r.videos.length > 0 && (
-        <Row title="videos." id="videos">
-          {r.videos.map((v) => <VideoCard video={v} />)}
-        </Row>
-      )}
-      {r.early.length > 0 && (
-        <Row title="the old stuff." id="early">
-          {r.early.map((t) => <Card track={t} />)}
-        </Row>
-      )}
-    </div>
+    <Index sections={sections} total={data.tracks} />
 
     <Contact />
     <Footer />
