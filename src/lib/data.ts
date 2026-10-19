@@ -27,7 +27,6 @@ export interface Reel {
   title: string;
   url: string;
   postedAt: string;
-  video: string | null;
   poster: ImageMetadata | null;
 }
 
@@ -281,7 +280,7 @@ async function load() {
     })
     .sort((a, b) => b.published.localeCompare(a.published));
 
-  // posted reels (scripts/export_reels.py, newest first); a reel with no hosted video still links out
+  // posted reels (scripts/export_reels.py, newest first); each is a poster that links out
   const posters = import.meta.glob<{ default: ImageMetadata }>('../assets/reels/*.jpg', { eager: true });
   const reels: Reel[] = (reelsData.reels as Array<Omit<Reel, 'poster'> & { poster: string | null }>).map((r) => ({
     ...r,

@@ -5,7 +5,8 @@
 // - a source file name isn't a plain part name (lowercase words, digits, hyphens);
 // - an image that sits behind text (public/brand/velvet*, plate*, room*) isn't in the
 //   BACKDROPS table of scripts/legibility.mjs, or names a device run that doesn't exist there;
-// - a built dist/ ships source maps.
+// - a built dist/ ships source maps;
+// - public/ or dist/ carries a video file (the site hosts none).
 // Sources: public/ and src/assets/. dist/ is scanned too when it exists (generated names are
 // exempt from the name rule).
 import { readdir, readFile } from 'node:fs/promises';
@@ -136,6 +137,12 @@ const dist = join(ROOT, 'dist');
 if (existsSync(dist)) {
   await scan(dist, { names: false });
   for await (const file of walk(dist)) if (file.endsWith('.map')) flag(file, 'source map in the build');
+}
+
+// the site hosts no video: reels and videos are posters that link out
+for (const d of [join(ROOT, 'public'), dist]) {
+  if (!existsSync(d)) continue;
+  for await (const file of walk(d)) if (/\.(mp4|m4v|mov|webm)$/i.test(file)) flag(file, 'self-hosted video');
 }
 
 // every image behind text is listed in legibility.mjs, against a device run that exists there
