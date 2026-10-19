@@ -63,6 +63,10 @@ for (const [dev, w, h, mobile, dpr] of DEVICES.filter(([d]) => !only || only.inc
     renderer: (() => { const g = document.createElement('canvas').getContext('webgl'); const x = g?.getExtension('WEBGL_debug_renderer_info'); return x ? g.getParameter(x.UNMASKED_RENDERER_WEBGL) : 'no webgl'; })(),
   }));
   console.log(`${dev}: velvet ${used.velvet}, renderer ${used.renderer}`);
+  // the device run must really show the backdrop the table says it covers
+  for (const [file, d] of Object.entries(BACKDROPS)) {
+    if (d === dev && file !== 'velvet-fog.jpg' && used.velvet !== file) rows.push({ dev, page: 'home', name: `backdrop ${file}`, med: 0, specks: 0, ok: false });
+  }
   for (const path of ['', 't/pop-the-trunk/', 't/whats-my-name/']) {
     await page.goto(url + path + lens + velvet, { waitUntil: 'networkidle' });
     await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
