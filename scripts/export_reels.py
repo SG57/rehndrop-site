@@ -9,6 +9,7 @@ and the entry to src/data/reels.json. The site hosts no video: every poster link
 and any web cut left in public/reels/ from an earlier export is removed.
 """
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -27,6 +28,21 @@ CATALOG = SITE / "src" / "data" / "catalog.json"
 def norm(s: str) -> str:
     s = s.lower().replace("’", "'").replace("‘", "'")
     return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9 ]", "", s)).strip()
+
+
+def published_cover(social: Path, item: str) -> Path | None:
+    """`ig_stage.py settle` files the published cover as <item>-cover.jpg, but skips that copy when
+    the track already holds the same bytes, which it does when the staged draft went out unchanged
+    (005). Then the draft is the cover, provided it still matches what the stage record shipped."""
+    settled = social / f"{item}-cover.jpg"
+    if settled.is_file():
+        return settled
+    draft, record = social / "stage" / "drafts" / item / "cover.jpg", social / "stage" / f"{item}.json"
+    if draft.is_file() and record.is_file():
+        shipped = json.loads(record.read_text(encoding="utf-8")).get("files", {}).get("cover.jpg")
+        if shipped == hashlib.sha256(draft.read_bytes()).hexdigest():
+            return draft
+    return None
 
 
 def main() -> int:
@@ -50,8 +66,8 @@ def main() -> int:
         entry = {"id": item, "track": slug, "title": p["track"], "url": url,
                  "postedAt": (p.get("posted_at") or "")[:10], "angle": p.get("angle"), "poster": None}
         track_dir = TRACKS / slug
-        cover = track_dir / "video" / "social" / f"{item}-cover.jpg"
-        if cover.is_file():
+        cover = published_cover(track_dir / "video" / "social", item)
+        if cover:
             poster = OUT_POSTER / f"{item}.jpg"
             if args.force or not poster.exists() or poster.stat().st_mtime < cover.stat().st_mtime:
                 Image.open(cover).convert("RGB").resize((720, 1280), Image.LANCZOS).save(poster, quality=84, progressive=True, optimize=True, comment=b"")  # no encoder comment carried over from the cover
