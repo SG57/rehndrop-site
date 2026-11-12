@@ -50,9 +50,6 @@ const chips = [
   ['picks', 'picks', 'sec-picks'],
   ['newest', 'new', 'sec-new'],
   ['reels', 'reels', 'sec-reels'],
-  ['heavy', 'heavy', 'essence-chrome'],
-  ['pretty', 'pretty', 'essence-dawn'],
-  ['detox', 'detox', 'essence-candle'],
   ['early', 'old', 'sec-old'],
 ].filter(([id]) => sections.some((s) => s.id === id && s.items.length > 0));
 ---
@@ -60,7 +57,7 @@ const chips = [
   <main id="main">
     <nav class="chips" aria-label="sections">
       {chips.map(([id, label, glyph]) => (
-        <a class:list={['chip', { 'chip--essence': glyph.startsWith('essence-') }]} data-essence-skin="chip" data-chip={id} href={`#${id}`}><Glyph name={glyph} size={19} class="chip-g" /><span>{label}</span></a>
+        <a class:list={['chip', { 'chip--essence': glyph.startsWith('essence-') }]} data-essence-skin="chip" data-chip={id} title={label} href={`#${id}`}><Glyph name={glyph} size={19} class="chip-g" /><span class="sr-only">{label}</span></a>
       ))}
     </nav>
     <div class="stage">
@@ -76,14 +73,12 @@ const chips = [
         </div>
         <div class="welcome-copy">
           <EssenceCompass variant="home" />
-          <p class="bio">the heavy stuff and the pretty stuff.</p>
           <StorePills />
         </div>
         <a class="scroll-cue" href="#spotlight" aria-label="more"><span></span></a>
       </section>
 
       <Spotlight tracks={data.spotlight} />
-      <button class="stage-contact" data-essence-skin="button" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={16} class="contact-glyph" /><span>booking · press · management</span></button>
     </div>
 
     <Index sections={sections} total={data.tracks} />

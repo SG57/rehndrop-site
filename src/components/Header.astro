@@ -19,8 +19,8 @@ const roomMap = Object.fromEntries(data.tracks.filter((t) => t.room).map((t) => 
   </a>
   <div class="top-end">
     <nav class="top-nav" aria-label="site">
-      <a class="top-link" data-essence-skin="link" href={home ? '#index' : u('#index')}><Glyph name="chevron-down" size={17} class="top-glyph" /><span>choose a track</span></a>
-      <button class="top-link" data-essence-skin="link" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={17} class="top-glyph" /><span>contact</span></button>
+      <a class="top-link" data-essence-skin="link" title="choose a track" href={home ? '#index' : u('#index')}><Glyph name="chevron-down" size={17} class="top-glyph" /><span class="sr-only">choose a track</span></a>
+      <button class="top-link" data-essence-skin="link" title="contact" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={17} class="top-glyph" /><span class="sr-only">contact</span></button>
     </nav>
     <EssenceCompass variant="mini" class="top-compass" />
   </div>

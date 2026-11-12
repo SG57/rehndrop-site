@@ -5,6 +5,6 @@ import { curation } from '../lib/data';
 import Glyph from './Glyph.astro';
 ---
 <section class="contact" aria-label="contact">
-  <button class="contact-links" data-essence-skin="button" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={16} class="contact-glyph" /><span>booking · press · management</span></button>
+  <button class="contact-links" data-essence-skin="button" title="contact" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={16} class="contact-glyph" /><span class="sr-only">contact: booking, press, management</span></button>
   <p class="contact-mail selectable">{curation.contact}</p>
 </section>

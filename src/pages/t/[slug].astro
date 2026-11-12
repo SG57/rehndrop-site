@@ -88,8 +88,7 @@ const jsonLd = {
         )}
 
         <div class="tv-stores">
-          <p class="tv-label">pick one.</p>
-          <Listen track={track} labels />
+          <Listen track={track} />
         </div>
 
         {track.lyrics ? (
@@ -102,9 +101,9 @@ const jsonLd = {
           <blockquote class="tv-quote lyric">{track.notes.quote}</blockquote>
         )}
 
-        <button class="tv-share" type="button" data-share data-share-url={url} data-share-title={`${track.title} · rehndrop`}>
+        <button class="tv-share" title="share" type="button" data-share data-share-url={url} data-share-title={`${track.title} · rehndrop`}>
           <Glyph name="share" size={18} />
-          <span>share</span>
+          <span class="sr-only">share</span>
         </button>
       </div>
 
@@ -127,7 +126,7 @@ const jsonLd = {
 
     {more.length > 0 && (
       <section class="tv-more" aria-labelledby="more-title">
-        <div class="ix-hd tv-hd"><Glyph name="more" size={20} class="ix-hd-glyph" /><h2 class="ix-h" id="more-title">more.</h2><span class="ix-rule" aria-hidden="true"></span><span class="ix-count" aria-hidden="true">{more.length}</span></div>
+        <div class="ix-hd tv-hd"><Glyph name="more" size={20} class="ix-hd-glyph" /><h2 class="ix-h" id="more-title">more.</h2><span class="ix-rule" aria-hidden="true"></span></div>
         <ul class="ix-grid ix-grid--list" role="list">
           {more.map((t) => <IndexRow track={t} />)}
         </ul>

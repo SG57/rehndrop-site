@@ -136,7 +136,12 @@ void main(){
 
 // the plain blit (no pass 2) still grades the calm zones, so small type keeps its contrast even when
 // the water pass has been shed on a starved machine
-const P_BLIT = `precision mediump float;varying vec2 u;uniform sampler2D fb;
+const P_BLIT = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 u;uniform sampler2D fb;
 ${CALM_GLSL}
 void main(){gl_FragColor=vec4(calmGrade(texture2D(fb,u).rgb,calmAt(u)),1.);}`;
 
@@ -229,6 +234,7 @@ export function startScene(opts: SceneOptions): SceneHandle {
   };
   Object.defineProperty(snap, 'tier', { get: () => getTier(), enumerable: true });
   Object.defineProperty(snap, 'scale', { get: () => scale, enumerable: true });
+  Object.defineProperty(snap, 'calm', { get: () => calmGl?.debug() ?? null, enumerable: true }); // audit numbers
   (window.__rehndrop ??= {}).scene = snap;
 
   if (!gl) return handle;
