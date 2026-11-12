@@ -5,6 +5,9 @@ import Spotlight from '../components/Spotlight.astro';
 import Index from '../components/Index.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
+import EssenceCompass from '../components/EssenceCompass.astro';
+import Glyph from '../components/Glyph.astro';
+import '../styles/phone.css';
 import { data, rows, curation, type Track } from '../lib/data';
 import { BIO, u } from '../lib/site';
 
@@ -44,19 +47,21 @@ const sections = [
 ];
 // the chip row: until the stage takes lenses, each chip is a plain jump to its section
 const chips = [
-  ['picks', 'picks'],
-  ['newest', 'new'],
-  ['reels', 'reels'],
-  ['heavy', 'heavy'],
-  ['pretty', 'pretty'],
-  ['detox', 'detox'],
-  ['early', 'old'],
+  ['picks', 'picks', 'sec-picks'],
+  ['newest', 'new', 'sec-new'],
+  ['reels', 'reels', 'sec-reels'],
+  ['heavy', 'heavy', 'essence-chrome'],
+  ['pretty', 'pretty', 'essence-dawn'],
+  ['detox', 'detox', 'essence-candle'],
+  ['early', 'old', 'sec-old'],
 ].filter(([id]) => sections.some((s) => s.id === id && s.items.length > 0));
 ---
 <Base title="rehndrop · bass music" description={BIO} tracks={data.tracks} jsonLd={jsonLd} home>
   <main id="main">
     <nav class="chips" aria-label="sections">
-      {chips.map(([id, label]) => <a class="chip" href={`#${id}`}>{label}</a>)}
+      {chips.map(([id, label, glyph]) => (
+        <a class:list={['chip', { 'chip--essence': glyph.startsWith('essence-') }]} data-essence-skin="chip" data-chip={id} href={`#${id}`}><Glyph name={glyph} size={19} class="chip-g" /><span>{label}</span></a>
+      ))}
     </nav>
     <div class="stage">
       <section class="welcome" aria-label="rehndrop">
@@ -70,6 +75,7 @@ const chips = [
           </div>
         </div>
         <div class="welcome-copy">
+          <EssenceCompass variant="home" />
           <p class="bio">the heavy stuff and the pretty stuff.</p>
           <StorePills />
         </div>
@@ -77,7 +83,7 @@ const chips = [
       </section>
 
       <Spotlight tracks={data.spotlight} />
-      <button class="stage-contact" type="button" data-contact-open aria-haspopup="dialog">booking · press · management</button>
+      <button class="stage-contact" data-essence-skin="button" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={16} class="contact-glyph" /><span>booking · press · management</span></button>
     </div>
 
     <Index sections={sections} total={data.tracks} />

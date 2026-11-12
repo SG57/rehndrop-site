@@ -9,9 +9,10 @@ import curation from '../data/curation.json';
 import storeLinks from '../data/store-links.json';
 import reelsData from '../data/reels.json';
 import lyricsData from '../data/lyrics.json';
-import { ARRIVAL_DAYS } from './config';
+import { ARRIVAL_DAYS, ROOMS, type Room } from './config';
 
 export type Lane = 'heavy' | 'hybrid' | 'melodic' | null;
+export type { Room };
 
 export interface Video {
   id: string;
@@ -50,6 +51,8 @@ export interface Track {
   links: { apple: string | null; spotify: string | null; youtube: string; soundcloud: string };
   video: Video | null;
   reels: Reel[];
+  // which painted look the track uses (docs/ROOMS.md). null for 2021 tracks: they keep the plain default look.
+  room: Room | null;
 }
 
 const APPLE_ARTIST = 1545317806;
@@ -145,6 +148,36 @@ const coverFor = (path: string) => covers[`../assets/${path}`]?.default;
 
 type CatalogTrack = (typeof catalog.tracks)[number];
 
+// Which room a track uses: Cord's pick in curation.room, else the default rule
+// (detox shelf: candle; melodic or no lane: dawn; everything else: chrome).
+// Only current-era tracks get a room. Tracks that fall to the rule are listed in roomWarnings.
+const isRoom = (v: unknown): v is Room => (ROOMS as readonly string[]).includes(v as string);
+const defaultRoom = (t: Track): Room =>
+  (curation.shelves.detox as string[]).includes(t.slug) ? 'candle' : t.lane === 'melodic' || t.lane === null ? 'dawn' : 'chrome';
+
+function assignRooms(tracks: Track[]) {
+  const picks = ((curation as { room?: Record<string, string> }).room ?? {}) as Record<string, string>;
+  const warnings: string[] = [];
+  for (const t of tracks) {
+    if (t.era !== 'current') continue;
+    const pick = picks[t.slug];
+    if (isRoom(pick)) {
+      t.room = pick;
+      continue;
+    }
+    t.room = defaultRoom(t);
+    warnings.push(
+      pick === undefined
+        ? `room: ${t.slug} has no pick in curation.room, using default "${t.room}"`
+        : `room: ${t.slug} has an invalid pick "${pick}" in curation.room, using default "${t.room}"`,
+    );
+  }
+  for (const slug of Object.keys(picks)) {
+    if (!tracks.some((t) => t.slug === slug && t.era === 'current')) warnings.push(`room: curation.room lists "${slug}", which is not a current-era track`);
+  }
+  return warnings;
+}
+
 async function load() {
   const [songs, mainFeed, ...topicFeeds] = await Promise.all([
     appleSongs(),
@@ -215,6 +248,7 @@ async function load() {
       links: linksFor(c.title, c.appleUrl ?? null),
       video: null,
       reels: [],
+      room: null,
     };
     bySlug.set(t.slug, t);
     byTitle.set(norm(t.title), t);
@@ -252,6 +286,7 @@ async function load() {
       links: linksFor(title, appleUrl),
       video: null,
       reels: [],
+      room: null,
     };
     bySlug.set(slug, t);
     byTitle.set(norm(title), t);
@@ -260,6 +295,9 @@ async function load() {
   const tracks = [...bySlug.values()].sort(
     (a, b) => (b.released ?? '').localeCompare(a.released ?? '') || a.title.localeCompare(b.title),
   );
+
+  const roomWarnings = assignRooms(tracks);
+  for (const w of roomWarnings) console.warn(`[rooms] ${w}`);
 
   const feed = mainFeed && mainFeed.length ? mainFeed : curation.youtube.videoSnapshot;
   const videos: Video[] = feed
@@ -293,7 +331,7 @@ async function load() {
   const spotlight = front ? [front, ...listedSpotlight.filter((t) => t !== front)] : listedSpotlight;
   const picks = curation.picks.map((s) => bySlug.get(s)).filter((t): t is Track => !!t);
 
-  return { tracks, bySlug, videos, spotlight, picks, reels };
+  return { tracks, bySlug, videos, spotlight, picks, reels, roomWarnings };
 }
 
 // which track leads the stage on arrival: Cord's pin, else the newest current release while it

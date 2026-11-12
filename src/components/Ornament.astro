@@ -1,0 +1,17 @@
+---
+// A quiet ornament line: a hairline, the three essence glyphs at rest, a hairline. Decorative.
+import Glyph from './Glyph.astro';
+interface Props { size?: number; class?: string; glyphs?: boolean }
+const { size = 16, class: cls, glyphs = true } = Astro.props;
+---
+<div class:list={['orn', cls]} aria-hidden="true">
+  <span class="orn-rule"></span>
+  {glyphs ? (
+    <span class="orn-set">
+      <Glyph name="essence-candle" size={size} class="ec-candle" />
+      <Glyph name="essence-chrome" size={size} class="ec-chrome" />
+      <Glyph name="essence-dawn" size={size} class="ec-dawn" />
+    </span>
+  ) : <span class="orn-gem"></span>}
+  <span class="orn-rule"></span>
+</div>

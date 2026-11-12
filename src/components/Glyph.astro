@@ -1,0 +1,33 @@
+---
+// Inline <svg><use> over one sprite per page. `sprite` renders only the sprite (the lead can place
+// <Glyph sprite /> early in <body>); otherwise the first Glyph of a render emits it.
+import '../styles/glyphs.css';
+import { isGlyph, resolveGlyph, spriteMarkup, type GlyphRef } from '../lib/glyphs';
+
+interface Props {
+  name?: GlyphRef;
+  size?: number;
+  class?: string;
+  /** lock colour and stroke character to one essence; omitted = follow the surrounding skin */
+  essence?: 'candle' | 'chrome' | 'dawn';
+  /** `a` = essence accent, `ink` = current text colour; omitted = accent inside a skin, else text */
+  tone?: 'a' | 'ink';
+  sprite?: boolean;
+}
+const { name, size = 24, class: cls = '', essence, tone, sprite = false } = Astro.props;
+
+const locals = Astro.locals as Record<string, unknown>;
+const needSprite = sprite || !locals.__glyphSprite;
+if (needSprite) locals.__glyphSprite = true;
+
+if (name && !isGlyph(name)) throw new Error(`Glyph: unknown name "${name}"`);
+const id = name ? `gl-${resolveGlyph(name)}` : '';
+const sz = size <= 18 ? 'sm' : size >= 40 ? 'lg' : 'md';
+const classes = ['glyph', tone ? `glyph--${tone}` : '', cls].filter(Boolean).join(' ');
+---
+{needSprite && <Fragment set:html={spriteMarkup()} />}
+{name && (
+  <svg class={classes} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-gs={sz} data-essence-lock={essence}>
+    <use href={`#${id}`} />
+  </svg>
+)}

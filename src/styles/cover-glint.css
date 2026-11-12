@@ -1,0 +1,31 @@
+/* Corner highlight on cover frames. Hardware tier only animates; off under reduced motion. */
+.spot-cover::before,
+.track-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* above the picture, below the reel ring (3) */
+  pointer-events: none;
+  border-radius: inherit;
+  --gl: color-mix(in srgb, var(--a, #fff) 30%, #fff8ec);
+  background:
+    radial-gradient(circle at 13px 13px, #fffaf0 0 1.2px, var(--gl) 1.8px, color-mix(in srgb, var(--gl) 35%, transparent) 3.5px, transparent 8px),
+    radial-gradient(circle at 13px calc(100% - 13px), #fffaf0 0 1.2px, var(--gl) 1.8px, color-mix(in srgb, var(--gl) 35%, transparent) 3.5px, transparent 8px),
+    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), #fffaf0 0 1.2px, var(--gl) 1.8px, color-mix(in srgb, var(--gl) 35%, transparent) 3.5px, transparent 8px);
+  opacity: 0.62;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-tier='software']):not([data-tier='reduced']):not(.is-frozen) .spot-cover::before,
+  html:not([data-tier='software']):not([data-tier='reduced']):not(.is-frozen) .track-cover::before {
+    animation: glint-breathe 14s ease-in-out infinite;
+  }
+}
+@keyframes glint-breathe {
+  0%, 100% { opacity: 0.38; }
+  50% { opacity: 0.85; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spot-cover::before, .track-cover::before { display: none; }
+}
+html[data-tier='reduced'] .spot-cover::before,
+html[data-tier='reduced'] .track-cover::before { display: none; }

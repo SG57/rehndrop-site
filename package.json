@@ -9,10 +9,14 @@
     "preview": "astro preview",
     "check": "astro check",
     "qa": "node scripts/qa.mjs",
+    "qa:software": "node scripts/qa.mjs --software",
+    "perf:tier": "node scripts/perf-tier.mjs",
+    "check:no-lab": "node scripts/check-no-lab.mjs",
     "export": "python scripts/export_catalog.py && python scripts/check_catalog.py && python scripts/verify_previews.py && python scripts/export_lyrics.py",
     "assets:check": "node scripts/assets-check.mjs",
     "assets:web": "node scripts/build_web_assets.mjs",
-    "legibility": "node scripts/legibility.mjs https://rehndrop.sg57.dev/"
+    "legibility": "node scripts/legibility.mjs https://rehndrop.sg57.dev/",
+    "legibility:local": "node scripts/legibility.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

@@ -1,11 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import { u } from '../lib/site';
+import Ornament from '../components/Ornament.astro';
 ---
 <Base title="rehndrop" description="rehndrop · bass music" tracks={[]}>
   <main class="welcome" style="grid-template-rows: 1fr auto 1fr;">
+    <h1 class="sr-only">rehndrop</h1>
     <span></span>
     <div class="welcome-copy">
+      <Ornament class="void-orn" glyphs={false} />
       <p class="pick">nothing here.</p>
       <a class="pill" href={u()} style="min-width: 200px;">rehndrop</a>
     </div>

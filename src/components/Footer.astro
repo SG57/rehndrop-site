@@ -1,9 +1,11 @@
 ---
 import Icon from './Icon.astro';
+import Ornament from './Ornament.astro';
 import { curation } from '../lib/data';
 const year = new Date().getFullYear();
 ---
 <footer class="foot">
+  <Ornament class="foot-orn" glyphs={false} />
   <div class="foot-social">
     <a href={curation.socials.instagram} target="_blank" rel="noopener" aria-label="instagram"><Icon name="instagram" size={18} /></a>
     <a href={curation.socials.facebook} target="_blank" rel="noopener" aria-label="facebook"><Icon name="facebook" size={18} /></a>

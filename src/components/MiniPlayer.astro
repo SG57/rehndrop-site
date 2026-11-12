@@ -2,13 +2,21 @@
 // The bar at the bottom while a preview plays. transition:persist sits on the element itself:
 // the router doesn't forward transition directives through a component's props.
 import Icon from './Icon.astro';
+import Glyph from './Glyph.astro';
 ---
-<aside class="mini" data-mini hidden aria-label="now playing" transition:persist="mini">
+<aside class="mini" data-essence-skin="bar" data-mini hidden aria-label="now playing" transition:persist="mini">
   <div class="mini-bar" aria-hidden="true"><span></span></div>
   <img class="mini-thumb" data-mini-thumb alt="" width="44" height="44" />
   <div class="mini-text">
     <span class="mini-label" aria-hidden="true">now playing</span>
-    <a class="mini-title" data-mini-title href="#"></a>
+    <span class="mini-line">
+      <span class="mini-ess" aria-hidden="true">
+        <Glyph name="essence-candle" size={16} class="mini-ess-g mini-ess--candle" />
+        <Glyph name="essence-chrome" size={16} class="mini-ess-g mini-ess--chrome" />
+        <Glyph name="essence-dawn" size={16} class="mini-ess-g mini-ess--dawn" />
+      </span>
+      <a class="mini-title" data-mini-title href="#"></a>
+    </span>
   </div>
   <div class="mini-actions">
     <a class="mini-link" data-mini-apple data-external href="#" target="_blank" rel="noopener" aria-label="open in apple music"><Icon name="apple" size={18} /></a>
@@ -19,7 +27,7 @@ import Icon from './Icon.astro';
       <svg class="pause-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" /></svg>
     </button>
     <button class="mini-btn mini-close" type="button" data-mini-close aria-label="close">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" fill="none" /></svg>
+      <Glyph name="close" size={16} />
     </button>
   </div>
 </aside>

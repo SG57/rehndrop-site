@@ -1,0 +1,137 @@
+/* Track page and index composition. Loads after global.css and essence.css (imported by the
+   track page and the index component), so it carries only what those two files do not: the
+   per-essence composition of the title block, scrubber marks, store row and reels column, and
+   the index details (section hairlines, `more.`, letter strip, empty state).
+
+   Everything is driven by --a --g --e --r --glow, inherited from the page's essence lock.
+   Radius language: candle ornate soft, chrome sharp chamfer, dawn round. Motion is opacity and
+   transform only, and none of it runs on the software tier or under reduced motion. */
+
+/* ---------- title block ---------- */
+.track-page .track-title { text-shadow: 0 0 calc(26px * var(--glow)) color-mix(in srgb, var(--a) 38%, transparent), 0 2px 18px rgba(2, 2, 4, 0.7); }
+.track-page .track-title::after {
+  content: '';
+  display: block;
+  width: 72px;
+  height: 1px;
+  margin: 14px 0 0;
+  background: linear-gradient(90deg, var(--a), transparent);
+}
+/* candle: a gilt rule that swells into a small bead */
+.track-page[data-room='candle'] .track-title { letter-spacing: 0.035em; }
+.track-page[data-room='candle'] .track-title::after { height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--a), color-mix(in srgb, var(--a) 20%, transparent) 70%, transparent); }
+/* chrome: a mitred bar, cut at both ends */
+.track-page[data-room='chrome'] .track-title { letter-spacing: 0.01em; }
+.track-page[data-room='chrome'] .track-title::after { height: 4px; width: 88px; background: var(--a); clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 4px 100%); opacity: 0.85; }
+/* dawn: two fine lines, the lower one shorter */
+.track-page[data-room='dawn'] .track-title { letter-spacing: 0.03em; }
+.track-page[data-room='dawn'] .track-title::after { height: 5px; width: 96px; background: linear-gradient(90deg, var(--a), transparent) top / 100% 1px no-repeat, linear-gradient(90deg, var(--a), transparent 80%) bottom / 56% 1px no-repeat; }
+@media (max-width: 700px) {
+  .track-page .track-title::after { margin-inline: auto; background-position: center; }
+  .track-page[data-room='candle'] .track-title::after,
+  .track-page[data-room='chrome'] .track-title::after { margin-inline: auto; }
+}
+
+.track-page .track-meta { gap: 10px; }
+.track-page .spot-answer { color: var(--ink-2); }
+
+/* ---------- scrubber: hit marks take the essence's own shape ---------- */
+.track-page .scrub-mark {
+  top: -3px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 0;
+  background: var(--a);
+  box-shadow: none;
+}
+.track-page[data-room='candle'] .scrub-mark { border-radius: 0 50% 50% 50%; transform: rotate(-45deg); }
+.track-page[data-room='chrome'] .scrub-mark { clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); background: color-mix(in srgb, var(--a) 70%, #fff); }
+.track-page[data-room='dawn'] .scrub-mark { border-radius: 100% 0 100% 0; background: linear-gradient(135deg, #fff, var(--a)); }
+.track-page .scrub-seam { top: -4px; bottom: -4px; width: 1px; margin-left: -0.5px; background: color-mix(in srgb, var(--a) 55%, transparent); box-shadow: none; }
+html:not([data-tier='software']):not([data-tier='reduced']) .track-page .scrub-mark { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--a) 70%, transparent)); }
+
+/* ---------- store row: short lowercase labels, one row where it fits ---------- */
+.track-page .tv-stores { width: 100%; justify-items: stretch; }
+.track-page .tv-stores .tv-label { justify-self: start; }
+.track-page .tv-stores .listen--labels { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
+.track-page .tv-stores .listen--labels a {
+  width: auto;
+  height: 44px;
+  padding: 0 16px 0 13px;
+  gap: 9px;
+  border-radius: min(calc(var(--r) * 1.7), 999px);
+  border-color: var(--e);
+  background-color: color-mix(in srgb, var(--g) 45%, rgb(4, 4, 7));
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  color: var(--ess-text-2);
+}
+.track-page .tv-stores .listen--labels a svg { color: var(--a); }
+.track-page .tv-stores .listen--labels a:hover { color: var(--ess-text); border-color: var(--a); }
+.track-page .tv-stores .listen--labels .listen-label { position: static; width: auto; height: auto; clip: auto; overflow: visible; }
+@media (max-width: 700px) {
+  .track-page .tv-stores .listen--labels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .track-page .tv-stores .listen--labels a { width: 100%; padding: 0 12px; justify-content: flex-start; border-radius: min(calc(var(--r) * 1.7), 999px); }
+  .track-page .tv-stores .tv-label { justify-self: center; }
+}
+.track-page .tv-share {
+  justify-self: start;
+  border-radius: min(calc(var(--r) * 1.7), 999px);
+  border-color: var(--e);
+  background-color: color-mix(in srgb, var(--g) 45%, rgb(4, 4, 7));
+}
+.track-page .tv-share svg { color: var(--a); }
+@media (max-width: 700px) { .track-page .tv-share { justify-self: center; } }
+
+/* ---------- lyrics: a quiet ornament above the text ---------- */
+.tv-lyrics-orn { width: min(100%, 200px); margin: 6px auto 2px; color: var(--a); }
+.tv-lyrics-orn .orn-gem { background: var(--a); }
+
+/* ---------- reels column: a framed poster, a hairline spine ---------- */
+.track-page .tv-posters .poster { gap: 8px; }
+.track-page .tv-posters .poster-art { border-radius: var(--r); }
+.track-page .tv-posters .poster-title { font-size: 14px; color: var(--ess-text); }
+.track-page .tv-posters .poster-sub { font-size: 13px; letter-spacing: 0.06em; }
+.track-page .tv-posters .poster-mark { color: var(--a); }
+/* one rule only: global's border-left on the side column, tinted by the essence accent */
+@media (min-width: 900px) and (min-height: 541px) {
+  .track-page .tv-side-col { border-left-color: color-mix(in srgb, var(--a) 40%, var(--line)); }
+}
+
+/* ---------- more. list: glyph column then the date ---------- */
+.tv-more .ix-meta { display: grid; grid-template-columns: 18px auto auto 18px; align-items: center; justify-content: end; column-gap: 10px; }
+.tv-more .ix-meta .ess-inline { grid-column: 1; justify-self: center; }
+.tv-more .ix-meta .ix-lyrics { grid-column: 2; }
+.tv-more .ix-meta > span:not(.badge):not(.ix-lyrics) { grid-column: 3; justify-self: end; font-variant-numeric: tabular-nums; }
+.tv-more .ix-meta .badge { grid-column: 4; justify-self: end; }
+.tv-more .ix-count { margin-left: -4px; }
+
+/* ---------- index details ---------- */
+.ix-sec .ix-hd .ix-hd-glyph { padding: 5px; box-sizing: content-box; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ec) 38%, transparent); background: rgba(2, 2, 4, 0.5); }
+/* `more.`: border takes the section's essence colour */
+.ix-more { border-color: color-mix(in srgb, var(--ec, var(--bone-2)) 45%, transparent); }
+/* letter strip: a hairline well, accent when pressed */
+.ix-letters { padding: 4px; border-radius: 14px; border: 1px solid var(--line); background: rgba(6, 6, 10, 0.55); width: fit-content; max-width: 100%; }
+.ix-letter:focus-visible { outline: 1.5px solid var(--bone); outline-offset: 1px; }
+/* empty search: the three glyphs at rest under the message */
+.ix-void .orn { color: var(--bone-2); }
+.ix-void .ix-empty { letter-spacing: 0.06em; }
+
+/* ---------- list view: the grid tile caption stays quiet, the row gets a glyph gutter ---------- */
+html[data-view='list'] .ix-meta .ess-inline,
+.ix-grid--list .ix-meta .ess-inline { opacity: 0.9; }
+
+/* ---------- transitions: opacity and transform only; none on software or reduced ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-tier='software']):not([data-tier='reduced']) .track-page .tv-side-col { animation: rise 1.2s var(--ease) 0.35s both; }
+  html:not([data-tier='software']):not([data-tier='reduced']) .tv-more { animation: rise 1.2s var(--ease) 0.5s both; }
+  html:not([data-tier='software']):not([data-tier='reduced']) .tv-more .ix-item { transition: transform 0.4s var(--ease); }
+  html:not([data-tier='software']):not([data-tier='reduced']) .tv-more .ix-item:hover { transform: translateX(3px); }
+}
+html[data-tier='software'] .track-page .track-cover,
+html[data-tier='software'] .track-page .tv-main,
+html[data-tier='software'] .track-page .tv-side-col,
+html[data-tier='software'] .track-page .tv-more { animation: none; }
+html[data-tier='software'] .track-page .scrub-mark { filter: none; }
+html[data-tier='software'] .track-page .track-title { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 0 14px rgba(2, 2, 4, 0.9); }

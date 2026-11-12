@@ -1,0 +1,76 @@
+/* Glyph skins. One drawing per icon (src/lib/glyphs.ts); everything that differs per essence is an
+   inherited property set here, so it flows through <use>. No filters, no blur, no animation.
+
+   character            candle           chrome            dawn
+   stroke width         1.8 medium       2.4 bold          1.2 light
+   join / cap           round / round    miter / square    round / round
+   fill                 warm wash        cold wash         pearl-to-rose gradient
+
+   --gl-c  glyph colour: currentColor by default, --a inside a skin, a lock, or .glyph--a
+   --gl-w  stroke width in 24-grid units (small sizes get a lift, large sizes ease off)       */
+
+.glyph-sprite { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+
+.glyph {
+  --gl-c: currentColor;
+  --gl-w: 1.8;
+  --gl-wash: 16%;
+  --gl-detail: 1;
+  --gl-fill: color-mix(in srgb, var(--gl-c) var(--gl-wash), transparent);
+  display: inline-block;
+  flex: none;
+  vertical-align: -0.15em;
+  stroke: var(--gl-c);
+  stroke-width: var(--gl-w);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: var(--gl-fill);
+}
+.glyph[data-gs='sm'] { --gl-w: 2.1; --gl-detail: 0; }
+.glyph[data-gs='lg'] { --gl-w: 1.6; }
+
+[data-essence-skin] .glyph,
+[data-essence-lock] .glyph,
+.glyph[data-essence-lock],
+.glyph--a { --gl-c: var(--a); }
+.glyph.glyph--ink,
+[data-essence-skin] .glyph.glyph--ink,
+[data-essence-lock] .glyph.glyph--ink,
+.glyph[data-essence-lock].glyph--ink { --gl-c: currentColor; }
+
+/* candle: soft, medium, round, warm wash */
+.glyph[data-essence-lock='candle'],
+[data-essence-lock='candle'] .glyph { --gl-w: 1.8; --gl-wash: 20%; }
+.glyph[data-essence-lock='candle'][data-gs='sm'],
+[data-essence-lock='candle'] .glyph[data-gs='sm'] { --gl-w: 1.8; }
+.glyph[data-essence-lock='candle'][data-gs='lg'],
+[data-essence-lock='candle'] .glyph[data-gs='lg'] { --gl-w: 1.65; }
+
+/* chrome: bold, mitred, square caps, cold wash */
+.glyph[data-essence-lock='chrome'],
+[data-essence-lock='chrome'] .glyph { --gl-w: 2.4; --gl-wash: 13%; stroke-linejoin: miter; stroke-miterlimit: 5; stroke-linecap: square; }
+.glyph[data-essence-lock='chrome'][data-gs='sm'],
+[data-essence-lock='chrome'] .glyph[data-gs='sm'] { --gl-w: 2; }
+.glyph[data-essence-lock='chrome'][data-gs='lg'],
+[data-essence-lock='chrome'] .glyph[data-gs='lg'] { --gl-w: 2.2; }
+
+/* dawn: light, round, pearl-to-rose fill (gradient lives in the sprite) */
+.glyph[data-essence-lock='dawn'],
+[data-essence-lock='dawn'] .glyph { --gl-w: 1.2; --gl-wash: 18%; --gl-fill: url(#gl-pearl); }
+.glyph[data-essence-lock='dawn'][data-gs='sm'],
+[data-essence-lock='dawn'] .glyph[data-gs='sm'] { --gl-w: 1.6; }
+.glyph[data-essence-lock='dawn'][data-gs='lg'],
+[data-essence-lock='dawn'] .glyph[data-gs='lg'] { --gl-w: 1.05; }
+
+/* drawing parts (matched on the sprite's own elements; the cloned shadow tree inherits the vars) */
+.gl-f { fill: var(--gl-c); stroke: none; }
+.gl-solid { fill: color-mix(in srgb, var(--gl-c) 88%, transparent); stroke-width: calc(var(--gl-w) * 0.5); }
+.gl-core { fill: color-mix(in srgb, var(--gl-c) 36%, transparent); }
+.gl-round { stroke-linejoin: round; }
+.gl-hair { stroke-width: max(calc(var(--gl-w) * 0.5), 0.9); stroke-opacity: 0.85; fill: none; stroke-linecap: round; }
+.gl-hi { stroke: #e9f3ff; stroke-width: calc(var(--gl-w) * 0.4); stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.gl-gilt { fill: var(--e, #b98a3e); stroke: var(--e, #b98a3e); stroke-width: 0.4; stroke-linejoin: round; }
+.gl-ray { stroke: color-mix(in srgb, #fff 80%, var(--gl-c)); stroke-width: max(calc(var(--gl-w) * 0.45), 0.7); stroke-linejoin: round; stroke-linecap: round; fill: none; }
+.gl-x { opacity: var(--gl-detail, 1); }
+.gl-pl { stroke-width: calc(var(--gl-w) * 0.6); }
+.gl-lite { fill: color-mix(in srgb, #fff0f4 38%, transparent); }

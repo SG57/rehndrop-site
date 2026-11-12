@@ -1,0 +1,27 @@
+---
+// The essence compass: the three essence glyphs as a real nav of three buttons. The dominant
+// essence glows, the other two rest (compass.ts, from rehndrop:essence). Click or Enter scrolls
+// to that essence's index section and moves focus there. Never labelled in visible words.
+import Glyph from './Glyph.astro';
+interface Props { variant?: 'home' | 'mini'; class?: string }
+const { variant = 'home', class: cls } = Astro.props;
+const E = ['candle', 'chrome', 'dawn'] as const;
+const big = variant === 'home';
+---
+<nav class:list={['compass', `compass--${variant}`, cls]} aria-label={big ? 'essence' : 'essences'} data-compass>
+  {big && (
+    <svg class="compass-ring" viewBox="0 0 132 124" aria-hidden="true" focusable="false">
+      <circle cx="66" cy="66" r="55" />
+      <path d="M66 26L101 86H31z" />
+    </svg>
+  )}
+  {E.map((e) => (
+    <button class={`compass-b ec-${e}`} type="button" data-compass-go={e} aria-label={e}>
+      <Glyph name={`essence-${e}`} size={big ? 30 : 19} class="compass-g" />
+    </button>
+  ))}
+</nav>
+<script>
+  import { startCompass } from '../scripts/compass';
+  startCompass();
+</script>

@@ -1,18 +1,28 @@
 ---
-// The chrome on every page: the R and the wordmark (home), `choose a track` (the index) and
-// `contact` (the contact sheet). On the home page the home link marks itself current and
-// does nothing (nav.ts).
+// The chrome on every page: the R and the wordmark (home), the essence compass in miniature,
+// `choose a track` (the index) and `contact` (the contact sheet). On the home page the home
+// link marks itself current and does nothing (nav.ts). The room map is the one small JSON the
+// compass reads to put the playing track's essence glyph in the mini player (compass.ts).
 import { u } from '../lib/site';
+import '../styles/structure.css';
+import { data } from '../lib/data';
+import EssenceCompass from './EssenceCompass.astro';
+import Glyph from './Glyph.astro';
 interface Props { home: boolean }
 const { home } = Astro.props;
+const roomMap = Object.fromEntries(data.tracks.filter((t) => t.room).map((t) => [t.slug, t.room]));
 ---
 <header class="top">
-  <a class="top-home" href={u()} data-home aria-current={home ? 'page' : undefined}>
+  <a class="top-home" href={u()} aria-label="rehndrop home" data-home aria-current={home ? 'page' : undefined}>
     <img class="top-mark" src={u('brand/r-chrome-160.webp')} width="160" height="167" alt="" decoding="async" />
     <img class="top-word" src={u('brand/wordmark-4k.jpg')} width="3186" height="277" alt="rehndrop" decoding="async" />
   </a>
-  <nav class="top-nav" aria-label="site">
-    <a class="top-link" href={home ? '#index' : u('#index')}>choose a track</a>
-    <button class="top-link" type="button" data-contact-open aria-haspopup="dialog">contact</button>
-  </nav>
+  <div class="top-end">
+    <nav class="top-nav" aria-label="site">
+      <a class="top-link" data-essence-skin="link" href={home ? '#index' : u('#index')}><Glyph name="chevron-down" size={17} class="top-glyph" /><span>choose a track</span></a>
+      <button class="top-link" data-essence-skin="link" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={17} class="top-glyph" /><span>contact</span></button>
+    </nav>
+    <EssenceCompass variant="mini" class="top-compass" />
+  </div>
+  <script type="application/json" id="room-map" set:html={JSON.stringify(roomMap)} />
 </header>

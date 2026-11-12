@@ -1,0 +1,33 @@
+/* Essence tokens as CSS variables. The five skin variables are set per element by
+   essence-ui.ts (blended from the three essences by position and time) or inherited from a
+   locked column in the kit page. Values mirror ESSENCE_TOKENS in src/lib/essence.ts
+   (scripts/check_essence.mjs guards the TypeScript side; keep these in step by hand).
+
+   --a    accent (colour)           --g    glass fill (rgba, semi-opaque)
+   --e    edge (rgba, .8 alpha)     --r    corner radius (ornate soft square / sharp chamfer / round)
+   --glow glow strength 0..1
+
+   Text colour never changes with the essence: legibility is measured against the
+   three plates (scripts/measure_contrast.mjs, TEXT table kept in step with these tokens);
+   the numbers are in essence.css above the search skin.
+     --ess-text    #e7e9ea  body and titles
+     --ess-text-2  #d4d8dc  secondary
+     --ess-text-3  #c9cdd2  tertiary (smallest allowed use: 14px meta text, always on glass) */
+:root {
+  --a: #c9ced6;
+  --g: rgba(10, 10, 14, 0.5);
+  --e: rgba(138, 143, 150, 0.8);
+  --r: 10px;
+  --glow: 0;
+  --ess-text: #e7e9ea;
+  --ess-text-2: #d4d8dc;
+  --ess-text-3: #c9cdd2;
+  /* global.css reads --ink-2 and --ink-3; tokens.css loads after it, so the lift lands everywhere */
+  --ink-2: var(--ess-text-2);
+  --ink-3: var(--ess-text-3);
+}
+
+/* a fixed essence, for the kit page and for any block that must not follow the wheel */
+[data-essence-lock='candle'] { --a: #d89a4f; --g: rgba(40, 8, 14, 0.58); --e: rgba(185, 138, 62, 0.8); --r: 12px; --glow: 0.5; }
+[data-essence-lock='chrome'] { --a: #8db1dc; --g: rgba(6, 10, 16, 0.62); --e: rgba(143, 163, 184, 0.8); --r: 3px; --glow: 0.35; }
+[data-essence-lock='dawn'] { --a: #e7b7a6; --g: rgba(70, 46, 52, 0.42); --e: rgba(233, 214, 168, 0.8); --r: 26px; --glow: 0.8; }

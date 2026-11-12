@@ -8,6 +8,9 @@ import { letterOf } from '../lib/fold';
 import IndexRow from './IndexRow.astro';
 import Poster from './Poster.astro';
 import StorePills from './StorePills.astro';
+import Glyph from './Glyph.astro';
+import Ornament from './Ornament.astro';
+import '../styles/trackpage.css';
 
 type Section =
   | { id: string; title: string; kind: 'tracks'; items: Track[] }
@@ -15,19 +18,32 @@ type Section =
   | { id: string; title: string; kind: 'videos'; items: Video[] };
 interface Props { sections: Section[]; total: Track[] }
 const { sections, total } = Astro.props;
+// which essence a lane section swells toward while it is in view
+const ROOM_OF_SECTION: Record<string, string | undefined> = { detox: 'candle', heavy: 'chrome', pretty: 'dawn' };
+// each section's glyph: the three lanes wear their essence glyph, the rest their own
+const GLYPH_OF_SECTION: Record<string, string> = {
+  picks: 'sec-picks',
+  newest: 'sec-new',
+  reels: 'sec-reels',
+  heavy: 'essence-chrome',
+  pretty: 'essence-dawn',
+  detox: 'essence-candle',
+  videos: 'play',
+  early: 'sec-old',
+};
 const shown = sections.filter((s) => s.items.length > 0);
 const letters = total.length > LETTER_STRIP_AFTER ? [...new Set(total.map((t) => letterOf(t.title)))].sort((a, b) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b))) : [];
 ---
 <section class="index" id="index" data-index aria-label="tracks">
   <div class="ix-head">
     <form class="ix-tools" role="search" action="#index">
-      <label class="ix-search">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M15.2 15.2 20 20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+      <label class="ix-search" data-essence-skin="search">
+        <Glyph name="search" size={18} class="ix-search-glyph" />
         <input type="search" name="q" data-search placeholder="find a track" aria-label="find a track" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" />
       </label>
       <div class="ix-views" role="group" aria-label="view">
-        <button class="ix-view" type="button" data-view-btn="grid" aria-pressed="true">grid</button>
-        <button class="ix-view" type="button" data-view-btn="list" aria-pressed="false">list</button>
+        <button class="ix-view" type="button" data-view-btn="grid" aria-pressed="true"><Glyph name="grid" size={16} class="ix-view-glyph" /><span>grid</span></button>
+        <button class="ix-view" type="button" data-view-btn="list" aria-pressed="false"><Glyph name="list" size={16} class="ix-view-glyph" /><span>list</span></button>
       </div>
     </form>
     <div class="ix-stores">
@@ -40,16 +56,24 @@ const letters = total.length > LETTER_STRIP_AFTER ? [...new Set(total.map((t) =>
       </nav>
     )}
   </div>
-  <p class="ix-empty" data-empty role="status"></p>
+  <div class="ix-void">
+    <Ornament class="ix-void-orn" size={22} />
+    <p class="ix-empty" data-empty role="status"></p>
+  </div>
   {shown.map((s) => (
-    <section class:list={['ix-sec', `ix-sec--${s.kind}`, { 'is-capped': s.items.length > INDEX_CAP }]} id={s.id} data-sec aria-labelledby={`${s.id}-title`}>
-      <h2 class="ix-h" id={`${s.id}-title`}>{s.title}</h2>
+    <section class:list={['ix-sec', `ix-sec--${s.kind}`, { 'is-capped': s.items.length > INDEX_CAP }]} id={s.id} data-essence-section={ROOM_OF_SECTION[s.id]} data-sec aria-labelledby={`${s.id}-title`}>
+      <div class="ix-hd">
+        <Glyph name={GLYPH_OF_SECTION[s.id] ?? 'more'} size={24} class="ix-hd-glyph" />
+        <h2 class="ix-h" id={`${s.id}-title`} tabindex="-1">{s.title}</h2>
+        <span class="ix-rule" aria-hidden="true"></span>
+        <span class="ix-count" aria-hidden="true">{s.items.length}</span>
+      </div>
       <ul class="ix-grid" role="list">
         {s.kind === 'tracks' && s.items.map((t, i) => <IndexRow track={t} extra={i >= INDEX_CAP} />)}
         {s.kind === 'reels' && s.items.map((r, i) => <Poster reel={r} extra={i >= INDEX_CAP} />)}
         {s.kind === 'videos' && s.items.map((v, i) => <Poster video={v} extra={i >= INDEX_CAP} />)}
       </ul>
-      {s.items.length > INDEX_CAP && <button class="ix-more" type="button" data-more aria-controls={s.id}>more.</button>}
+      {s.items.length > INDEX_CAP && <button class="ix-more" type="button" data-more aria-controls={s.id}><span>more.</span><Glyph name="chevron-down" size={16} class="ix-more-glyph" /></button>}
     </section>
   ))}
 </section>

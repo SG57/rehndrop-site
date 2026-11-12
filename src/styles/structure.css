@@ -1,0 +1,302 @@
+/* Structure: the glyph language laid into the page. Loaded by Header.astro (every page), after
+   global.css, tokens.css and essence.css. Glyphs come from Glyph.astro (inline svg, currentColor);
+   everything here only places, sizes and colours them. Rules:
+   - one fixed colour per essence for badges and marks that must always read as that essence
+     (--ec); anything inside a [data-essence-lock] block may use the blended --a instead
+   - no filters, no backdrop blur, no animation: a colour or opacity change is the most a glyph does,
+     and on the software tier even that is all that moves (tier rules in essence.css still apply)
+   - every glyph is decorative (aria-hidden) except the compass buttons, which are named in the markup */
+
+:root {
+  --ec-candle: #d89a4f;
+  --ec-chrome: #8db1dc;
+  --ec-dawn: #e7b7a6;
+  --gm-candle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.25 3.62A8.8 8.8 0 1 0 19.89 15.35 7 7 0 0 1 12.25 3.62z' fill='%23000' fill-opacity='.25'/%3E%3Cpath d='M18 4.2v2.4M16.8 5.4h2.4'/%3E%3C/svg%3E");
+  --gm-chrome: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='miter' stroke-linejoin='miter'%3E%3Cpath d='M1.8 12h20.4'/%3E%3Cpath d='M8.5 4.6h.6l.9.9v13l-.9.9h-.6l-.9-.9v-13zM15.5 4.6h-.6l-.9.9v13l.9.9h.6l.9-.9v-13z' fill='%23000' fill-opacity='.3'/%3E%3C/svg%3E");
+  --gm-dawn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 4.5h8l5.5 5L12 21 2.5 9.5z' fill='%23000' fill-opacity='.25'/%3E%3Cpath d='M2.5 9.5h19M9.5 9.5 12 21l2.5-11.5'/%3E%3C/svg%3E");
+}
+.ec-candle { --ec: var(--ec-candle); color: var(--ec-candle); }
+.ec-chrome { --ec: var(--ec-chrome); color: var(--ec-chrome); }
+.ec-dawn { --ec: var(--ec-dawn); color: var(--ec-dawn); }
+[data-essence-section='candle'], [data-chip='detox'] { --ec: var(--ec-candle); }
+[data-essence-section='chrome'], [data-chip='heavy'] { --ec: var(--ec-chrome); }
+[data-essence-section='dawn'], [data-chip='pretty'] { --ec: var(--ec-dawn); }
+.chip svg, .top-link svg, .ix-hd svg, .ix-view svg, .ix-more svg, .kicker svg, .crest svg, .orn svg, .contact-links svg, .stage-contact svg, .tv-share svg, .mini-line svg, .spot-step svg { flex: none; }
+.compass-b svg { display: block; }
+/* the compass needs script; without it the three buttons would do nothing */
+html:not(.js) .compass { display: none; }
+.compass--home .compass-b:focus-visible { border-radius: 50%; }
+
+/* ---------- header: brand, compass in miniature, links with glyphs ---------- */
+.top-end { display: flex; align-items: center; min-width: 0; }
+
+.top-link { white-space: nowrap; }
+.top-glyph { display: none; color: var(--bone-2); }
+@media (min-width: 760px) {
+  .top-glyph { display: block; }
+  .top-link { gap: 8px; }
+}
+/* below 640 the wordmark gives way to the compass (the R alone is the brand); between 430 and 640
+   there was never room for both */
+@media (max-width: 639px) { .top-word { display: none; } }
+.top-link:hover .top-glyph { color: var(--bone); }
+
+/* ---------- the compass ---------- */
+.compass { position: relative; }
+.compass-b {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: rgba(231, 233, 234, 0.78);
+  transition: color 0.6s var(--ease), background-color 0.6s var(--ease), border-color 0.6s var(--ease);
+}
+.compass-b:hover { color: rgba(231, 233, 234, 0.92); }
+.compass-g { grid-area: 1 / 1; position: relative; }
+
+/* home: three glass nodes at the corners of a hairline triangle, inside a hairline ring */
+.compass--home { width: 132px; height: 124px; flex: none; }
+.compass-ring { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; pointer-events: none; }
+.compass-ring circle { stroke: rgba(231, 233, 234, 0.26); stroke-width: 0.9; }
+.compass-ring path { stroke: rgba(231, 233, 234, 0.2); stroke-width: 0.9; stroke-linejoin: round; }
+.compass--home .compass-b {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: radial-gradient(circle at 35% 30%, rgba(40, 42, 50, 0.88), rgba(4, 4, 7, 0.92) 72%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 20px -10px rgba(0, 0, 0, 0.95);
+}
+.compass--home [data-compass-go='candle'] { left: 40px; top: 0; }
+.compass--home [data-compass-go='chrome'] { left: 75px; top: 60px; }
+.compass--home [data-compass-go='dawn'] { left: 5px; top: 60px; }
+.compass--home .compass-b::after { /* a pinpoint under the leader */
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  border-radius: 50%;
+  background: var(--ec);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+
+/* header: three bare glyphs after a hairline, at the end of the row (after the links in tab order too) */
+.compass--mini { display: inline-flex; align-items: center; margin-left: 4px; padding-left: 4px; border-left: 1px solid var(--line); }
+.top-compass { display: none; }
+@media (min-width: 480px) { .top-compass.compass--mini { display: inline-flex; } }
+.compass--mini .compass-b { width: 44px; height: 44px; }
+.compass--mini .compass-b::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 9px;
+  width: 10px;
+  height: 1px;
+  margin-left: -5px;
+  background: var(--ec);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+
+/* the home page shows the large compass; the header one steps aside while it is on screen (compass.ts) */
+html[data-compass-home] .compass--mini { display: none; }
+
+/* the leader: colour and a pinpoint, nothing moves */
+.compass[data-on='candle'] [data-compass-go='candle'],
+.compass[data-on='chrome'] [data-compass-go='chrome'],
+.compass[data-on='dawn'] [data-compass-go='dawn'] { color: var(--ec); }
+.compass--home[data-on='candle'] [data-compass-go='candle'],
+.compass--home[data-on='chrome'] [data-compass-go='chrome'],
+.compass--home[data-on='dawn'] [data-compass-go='dawn'] { border-color: color-mix(in srgb, var(--ec) 70%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 22px -4px color-mix(in srgb, var(--ec) 55%, transparent), 0 8px 20px -10px rgba(0, 0, 0, 0.95); }
+.compass[data-on='candle'] [data-compass-go='candle']::after,
+.compass[data-on='chrome'] [data-compass-go='chrome']::after,
+.compass[data-on='dawn'] [data-compass-go='dawn']::after { opacity: 1; }
+
+/* the welcome block: the compass sits over the bio and the four stores */
+.welcome-copy .compass--home { margin: 0 auto 6px; }
+
+/* ---------- chips: glyph + word on a small dark capsule ---------- */
+.chips { gap: 8px; padding-top: 2px; padding-bottom: 2px; }
+html .chip {
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(16, 16, 22, 0.66), rgba(4, 4, 7, 0.74));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: color 0.3s, border-color 0.5s, background-color 0.5s;
+}
+html .chip::after { display: none; }
+html .chip:hover { border-color: color-mix(in srgb, var(--e, var(--line-2)) 75%, transparent); }
+.chip-g { color: var(--ec, var(--bone-2)); opacity: 0.92; }
+.chip:not(.chip--essence) .chip-g { color: var(--bone-2); }
+.chip:hover .chip-g { opacity: 1; }
+
+/* ---------- search, view toggle, more ---------- */
+.ix-view { display: inline-flex; align-items: center; gap: 8px; padding: 0 16px 0 14px; }
+.ix-view svg { opacity: 0.85; }
+.ix-search svg { margin-left: 20px; color: var(--ink-3); }
+.ix-more svg { color: var(--bone-2); }
+
+/* ---------- section headings: glyph, words, a hairline in the essence colour, a count ---------- */
+.ix-hd-glyph { color: var(--ec); }
+.ix-rule {
+  order: 4;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ec) 78%, transparent), color-mix(in srgb, var(--ec) 22%, transparent) 62%, transparent);
+}
+.ix-rule::before { /* a small lozenge where the rule starts */
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  background: var(--ec);
+  transform: rotate(45deg);
+  opacity: 0.9;
+}
+.ix-count { order: 3; margin-left: -4px; font-family: var(--font-display); font-size: 13px; letter-spacing: 0.14em; color: var(--ink-2, var(--ink-3)); font-variant-numeric: tabular-nums; text-shadow: 0 0 2px rgba(2, 2, 4, 0.95), 0 1px 3px rgba(0, 0, 0, 0.85); }
+.ix-sec.is-filtered .ix-count { display: none; }
+/* a phone: one line, a shorter rule, and the rule gives way before the words do */
+@media (max-width: 379px) {
+  .ix-hd { gap: 10px; }
+  .ix-h { white-space: nowrap; letter-spacing: 0.16em; font-size: 13px; }
+  .ix-rule { min-width: 0; flex-basis: 0; }
+}
+.ix-h:focus { outline: none; }
+.ix-h:focus-visible { outline: 1.5px solid var(--bone); outline-offset: 6px; border-radius: 4px; }
+
+/* ---------- essence badge: tiles and rows ----------
+   The glyph is a mask (one drawing per essence, in :root), so it looks the same on every tier and costs
+   no inline svg. The lanes already say their essence in the heading, so the badge only appears where
+   it adds something: picks, new, old and the track page's more. Grid: a small plate on the cover's
+   top left. List: the glyph alone, at the start of the meta, clear of the play button. */
+.ess-g { display: block; width: 100%; height: 100%; background: currentColor; -webkit-mask: var(--gm) center / contain no-repeat; mask: var(--gm) center / contain no-repeat; }
+.ess-g--candle { --gm: var(--gm-candle); }
+.ess-g--chrome { --gm: var(--gm-chrome); }
+.ess-g--dawn { --gm: var(--gm-dawn); }
+.ess-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: min(50%, calc(var(--r) * 0.75)); /* soft square, chamfer, round: the radius language */
+  border: 1px solid color-mix(in srgb, var(--e) 70%, transparent);
+  background: color-mix(in srgb, var(--g) 70%, rgb(4, 4, 7));
+  color: var(--a);
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  contain: strict; /* a fixed-size decoration: its paint never reaches the tile (measured on the software tier) */
+}
+.ess-badge .ess-g { width: 16px; height: 16px; grid-area: 1 / 1; }
+.ess-inline { display: none; flex: none; width: 15px; height: 15px; color: var(--a); opacity: 0.9; margin-right: 8px; }
+[data-essence-section] .ess-badge, [data-essence-section] .ess-inline { display: none; }
+html[data-view='list'] .ix-item .ess-badge,
+.ix-grid--list .ess-badge { display: none; }
+html[data-view='list'] .ix-item .ess-inline,
+.ix-grid--list .ess-inline { display: block; }
+html[data-view='list'] [data-essence-section] .ess-inline { display: none; }
+
+/* ---------- the void: nothing here ---------- */
+.ix-void { display: grid; justify-items: center; }
+.ix-void:has(.ix-empty:empty) .orn { display: none; }
+.ix-void .orn { margin-top: clamp(28px, 6vh, 56px); width: min(100%, 260px); }
+.ix-void .ix-empty { margin-top: 14px; }
+.void-orn { width: min(100%, 300px); margin: 0 auto; }
+
+/* ---------- ornament ---------- */
+.orn { display: flex; align-items: center; gap: 14px; }
+.orn-rule { flex: 1 1 0; height: 1px; background: linear-gradient(90deg, transparent, var(--line-2)); }
+.orn-rule:last-child { background: linear-gradient(270deg, transparent, var(--line-2)); }
+.orn-set { display: inline-flex; align-items: center; gap: 10px; }
+.orn-set svg { opacity: 0.7; }
+.orn-gem { width: 6px; height: 6px; transform: rotate(45deg); background: var(--bone-3); }
+.foot-orn { width: min(100%, 320px); margin-bottom: 6px; }
+
+/* ---------- spotlight: kicker and step buttons ---------- */
+.kicker { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0 0 2px; color: var(--a); }
+.kicker-g { opacity: 0.95; }
+.kicker-rule { display: none; width: 64px; height: 1px; background: linear-gradient(90deg, color-mix(in srgb, var(--a) 70%, transparent), transparent); }
+@media (orientation: landscape) and (max-height: 540px), (min-width: 900px) and (min-height: 541px) {
+  .kicker { justify-content: flex-start; }
+  .kicker-rule { display: block; }
+}
+.spot-step {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  color: var(--bone-2);
+  transition: color 0.3s, border-color 0.4s, background-color 0.4s;
+}
+.spot-step:hover { color: var(--bone); border-color: var(--line-2); background: rgba(6, 6, 10, 0.5); }
+
+/* ---------- play marks: rounded, so the corners match the glyph set ---------- */
+.play-glyph path, .poster-play svg path { stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; }
+
+/* ---------- contact ---------- */
+.contact-links, .stage-contact { align-items: center; justify-content: center; gap: 12px; }
+.contact-links { display: inline-flex; }
+/* the stage button only exists where global.css shows it */
+@media (min-width: 900px) and (min-height: 560px) and (min-aspect-ratio: 5/4) { .stage-contact { display: inline-flex; } }
+.contact-glyph { opacity: 0.85; }
+
+/* ---------- mini player: the essence glyph by the title ---------- */
+.mini-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mini-ess { display: none; flex: none; }
+.mini[data-ess] .mini-ess { display: block; }
+.mini-ess .mini-ess-g { display: none; }
+.mini[data-ess='candle'] .mini-ess--candle { display: block; color: var(--ec-candle); }
+.mini[data-ess='chrome'] .mini-ess--chrome { display: block; color: var(--ec-chrome); }
+.mini[data-ess='dawn'] .mini-ess--dawn { display: block; color: var(--ec-dawn); }
+.mini-line .mini-title { min-width: 0; flex: 0 1 auto; }
+/* phones: the title needs the room, so the glyph rides the corner of the thumbnail */
+@media (max-width: 480px) {
+  .mini[data-ess] .mini-ess { position: absolute; left: 33px; bottom: 5px; display: grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; background: rgba(4, 4, 7, 0.92); box-shadow: 0 0 0 1px rgba(231, 233, 234, 0.14); }
+  .mini-ess-g { width: 13px; height: 13px; }
+  .mini-line { gap: 0; }
+}
+
+/* ---------- track page: a quiet crest above the title ---------- */
+.crest { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; margin: 0 0 2px; color: var(--a); }
+.crest-g { opacity: 0.8; }
+.crest-rule { flex: 0 1 72px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--a) 65%, transparent)); }
+.crest-rule:last-child { background: linear-gradient(270deg, transparent, color-mix(in srgb, var(--a) 65%, transparent)); }
+@media (orientation: landscape) and (max-height: 540px), (min-width: 900px) and (min-height: 541px) {
+  .crest { justify-content: flex-start; }
+  .crest-rule:first-child { display: none; }
+}
+.back svg { width: 20px; height: 20px; }
+.tv-share svg { opacity: 0.9; }
+.tv-hd .ix-hd-glyph { --ec: var(--a, var(--bone-2)); }
+
+/* ---------- software tier: fewer blended layers ----------
+   Every translucent layer over the scene is re-blended in software on each scene frame. The glyph
+   furniture keeps its look but is painted opaque and flat there: no blur shadows, no inset
+   highlights, no lozenge. The hardware tier is untouched. */
+/* the tile badge keeps its glyph and loses the blended layers: a flat opaque plate, no shadow */
+html[data-tier='software'] .ess-badge { border-color: var(--e); background: rgb(8, 8, 12); box-shadow: none; }
+html[data-tier='software'] .ix-rule::before { display: none; }
+html[data-tier='software'] .ix-count { text-shadow: none; }
+html[data-tier='software'] .chip { box-shadow: none; background: rgb(10, 10, 14); }
+html[data-tier='software'] .compass--home .compass-b,
+html[data-tier='software'] .compass--home[data-on] .compass-b { box-shadow: none; background: rgb(9, 9, 13); }
+html[data-tier='software'] .compass-b,
+html[data-tier='software'] .spot-step,
+html[data-tier='software'] .compass-b::after { transition: none; }

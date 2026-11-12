@@ -4,7 +4,6 @@
 // keep their shape, so tap-to-play can return later without moving anything.
 import { Image } from 'astro:assets';
 import type { Reel, Video } from '../lib/data';
-import { fmtDate } from '../lib/data';
 import { fold } from '../lib/fold';
 import Icon from './Icon.astro';
 type Common = { tag?: 'li' | 'div'; eager?: boolean; extra?: boolean };
@@ -14,10 +13,10 @@ const Tag = tag;
 const title = reel ? reel.title : video!.title;
 const href = reel ? reel.url : `https://www.youtube.com/watch?v=${video!.id}`;
 const label = reel ? `${title} reel on instagram` : `${video!.credit ? `${title} (${video!.credit})` : title} on youtube`;
-const sub = reel ? fmtDate(reel.postedAt) : video!.credit ?? video!.published.slice(0, 4);
+const sub = reel ? null : video!.credit ?? null;
 ---
 <Tag class:list={['poster', reel ? 'poster--reel' : 'poster--video']} data-title={fold(title)} data-extra={extra ? '' : undefined}>
-  <a class="poster-art" href={href} target="_blank" rel="noopener" data-external aria-label={label}>
+  <a class="poster-art" data-essence-skin="cover" href={href} target="_blank" rel="noopener" data-external aria-label={label}>
     {reel ? (
       reel.poster ? <Image src={reel.poster} width={360} height={640} widths={[180, 270, 360]} sizes="auto, (min-width: 900px) 190px, 40vw" alt="" loading={eager ? 'eager' : 'lazy'} format="webp" quality={80} /> : <span class="poster-empty" />
     ) : (

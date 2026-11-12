@@ -2,8 +2,9 @@
 // The contact block above every footer: one control opens the contact sheet; the address
 // itself sits under it as selectable text.
 import { curation } from '../lib/data';
+import Glyph from './Glyph.astro';
 ---
 <section class="contact" aria-label="contact">
-  <button class="contact-links" type="button" data-contact-open aria-haspopup="dialog">booking · press · management</button>
+  <button class="contact-links" data-essence-skin="button" type="button" data-contact-open aria-haspopup="dialog"><Glyph name="contact" size={16} class="contact-glyph" /><span>booking · press · management</span></button>
   <p class="contact-mail selectable">{curation.contact}</p>
 </section>

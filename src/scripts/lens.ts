@@ -2,10 +2,16 @@
 // evaporate, heavier drops slide with a stick-slip stutter and clear a trail through
 // the fog, and the music pushes it all (see player.ts -> drive).
 //
+// With a `scene` the lens is pass 2 of the scene's frame instead of a renderer of its own: it
+// shares the scene's GL context, reads the scene framebuffer as the sharp velvet and a 1/4
+// resolution copy of it (the scene makes that, refreshed every other frame) as the fog, and is
+// drawn by the scene's loop. Without a scene it behaves exactly as it always has.
+//
 // Failure is always graceful: no WebGL, a lost context, a slow device or reduced motion
 // all leave the static CSS velvet underneath, which is the same image.
 import { drive, reducedMotion } from './drive';
 import { frozen, wallNow } from './clock';
+import type { SceneHandle } from './scene';
 
 const VERT = `
 attribute vec2 aPos;
@@ -174,21 +180,25 @@ interface Options {
   sharp: string;
   fog: string;
   texAspect: number;
+  scene?: SceneHandle;
 }
 
-export function startLens({ canvas, sharp, fog, texAspect }: Options) {
+export function startLens({ canvas, sharp, fog, texAspect, scene }: Options) {
   const force = new URLSearchParams(location.search).has('lens');
   if (reducedMotion() && !force) return;
+  if (scene && scene.info().tier === 'reduced' && !force) return; // still scene: plain blit, no moving glass
 
-  const gl = canvas.getContext('webgl', {
-    alpha: false,
-    antialias: false,
-    depth: false,
-    stencil: false,
-    premultipliedAlpha: false,
-    powerPreference: 'low-power',
-    failIfMajorPerformanceCaveat: !force, // software GL would melt a phone; keep the static velvet
-  }) as WebGLRenderingContext | null;
+  const gl = (scene
+    ? scene.gl
+    : canvas.getContext('webgl', {
+        alpha: false,
+        antialias: false,
+        depth: false,
+        stencil: false,
+        premultipliedAlpha: false,
+        powerPreference: 'low-power',
+        failIfMajorPerformanceCaveat: !force, // software GL would melt a phone; keep the static velvet
+      })) as WebGLRenderingContext | null;
   if (!gl) return;
 
   const prog = link(gl);
@@ -217,6 +227,16 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   let lastH = 0;
 
   const size = () => {
+    if (scene) {
+      // the scene owns the backing store; the framebuffer already covers the screen, so only
+      // the 8% parallax slack is left to apply
+      aspect = canvas.clientWidth / canvas.clientHeight || 1;
+      const k = 1 / 1.08;
+      gl.useProgram(prog);
+      gl.uniform4f(u.cover, k, k, (1 - k) / 2, (1 - k) / 2);
+      gl.uniform1f(u.aspect, aspect);
+      return;
+    }
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
@@ -261,7 +281,27 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   let raf = 0;
   let running = false;
   let lastScroll = 0;
-  window.addEventListener('scroll', () => (lastScroll = performance.now()), { passive: true });
+  // layout-dependent numbers are cached and refreshed on scroll, resize and size changes of the
+  // page, so a frame never forces a synchronous layout (style writes elsewhere would make each
+  // read a full relayout, which competes with the software rasteriser for the same cores)
+  let scrollPos = scrollY;
+  let viewH = innerHeight;
+  let scrollMax = 1;
+  const measurePage = () => {
+    viewH = innerHeight;
+    scrollMax = Math.max(1, document.documentElement.scrollHeight - viewH);
+  };
+  measurePage();
+  window.addEventListener('scroll', () => {
+    lastScroll = performance.now();
+    scrollPos = scrollY;
+  }, { passive: true });
+  window.addEventListener('resize', measurePage, { passive: true });
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(measurePage);
+    ro.observe(document.documentElement);
+    ro.observe(document.body);
+  }
   let lost = false;
   let last = performance.now();
   let slide = 0;
@@ -273,6 +313,65 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
   let probeFrames = 0;
   let probeTime = 0;
   let downgrades = 0;
+
+  // everything that depends on the clock and the music, then the draw. Shared by the lens' own
+  // loop (frame) and by the scene's pass 2.
+  const render = (dt: number) => {
+    if (scene) {
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, scene.texture());
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, scene.fogTexture());
+      gl.uniform1i(u.sharp, 0);
+      gl.uniform1i(u.fog, 1);
+    }
+    if (frozen) {
+      // a still frame: every clock in the shader comes from the pinned time
+      wall = slide = (wallNow() / 1000) % 2000;
+    } else {
+      wall = (wall + dt) % 2000;
+      slide = (slide + dt * drive.speed) % 2000;
+    }
+    flash = Math.max(drive.flash, flash - dt * 3);
+    for (let k = 0; k < 3; k++) tint[k] += (drive.tint[k] - tint[k]) * Math.min(1, dt * 2.5);
+    for (let i = 0; i < 6; i++) wipes[i * 3 + 2] = Math.max(0, wipes[i * 3 + 2] - dt * 0.7);
+    // the dye bleeds in and drains slowly, like light soaking into fabric. Its colour only
+    // travels while it shows, so a new track never fades in through the last one's colour
+    const [r, g, b] = drive.tint.map((c) => c ** 2.2);
+    const l = Math.max(0.01, 0.2126 * r + 0.7152 * g + 0.0722 * b);
+    const target = [r / l, g / l, b / l];
+    for (let k = 0; k < 3; k++) dyeCol[k] = dye < 0.01 ? target[k] : dyeCol[k] + (target[k] - dyeCol[k]) * Math.min(1, dt * 1.2);
+    dye += (drive.dye - dye) * Math.min(1, dt * 0.9);
+
+    // wall-clock orbit and sway, computed here in float64 so the GPU never sees a large time
+    const t = wallNow() / 1000;
+    sx += (px - sx) * Math.min(1, dt * 2);
+    sy += (py - sy) * Math.min(1, dt * 2);
+    gl.uniform2f(u.sway, 0.006 * Math.sin(t * 0.21) + 0.004 * Math.sin(t * 0.13) - sx * 0.012, 0.005 * Math.cos(t * 0.17) + sy * 0.01);
+    gl.uniform4f(u.lights,
+      0.5 + 0.42 * Math.cos(t * 0.071), 0.55 + 0.36 * Math.sin(t * 0.053),
+      0.5 + 0.4 * Math.cos(t * 0.047 + 2.6), 0.45 + 0.38 * Math.sin(t * 0.061 + 1.1));
+    // the light pools breathe on their own and swell with the low end while music plays
+    gl.uniform2f(u.lightAmp,
+      0.8 + 0.25 * Math.sin(t * 0.55) + drive.pulse * 1.1,
+      0.8 + 0.25 * Math.sin(t * 0.41 + 1.3) + drive.pulse * 1.4);
+
+    gl.uniform1f(u.time, wall);
+    gl.uniform1f(u.slide, slide);
+    gl.uniform1f(u.rain, Math.min(1, Math.max(0, drive.rain)));
+    gl.uniform1f(u.flash, flash);
+    gl.uniform1f(u.scroll, Math.min(1, scrollPos / scrollMax));
+    gl.uniform1f(u.depth, (scrollPos / viewH) * 0.35);
+    gl.uniform3f(u.tint, tint[0], tint[1], tint[2]);
+    // it breathes a little with the low end
+    gl.uniform4f(u.dye, dyeCol[0], dyeCol[1], dyeCol[2], Math.min(1, dye * (0.9 + 0.3 * drive.pulse)));
+    gl.uniform3fv(u.wipe, wipes);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
 
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
@@ -305,49 +404,7 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
       }
     }
 
-    if (frozen) {
-      // a still frame: every clock in the shader comes from the pinned time
-      wall = slide = (wallNow() / 1000) % 2000;
-    } else {
-      wall = (wall + dt) % 2000;
-      slide = (slide + dt * drive.speed) % 2000;
-    }
-    flash = Math.max(drive.flash, flash - dt * 3);
-    for (let k = 0; k < 3; k++) tint[k] += (drive.tint[k] - tint[k]) * Math.min(1, dt * 2.5);
-    for (let i = 0; i < 6; i++) wipes[i * 3 + 2] = Math.max(0, wipes[i * 3 + 2] - dt * 0.7);
-    // the dye bleeds in and drains slowly, like light soaking into fabric. Its colour only
-    // travels while it shows, so a new track never fades in through the last one's colour
-    const [r, g, b] = drive.tint.map((c) => c ** 2.2);
-    const l = Math.max(0.01, 0.2126 * r + 0.7152 * g + 0.0722 * b);
-    const target = [r / l, g / l, b / l];
-    for (let k = 0; k < 3; k++) dyeCol[k] = dye < 0.01 ? target[k] : dyeCol[k] + (target[k] - dyeCol[k]) * Math.min(1, dt * 1.2);
-    dye += (drive.dye - dye) * Math.min(1, dt * 0.9);
-
-    // wall-clock orbit and sway, computed here in float64 so the GPU never sees a large time
-    const t = wallNow() / 1000;
-    sx += (px - sx) * Math.min(1, dt * 2);
-    sy += (py - sy) * Math.min(1, dt * 2);
-    gl.uniform2f(u.sway, 0.006 * Math.sin(t * 0.21) + 0.004 * Math.sin(t * 0.13) - sx * 0.012, 0.005 * Math.cos(t * 0.17) + sy * 0.01);
-    gl.uniform4f(u.lights,
-      0.5 + 0.42 * Math.cos(t * 0.071), 0.55 + 0.36 * Math.sin(t * 0.053),
-      0.5 + 0.4 * Math.cos(t * 0.047 + 2.6), 0.45 + 0.38 * Math.sin(t * 0.061 + 1.1));
-    // the light pools breathe on their own and swell with the low end while music plays
-    gl.uniform2f(u.lightAmp,
-      0.8 + 0.25 * Math.sin(t * 0.55) + drive.pulse * 1.1,
-      0.8 + 0.25 * Math.sin(t * 0.41 + 1.3) + drive.pulse * 1.4);
-
-    const scrollMax = Math.max(1, document.documentElement.scrollHeight - innerHeight);
-    gl.uniform1f(u.time, wall);
-    gl.uniform1f(u.slide, slide);
-    gl.uniform1f(u.rain, Math.min(1, Math.max(0, drive.rain)));
-    gl.uniform1f(u.flash, flash);
-    gl.uniform1f(u.scroll, Math.min(1, scrollY / scrollMax));
-    gl.uniform1f(u.depth, (scrollY / innerHeight) * 0.35);
-    gl.uniform3f(u.tint, tint[0], tint[1], tint[2]);
-    // it breathes a little with the low end
-    gl.uniform4f(u.dye, dyeCol[0], dyeCol[1], dyeCol[2], Math.min(1, dye * (0.9 + 0.3 * drive.pulse)));
-    gl.uniform3fv(u.wipe, wipes);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    render(dt);
     if (frozen) stop();
   };
 
@@ -365,6 +422,27 @@ export function startLens({ canvas, sharp, fog, texAspect }: Options) {
       document.documentElement.classList.remove('lens-on');
     }
   };
+
+  if (scene) {
+    // pass 2 of the scene frame: the scene calls this every frame it draws (no throttle: the
+    // canvas is cleared after each composite, so skipping a frame would blank the glass), and
+    // its adaptive scale already covers what the lens' own probe does
+    // The scene hides the static CSS velvet only once it has really drawn: lens-on goes on at the
+    // first drawn frame, and the scene takes it off again if it fails or sheds the lens.
+    window.addEventListener('resize', size, { passive: true });
+    size();
+    scene.setPass2((now) => {
+      const dt = Math.min((now - last) / 1000, 0.1);
+      last = now;
+      render(dt);
+    });
+    const on = () => {
+      if (scene.info().lens) document.documentElement.classList.add('lens-on'); // not if it already failed
+    };
+    if (scene.drawn()) on();
+    else document.addEventListener('scene:ready', on, { once: true });
+    return;
+  }
 
   canvas.addEventListener('webglcontextlost', (e) => {
     e.preventDefault();

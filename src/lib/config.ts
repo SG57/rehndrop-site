@@ -12,3 +12,8 @@ export const TOAST_MS = 2000;
 
 // the portrait phone velvet (Base.astro): one media query for the preload, the CSS and the lens
 export const PHONE_VELVET_MQ = '(max-width: 700px) and (orientation: portrait)';
+
+// rooms (data.ts, scripts/check_rooms.mjs): the three painted looks a current-era track can use.
+// Keep the list in step with scripts/check_rooms.mjs and src/lib/essence.ts.
+export const ROOMS = ['candle', 'chrome', 'dawn'] as const;
+export type Room = (typeof ROOMS)[number];

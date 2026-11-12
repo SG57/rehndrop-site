@@ -3,11 +3,15 @@ import '@fontsource/michroma/400.css';
 import '@fontsource-variable/manrope';
 import '@fontsource/instrument-serif/latin-400-italic.css';
 import '../styles/global.css';
+import '../styles/tokens.css';
+import '../styles/essence.css';
 import { getImage } from 'astro:assets';
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
 import MiniPlayer from '../components/MiniPlayer.astro';
 import ContactSheet from '../components/ContactSheet.astro';
+import Glyph from '../components/Glyph.astro';
+import '../styles/interact.css'; // last, so it wins ties against component styles
 import type { Track } from '../lib/data';
 import curation from '../data/curation.json';
 import { PHONE_VELVET_MQ } from '../lib/config';
@@ -46,6 +50,9 @@ const player = await Promise.all(
     href: u(`t/${t.slug}/`),
   })),
 );
+const sceneNames = ['candle', 'chrome', 'dawn'];
+const scenePlates = sceneNames.map((n) => u(`scene/room-${n}.webp`));
+const sceneMasks = sceneNames.map((n) => u(`scene/mask-${n}.png`));
 const velvet = u('brand/velvet.webp');
 const velvetPhone = u('brand/velvet-phone.webp');
 ---
@@ -94,6 +101,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <ClientRouter />
   </head>
   <body>
+    <Glyph sprite />
     {home && <a class="skip" href="#index">skip to tracks</a>}
     <div class="velvet" aria-hidden="true" transition:persist="velvet" style={`--velvet:url(${velvet});--velvet-phone:url(${velvetPhone})`}></div>
     <canvas class="lens" aria-hidden="true" data-lens transition:persist="lens"></canvas>
@@ -104,10 +112,10 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <div class="drops-layer" aria-hidden="true" transition:persist="drops"><canvas class="drops" data-drops></canvas></div>
     <MiniPlayer />
     <ContactSheet />
-    <p class="toast" data-toast role="status" aria-live="polite"></p>
+    <p class="toast" data-essence-skin="toast" data-toast role="status" aria-live="polite"></p>
     <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />
-    <script is:inline define:vars={{ base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
-      window.__rehndrop = Object.assign(window.__rehndrop || {}, { base, sharp, fog, velvet, texAspect: 2560 / 1441 });
+    <script is:inline define:vars={{ scenePlates, sceneMasks, base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
+      window.__rehndrop = Object.assign(window.__rehndrop || {}, { base, sharp, fog, velvet, texAspect: 2560 / 1441, scenePlates, sceneMasks });
       // portrait phones: the lens reads the same 1080w portrait velvet the CSS layer shows
       if (matchMedia(phoneMq).matches) {
         window.__rehndrop.sharp = phone;
@@ -120,6 +128,10 @@ const velvetPhone = u('brand/velvet-phone.webp');
     </script>
     <script>
       import { startLens } from '../scripts/lens';
+      import { startScene } from '../scripts/scene';
+      import { startWater } from '../scripts/water';
+      import { startEssenceUI } from '../scripts/essence-ui';
+      import { startInteract } from '../scripts/interact';
       import { startDrops } from '../scripts/drops';
       import { startPlayer, type Player, type PlayerTrack } from '../scripts/player';
       import { startSpotlight, startTilt } from '../scripts/ui';
@@ -127,7 +139,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
       import { startSheet } from '../scripts/sheet';
       import { focusTitle, startNav } from '../scripts/nav';
 
-      type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number };
+      type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number; scenePlates: string[]; sceneMasks: string[] };
       const cfg = (window as unknown as { __rehndrop: Cfg }).__rehndrop;
 
       // Two kinds of setup. Once per visit: the player (its <audio> is a persisted element),
@@ -135,6 +147,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
       // Every page load, including the first: whatever lives in the page the router swapped in.
       let player: Player | null = null;
       let first = true;
+      let waterOn = false;
 
       const boot = () => {
         const tracks = JSON.parse(document.getElementById('player-data')?.textContent || '[]') as PlayerTrack[];
@@ -144,9 +157,19 @@ const velvetPhone = u('brand/velvet-phone.webp');
           startSheet();
           startTilt();
           const canvas = document.querySelector<HTMLCanvasElement>('[data-lens]');
-          if (canvas) startLens({ canvas, sharp: cfg.sharp, fog: cfg.fog, texAspect: cfg.texAspect });
+          if (canvas) {
+            // the scene (three blended essences) is pass 1; the wet lens is pass 2 on the same canvas
+            const scene = startScene({ canvas, plates: cfg.scenePlates, masks: cfg.sceneMasks, base: cfg.base });
+            if (scene.gl) {
+              // water on glass is pass 2 of the scene frame; the old 2D drop sprites are not started
+              startWater({ scene });
+              waterOn = true;
+            } else startLens({ canvas, sharp: cfg.sharp, fog: cfg.fog, texAspect: cfg.texAspect, scene });
+          }
+          startEssenceUI();
+          startInteract();
           const water = document.querySelector<HTMLCanvasElement>('[data-drops]');
-          if (water) startDrops(water);
+          if (water && !waterOn) startDrops(water);
         } else {
           player.updateTracks(tracks);
         }

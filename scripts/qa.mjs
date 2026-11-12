@@ -1,10 +1,14 @@
 // Visual + behavioural QA across real device viewports, driving the installed Edge.
-//   npm run build && node scripts/qa.mjs [--only name,name] [--full] [--gpu] [--headed] [--skip-long]
+//   npm run build && node scripts/qa.mjs [--only name,name] [--full] [--gpu] [--headed] [--software] [--skip-long]
 // Serves dist/ itself under the configured base path, writes screenshots to .cache/qa/,
 // and exits 1 on horizontal overflow, console errors, or any failed behaviour check.
 // The browser is always muted. --gpu runs headless on the real GPU; --headed opens an off-screen
 // window for when headless only gets SwiftShader (the WebGL renderer string is printed, so a
 // SwiftShader run is never mistaken for a hardware one); the default is headless SwiftShader.
+// --software forces software WebGL (angle + swiftshader), wins over --gpu and --headed, and fails if the
+// renderer string does not look like software: it is the run that stands in for the target machine.
+// Scene checks (data-tier set, a scene canvas, no overflow with the scene on, forced tiers) run only once
+// the scene exists on the page; until then each prints an explicit SKIP and the final line counts them.
 import { createServer } from 'node:http';
 import { readFile, mkdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -18,7 +22,8 @@ const BASE = existsSync(new URL('../public/CNAME', import.meta.url)) ? '/' : '/r
 const args = process.argv.slice(2);
 const only = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',') : null;
 const full = args.includes('--full');
-const gpu = args.includes('--gpu');
+const software = args.includes('--software');
+const gpu = args.includes('--gpu') && !software;
 const skipLong = args.includes('--skip-long');
 
 const DEVICES = [
@@ -64,14 +69,27 @@ const origin = `http://localhost:${server.address().port}${BASE}`;
 await mkdir(OUT, { recursive: true });
 // Every launch is muted and never on screen: --gpu stays headless on the real GPU (d3d11); only
 // --headed opens a window, parked off screen, for a GPU that headless can't reach.
-const MUTED = ['--mute-audio', '--autoplay-policy=no-user-gesture-required'];
-const headed = args.includes('--headed');
-const browser = await chromium.launch(gpu || headed
+const MUTED = ['--mute-audio', '--disable-features=MediaSessionService,HardwareMediaKeyHandling,GlobalMediaControls', '--autoplay-policy=no-user-gesture-required'];
+const headed = args.includes('--headed') && !software;
+const SOFT_RE = /swiftshader|llvmpipe|software|basic render/i;
+const SOFTWARE_ARGS = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
+const browser = await chromium.launch(software
+  ? { channel: 'msedge', headless: true, args: [...MUTED, ...SOFTWARE_ARGS] }
+  : gpu || headed
   ? { channel: 'msedge', headless: !headed, args: [...MUTED, '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...(headed ? ['--window-position=-2400,-2400'] : [])] }
   : { channel: 'msedge', headless: true, args: [...MUTED, '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 
 const problems = [];
+const skips = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
+const skip = (msg) => { skips.push(msg); console.log('SKIP', msg); };
+// the scene is "present" when the engine has published its snapshot or marked its canvas
+const SCENE_PRESENT = () => !!(window.__rehndrop && window.__rehndrop.scene) || !!document.querySelector('canvas[data-scene], [data-scene] canvas');
+const sceneState = (page) => page.evaluate(() => {
+  const c = document.querySelector('canvas[data-scene], [data-scene] canvas');
+  const r = c?.getBoundingClientRect();
+  return { tier: document.documentElement.dataset.tier || '', canvas: !!c, w: r ? Math.round(r.width) : 0, h: r ? Math.round(r.height) : 0, snap: !!(window.__rehndrop && window.__rehndrop.scene) };
+});
 const calm = 'html{scroll-behavior:auto!important}';
 const desk = () => browser.newContext({ viewport: { width: 1440, height: 900 } });
 const phone = () => browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
@@ -89,7 +107,8 @@ const audioState = (page) => page.evaluate(() => {
     const x = g?.getExtension('WEBGL_debug_renderer_info');
     return x ? g.getParameter(x.UNMASKED_RENDERER_WEBGL) : g ? 'webgl, no renderer info' : 'no webgl';
   });
-  console.log('renderer', JSON.stringify(renderer), headed ? '(headed off screen, real GPU requested)' : gpu ? '(headless, real GPU requested)' : '(headless SwiftShader)');
+  console.log('renderer', JSON.stringify(renderer), software ? '(forced software WebGL)' : headed ? '(headed off screen, real GPU requested)' : gpu ? '(headless, real GPU requested)' : '(headless SwiftShader)');
+  if (software) check(SOFT_RE.test(renderer), `--software: renderer "${renderer}" does not look like software rendering`);
   await ctx.close();
 }
 
@@ -107,6 +126,14 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     check(overflow <= 1, `${tag}: horizontal overflow ${overflow}px`);
     check(!errors.length, `${tag}: console errors: ${errors.join(' | ')}`);
+    if (!path) {
+      if (await page.evaluate(SCENE_PRESENT)) {
+        const sc = await sceneState(page);
+        check(['software', 'hardware', 'reduced'].includes(sc.tier), `${tag}: html[data-tier] is "${sc.tier}" with the scene present`);
+        check(sc.canvas && sc.w > 0 && sc.h > 0, `${tag}: scene present but no sized scene canvas (${sc.w}x${sc.h})`);
+        check(overflow <= 1, `${tag}: horizontal overflow ${overflow}px with the scene on`);
+      } else skip(`${tag}: scene not on the page yet (tier, canvas and scene-overflow checks not run)`);
+    }
     await page.screenshot({ path: join(OUT, `${tag}.png`) });
     if (!path) {
       for (const id of ['spotlight', 'index', 'newest', 'videos']) {
@@ -118,6 +145,25 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
       if (full) await page.screenshot({ path: join(OUT, `${tag}-full.png`), fullPage: true });
     }
     await page.close();
+  }
+  await ctx.close();
+}
+
+// forced tiers: ?tier= must win, and a software run must never end up on the hardware tier
+{
+  const ctx = await desk();
+  const page = await ctx.newPage();
+  await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
+  if (!(await page.evaluate(SCENE_PRESENT))) skip('forced tiers: scene not on the page yet');
+  else {
+    const got = {};
+    for (const t of ['software', 'hardware', 'reduced']) {
+      await page.goto(origin + `?lens&tier=${t}`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(800);
+      got[t] = (await sceneState(page)).tier;
+      check(got[t] === t, `tier: ?tier=${t} gave data-tier "${got[t]}"`);
+    }
+    console.log('forced-tiers', JSON.stringify(got));
   }
   await ctx.close();
 }
@@ -564,5 +610,6 @@ if (!skipLong) {
 
 await browser.close();
 server.close();
-console.log(problems.length ? `FAIL\n- ${problems.join('\n- ')}` : 'PASS: no overflow, no console errors, every behaviour check held');
+if (skips.length) console.log(`SKIPPED ${skips.length} scene check(s), not passed:\n- ${skips.join('\n- ')}`);
+console.log(problems.length ? `FAIL\n- ${problems.join('\n- ')}` : `PASS: no overflow, no console errors, every behaviour check that ran held${skips.length ? ` (${skips.length} scene check(s) SKIPPED, see above)` : ''}`);
 process.exit(problems.length ? 1 : 0);

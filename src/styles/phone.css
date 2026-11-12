@@ -1,0 +1,81 @@
+/* Phone and tablet portrait composition. Loaded by the home page after the shared sheets.
+   Goal: the cover and the play button are in the first screen (with the mini player band reserved),
+   the R shrinks and moves beside the compass and stores, and nothing widens the page. Landscape,
+   desktop and the landscape phone layouts are untouched (every rule is portrait only). Selectors
+   start with `main` so they beat the shared single-class rules whatever the sheet order. */
+
+:root { --mini-band: calc(84px + var(--safe-b, 0px)); }
+
+@media (max-width: 899px) and (orientation: portrait) {
+  /* the first screen: header, chips, then one compact row (R | compass + stores), then the spotlight */
+  main .welcome {
+    min-height: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto;
+    justify-content: center;
+    align-content: start;
+    column-gap: clamp(12px, 4vw, 28px);
+    row-gap: 0;
+    padding: 6px var(--gutter) 0;
+    text-align: left;
+  }
+  main .welcome .r-stage { width: clamp(70px, 12.5svh, 150px); justify-self: center; align-self: center; }
+  main .welcome .scroll-cue { display: none; }
+  main .welcome-copy { justify-items: start; align-content: center; gap: 8px; }
+  main .welcome-copy::before { inset: -18% -8%; }
+  main .welcome-copy .compass--home { display: flex; width: auto; height: auto; gap: 10px; justify-self: start; margin: 0; }
+  main .welcome-copy .compass-ring { display: none; }
+  main .welcome-copy .compass--home .compass-b { position: relative; left: auto; top: auto; width: 44px; height: 44px; }
+  main .welcome-copy .compass--home .compass-b::after { bottom: 3px; }
+  main .welcome-copy .bio { font-size: 13px; line-height: 1.35; }
+  main .welcome-copy .stores { justify-content: flex-start; gap: 6px; margin-top: 0; flex-wrap: nowrap; }
+  /* the welcome store row is secondary here: outlined and quiet, so the play circle is the one filled control */
+  main .welcome-copy .store { width: 36px; background: transparent; box-shadow: none; filter: opacity(0.6); }
+  main .welcome-copy .store svg { width: 18px; height: 18px; }
+
+  /* the spotlight: a cover sized by what is left of the screen, then the title, then play; the lyric
+     and the date come after the play button so they never push it off the screen */
+  main .spotlight { padding-top: 10px; }
+  main .spot { gap: 10px; align-content: start; }
+  main .spot-cover { width: min(78vw, max(120px, calc(100svh - 500px)), 420px); }
+  main .spot-info { gap: 6px; }
+  /* every slide's title block is the same height (two lines, clamped) so play lands at the same y on all of them */
+  main .spot-info .spot-title { order: 1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 2.36em; align-content: center; }
+  main .spot-info .spot-actions { order: 2; margin-top: 4px; }
+  main .spot-info .spot-answer, main .spot-info .spot-note { order: 3; }
+  main .spot-info .kicker { order: 0; }
+  /* the page never ends under the mini player */
+  main .index { scroll-margin-top: 8px; }
+}
+
+/* a little more air when the phone is tall enough */
+@media (max-width: 599px) and (orientation: portrait) and (min-height: 760px) {
+  main .welcome-copy .store { width: 40px; }
+  main .welcome-copy .compass--home .compass-b { width: 48px; height: 48px; }
+}
+
+/* short phones (375x667, 360x640, 320x568): the bio line goes, and the cover gives up some height */
+@media (max-width: 599px) and (orientation: portrait) and (max-height: 700px) {
+  main .welcome-copy .bio { display: none; }
+  main .spotlight { padding-top: 6px; }
+  main .spot-cover { width: min(78vw, max(120px, calc(100svh - 452px))); }
+  main .spot-info .kicker { display: none; }
+  main .spot-info .spot-title { font-size: clamp(22px, 7vw, 28px); }
+}
+@media (max-width: 599px) and (orientation: portrait) and (max-height: 600px) {
+  main .welcome { padding-top: 2px; }
+  main .spot-cover { width: min(70vw, max(110px, calc(100svh - 436px))); }
+  main .welcome-copy .compass--home .compass-b { width: 40px; height: 40px; }
+  main .spot-info .spot-actions { margin-top: 0; }
+}
+
+/* tablets held upright: a roomier row, still one screen to the play button */
+@media (min-width: 600px) and (max-width: 899px) and (orientation: portrait) {
+  main .welcome { grid-template-columns: auto minmax(0, 380px); column-gap: clamp(36px, 7vw, 80px); padding-top: 14px; }
+  main .welcome .r-stage { width: clamp(150px, 19svh, 250px); }
+  main .welcome-copy { gap: 14px; }
+  main .welcome-copy .compass--home .compass-b { width: 52px; height: 52px; }
+  main .welcome-copy .store { width: 44px; background: transparent; box-shadow: none; filter: opacity(0.7); }
+  main .welcome-copy .stores { gap: 12px; }
+  main .spot-cover { width: min(56vw, max(120px, calc(100svh - 640px)), 440px); }
+}

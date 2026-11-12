@@ -3,10 +3,10 @@ import { getImage } from 'astro:assets';
 import Cover from './Cover.astro';
 import ReelRing from './ReelRing.astro';
 import type { Track } from '../lib/data';
-import { fmtDate } from '../lib/data';
 import { u } from '../lib/site';
 import PlayButton from './PlayButton.astro';
 import Listen from './Listen.astro';
+import Glyph from './Glyph.astro';
 interface Props { tracks: Track[] }
 const { tracks } = Astro.props;
 const ambient = await Promise.all(
@@ -16,15 +16,21 @@ const ambient = await Promise.all(
 <section class="spotlight" id="spotlight" data-spotlight aria-roledescription="carousel" aria-label="spotlight" style={`--accent-spot:${tracks[0]?.accent ?? '#c9ced6'}`}>
   <div class="spot-slides">
     {tracks.map((t, i) => (
-      <article class:list={['spot', { 'is-current': i === 0 }]} data-slide data-accent={t.accent} aria-roledescription="slide" aria-label={`${i + 1} of ${tracks.length}`} aria-hidden={i === 0 ? 'false' : 'true'} inert={i !== 0} style={`--slide-accent:${t.accent}`}>
+      <article class:list={['spot', { 'is-current': i === 0 }]} data-slide data-accent={t.accent} data-essence-lock={t.room ?? undefined} data-room={t.room ?? undefined} aria-roledescription="slide" aria-label={`${i + 1} of ${tracks.length}`} aria-hidden={i === 0 ? 'false' : 'true'} inert={i !== 0} style={`--slide-accent:${t.accent}`}>
         {ambient[i] && <img class="spot-ambient" src={ambient[i]!.src} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} />}
-        <div class="spot-cover" data-cover={t.slug}>
+        <div class="spot-cover" data-essence-skin="cover" data-cover={t.slug}>
           <ReelRing track={t} size="lg" />
           {t.cover && <Cover src={t.cover} size={720} widths={[360, 540, 720]} sizes="(min-width: 900px) 420px, (orientation: landscape) 46vh, 78vw" alt={`${t.title} cover`} eager={i === 0} quality={85} />}
         </div>
         <div class="spot-info">
+          {t.room && (
+            <p class="kicker" aria-hidden="true">
+              <Glyph name={`essence-${t.room}`} size={26} class="kicker-g" />
+              <span class="kicker-rule"></span>
+            </p>
+          )}
           <a class="spot-title" href={u(`t/${t.slug}/`)} data-open={t.slug}>{t.title}</a>
-          {t.answer ? <p class="spot-answer">{t.answer}</p> : !t.notes?.note && <p class="spot-answer spot-answer--date">{fmtDate(t.released)}</p>}
+          {t.answer && <p class="spot-answer">{t.answer}</p>}
           {/* a lyric sheet breaks at the phrase: one sentence per line */}
           {t.notes?.note && <blockquote class="spot-note lyric">{t.notes.note.replace(/\. (?=\S)/g, '.\n')}</blockquote>}
           <div class="spot-actions">
@@ -35,9 +41,17 @@ const ambient = await Promise.all(
       </article>
     ))}
   </div>
-  <div class="spot-ticks" role="group" aria-label="choose a track">
-    {tracks.map((t, i) => (
-      <button class:list={['tick', { 'is-current': i === 0 }]} type="button" data-tick aria-label={t.title} aria-current={i === 0 ? 'true' : 'false'}><span></span></button>
-    ))}
+  <div class="spot-nav">
+    <button class="spot-step" type="button" data-spot-step="-1" aria-label="previous"><Glyph name="prev" size={18} /></button>
+    <div class="spot-ticks" role="group" aria-label="choose a track">
+      {tracks.map((t, i) => (
+        <button class:list={['tick', { 'is-current': i === 0 }]} type="button" data-tick aria-label={t.title} aria-current={i === 0 ? 'true' : 'false'}><span></span></button>
+      ))}
+    </div>
+    <button class="spot-step" type="button" data-spot-step="1" aria-label="next"><Glyph name="next" size={18} /></button>
   </div>
+  <script>
+    import { startStructure } from '../scripts/structure';
+    startStructure();
+  </script>
 </section>

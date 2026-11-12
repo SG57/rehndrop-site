@@ -1,0 +1,43 @@
+/* Decorative frame on very wide viewports. Hidden (content-visibility) below 4800px. */
+.edge {
+  position: fixed;
+  inset: 0;
+  z-index: -1; /* above the scene canvas, below the grain and the interface */
+  pointer-events: none;
+  content-visibility: hidden;
+  visibility: hidden;
+}
+@media (min-width: 4800px) {
+  .edge { content-visibility: visible; visibility: visible; }
+}
+.edge i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc((100vw - 1920px) / 2);
+  display: block;
+  background-color: #04050a;
+  /* hairlines */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(150, 165, 190, 0.045) 0 1px, transparent 1px 96px),
+    repeating-linear-gradient(60deg, rgba(150, 165, 190, 0.045) 0 1px, transparent 1px 96px),
+    repeating-linear-gradient(120deg, rgba(150, 165, 190, 0.045) 0 1px, transparent 1px 96px);
+}
+.edge-l { left: 0; }
+.edge-r { right: 0; }
+/* fading rows */
+.edge i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(180deg, rgba(168, 176, 196, 0.14) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(180deg, transparent 0 4px, rgba(168, 176, 196, 0.12) 4px 6px, transparent 6px 17px),
+    repeating-linear-gradient(180deg, transparent 0 11px, rgba(168, 176, 196, 0.1) 11px 12px, transparent 12px 29px),
+    repeating-linear-gradient(180deg, transparent 0 23px, rgba(168, 176, 196, 0.16) 23px 25px, transparent 25px 61px);
+}
+.edge-l::after { -webkit-mask-image: linear-gradient(270deg, #000, transparent 46%); mask-image: linear-gradient(270deg, #000, transparent 46%); }
+.edge-r::after { -webkit-mask-image: linear-gradient(90deg, #000, transparent 46%); mask-image: linear-gradient(90deg, #000, transparent 46%); }
+/* frame line */
+.edge-l { box-shadow: inset -1px 0 0 rgba(168, 176, 196, 0.1); }
+.edge-r { box-shadow: inset 1px 0 0 rgba(168, 176, 196, 0.1); }

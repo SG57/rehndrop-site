@@ -447,8 +447,11 @@ main { overflow-x: clip; }
 .spot-answer { margin: 0; color: var(--ink-2); font-size: 15px; letter-spacing: 0.03em; }
 .spot-note { margin: 4px 0 0; max-width: 34ch; color: var(--bone); } /* styled as a .lyric */
 .spot-actions { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 12px; flex-wrap: wrap; }
-.spot-ticks { display: flex; justify-content: center; gap: 8px; margin-top: clamp(20px, 4vh, 36px); }
-.tick { width: 34px; height: 24px; display: grid; place-items: center; }
+.spot-nav { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: clamp(20px, 4vh, 36px); }
+.spot-ticks { display: flex; justify-content: center; gap: 2px; min-width: 0; }
+.spot-nav .spot-ticks { flex: 1 1 auto; }
+@media (min-width: 480px) { .spot-ticks { gap: 8px; } }
+.tick { flex: 0 1 34px; min-width: 24px; height: 24px; display: grid; place-items: center; }
 .tick span { position: relative; display: block; width: 100%; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
 .tick span::after { content: ''; position: absolute; inset: 0; background: var(--bone); transform: scaleX(0); transform-origin: left; }
 .tick.is-current span::after { animation: tick 9s linear forwards; }
@@ -716,19 +719,22 @@ main { overflow-x: clip; }
   position: relative;
   margin-top: clamp(26px, 5vh, 56px);
   scroll-margin-top: 4px;
-  /* off-screen sections skip layout and paint until they near the viewport */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 760px;
+  /* no content-visibility here: it is paint containment and hard-clips any card that lifts or glows past its section */
 }
-.ix-h {
+.ix-hd {
   position: sticky;
   top: 0;
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   margin: 0 0 14px;
   padding: 16px 0 12px;
+  --ec: var(--bone-2);
+}
+.ix-h {
+  margin: 0;
+  padding: 0;
   font-family: var(--font-display);
   font-weight: 400;
   font-size: 14px;
@@ -738,7 +744,7 @@ main { overflow-x: clip; }
 }
 /* the heading's shade fades out on every side, so it reads as shadow under the words (and
    covers rows scrolling beneath it), never as a box */
-.ix-h::before {
+.ix-hd::before {
   content: '';
   position: absolute;
   inset: -14px 0 -22px;
@@ -748,7 +754,6 @@ main { overflow-x: clip; }
   -webkit-mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
   mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
 }
-.ix-h::after { content: ''; flex: 0 1 clamp(40px, 10vw, 180px); height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
 .ix-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px clamp(12px, 2vw, 22px); }
 @media (min-width: 600px) { .ix-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 900px) { .ix-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
@@ -885,8 +890,6 @@ html:not([data-view='list']) .ix-grid:not(.ix-grid--list) .ix-meta > :not(.ix-ly
   background: rgba(2, 2, 4, 0.45);
   border: 1px solid rgba(231, 233, 234, 0.55);
   color: var(--bone);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
   transition: transform 0.45s var(--ease), background 0.45s, color 0.45s;
 }
 .poster-play svg { width: 40%; height: 40%; transform: translateX(6%); }
@@ -958,8 +961,8 @@ html[data-view='list'] .poster-art { grid-row: 1 / span 2; width: 52px; margin: 
 html[data-view='list'] .poster-play { width: 26px; height: 26px; border: 0; }
 html[data-view='list'] .poster-mark { display: none; }
 @media (max-width: 899px) {
-  html[data-view='list'] .ix-meta > :not(.badge):not(.ix-lyrics),
-  .ix-grid--list .ix-meta > :not(.badge):not(.ix-lyrics) { display: none; }
+  html[data-view='list'] .ix-meta > :not(.badge):not(.ix-lyrics):not(.ess-inline),
+  .ix-grid--list .ix-meta > :not(.badge):not(.ix-lyrics):not(.ess-inline) { display: none; }
 }
 
 /* a track with reels wears a slowly turning ring on every cover of it, a link to its reels.
@@ -1074,7 +1077,7 @@ html[data-view='list'] .poster-mark { display: none; }
   box-shadow: 0 60px 160px -30px rgba(0, 0, 0, 1), inset 0 1px 0 rgba(255, 255, 255, 0.09);
   overflow: auto;
 }
-.sheet::backdrop { background: rgba(2, 2, 4, 0.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.sheet::backdrop { background: rgba(2, 2, 4, 0.72); }
 .sheet[open] { animation: sheet-in 0.5s var(--ease); }
 .sheet[open]::backdrop { animation: fade-in 0.5s var(--ease); }
 @keyframes sheet-in { from { opacity: 0; transform: translateY(18px) scale(0.985); } }
@@ -1158,8 +1161,6 @@ html[data-view='list'] .poster-mark { display: none; }
   border-radius: 18px;
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(16, 16, 22, 0.8), rgba(4, 4, 7, 0.86));
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  backdrop-filter: blur(20px) saturate(1.3);
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.03) inset, inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 -1px 40px -18px color-mix(in srgb, var(--accent) 60%, transparent);
   transform: translate(-50%, 0);
   animation: mini-in 0.6s var(--ease) both;
@@ -1230,8 +1231,6 @@ html[data-view='list'] .poster-mark { display: none; }
   border-radius: 50%;
   border: 1px solid var(--line-2);
   background: rgba(6, 6, 10, 0.58);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
   color: var(--bone);
   transition: transform 0.4s var(--ease), background 0.4s;
 }
@@ -1287,9 +1286,10 @@ html[data-view='list'] .poster-mark { display: none; }
 .tv-quote { margin: 10px 0 0; max-width: 34ch; color: var(--bone); }
 .tv-lyrics { display: grid; gap: 8px; width: 100%; margin-top: 8px; }
 .tv-lyrics-text { white-space: pre-line; text-transform: lowercase; font-size: clamp(18px, 2.1vw, 21px); line-height: 1.45; color: var(--bone); max-height: 60vh; overflow: auto; }
-.tv-h { position: relative; margin: 0 0 6px; padding: 0; }
+.tv-h { position: relative; margin: 0; padding: 0; }
 /* outside the index a heading doesn't stick, so it needs no shade */
-.tv-h::before, .tv-more .ix-h::before { display: none; }
+.tv-hd { position: relative; z-index: auto; margin: 0 0 8px; padding: 0; }
+.tv-hd::before { display: none; }
 .tv-share {
   display: inline-flex;
   align-items: center;
@@ -1312,7 +1312,6 @@ html[data-view='list'] .poster-mark { display: none; }
 .tv-side-col--video .tv-posters { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
 .tv-more { max-width: 1180px; margin: 0 auto; padding: clamp(12px, 3vh, 32px) max(var(--gutter), env(safe-area-inset-right)) 0 max(var(--gutter), env(safe-area-inset-left)); position: relative; }
 .tv-more::before { content: ''; position: absolute; inset: 0 -10vw -40px; z-index: -1; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(2, 2, 4, 0.66) 90px, rgba(2, 2, 4, 0.7)); }
-.tv-more .ix-h { position: relative; }
 /* the line under the title, centred with a hairline above on phones; hung off a hairline at
    the left wherever the view aligns left */
 .tv-quote.lyric, .tv-lyrics-text.lyric { padding: 16px 0 0; }
@@ -1321,8 +1320,8 @@ html[data-view='list'] .poster-mark { display: none; }
   .listen--labels .listen-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .listen--labels a { width: 50px; height: 50px; padding: 0; justify-content: center; border-radius: 50%; }
   .tv-side-col { justify-items: center; text-align: center; }
-  .tv-side-col .ix-h { justify-content: center; }
-  .tv-side-col .ix-h::after { display: none; }
+  .tv-side-col .ix-hd { justify-content: center; }
+  .tv-side-col .tv-hd .ix-rule { display: none; }
   .tv-posters { grid-template-columns: repeat(auto-fill, minmax(140px, 180px)); justify-content: center; }
 }
 
@@ -1413,7 +1412,8 @@ html[data-view='list'] .poster-mark { display: none; }
   }
   .stage .spot-cover { width: 100%; }
   .stage .spot-ambient { inset: -18% -10%; width: 120%; height: 136%; }
-  .stage .spot-ticks { margin-top: clamp(14px, 3vh, 26px); width: min(44vh, 34vw, 440px); justify-content: center; }
+  .stage .spot-nav { margin-top: clamp(14px, 3vh, 26px); width: min(44vh, 34vw, 440px); }
+  .stage .spot-ticks { flex: 1 1 auto; }
   .stage-contact { display: block; position: absolute; right: var(--gutter); bottom: 8px; }
 }
 
@@ -1426,7 +1426,7 @@ html[data-view='list'] .poster-mark { display: none; }
    so it costs no script and a still page is a still picture */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .ix-item, .poster, .ix-h {
+    .ix-item, .poster, .ix-hd {
       animation: reveal linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 55%;
@@ -1447,3 +1447,37 @@ html[data-view='list'] .poster-mark { display: none; }
 
 /* ?t=<ms>: a pinned clock gives a still, reproducible frame (clock.ts) */
 .is-frozen *, .is-frozen *::before, .is-frozen *::after { animation: none !important; transition: none !important; }
+
+/* glass blur costs a full re-blur over a moving canvas every frame; software renderers pay for it in frame rate.
+   It is allowed only where a hardware renderer was detected (tier.ts sets html[data-tier]) and only on these few surfaces. */
+html[data-tier='hardware'] .mini { -webkit-backdrop-filter: blur(20px) saturate(1.3); backdrop-filter: blur(20px) saturate(1.3); }
+html[data-tier='hardware'] .sheet::backdrop { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+html[data-tier='hardware'] .poster-play { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+
+/* once the scene has drawn, it IS the background: it stays visible even if the wet-lens pass is shed on a slow machine, and the old velvet never comes back */
+html[data-scene-drawn] .lens { opacity: 1; }
+html[data-scene-drawn] .velvet { display: none; }
+
+/* software renderers repaint every decorated layer on every frame the scene changes. Decorative infinite animations, blend modes and
+   scroll-driven reveals are frozen there (they cost more than the scene itself, measured by ablation); the hardware tier keeps them. */
+html[data-tier='software'] .r-glow,
+html[data-tier='software'] .r-sheen,
+html[data-tier='software'] .store::after,
+html[data-tier='software'] .pill::after,
+html[data-tier='software'] .scroll-cue span::after,
+html[data-tier='software'] .spot-ambient,
+html[data-tier='software'] .reel-ring-halo,
+html[data-tier='software'] .ix-item,
+html[data-tier='software'] .poster,
+html[data-tier='software'] .ix-hd { animation: none !important; }
+html[data-tier='software'] .r-sheen { display: none; }
+
+/* software tier, second pass: every non-opaque layer over the scene is re-blended in software on each scene frame, so the one-second crossfade of two
+   cover-sized slides and the blurred ambient wash are removed there. The gain is UNVERIFIED: repeat interleaved headless runs showed a difference inside noise
+   (the rAF metric saturates at 60 fps). The mechanism (fewer blended layers per scene frame) is the justification, not a measured number. */
+html[data-tier='software'] .spot,
+html[data-tier='software'] .spot.is-current,
+html[data-tier='software'] .spot-cover { transition: none; }
+html[data-tier='software'] .spot-ambient { display: none; }
+/* the film grain is a full-screen layer at 7% opacity, blended over the whole canvas on every frame (mechanism only, gain UNVERIFIED) */
+html[data-tier='software'] .grain { display: none; }

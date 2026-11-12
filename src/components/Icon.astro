@@ -1,6 +1,13 @@
 ---
+// Brand marks keep their filled simple-icons paths and the original API. Any glyph name
+// (play, search, essence-candle, ...) is forwarded to Glyph, so one component covers both.
 import { icons, type IconName } from '../lib/site';
-interface Props { name: IconName; size?: number }
-const { name, size = 18 } = Astro.props;
+import { isGlyph, type GlyphRef } from '../lib/glyphs';
+import Glyph from './Glyph.astro';
+interface Props { name: IconName | GlyphRef; size?: number; essence?: 'candle' | 'chrome' | 'dawn'; tone?: 'a' | 'ink'; class?: string }
+const { name, size = 18, essence, tone, class: cls } = Astro.props;
+const brand = name in icons;
 ---
-<svg class="icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={icons[name]} fill="currentColor" /></svg>
+{brand
+  ? <svg class="icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={icons[name as IconName]} fill="currentColor" /></svg>
+  : isGlyph(name) && <Glyph name={name as GlyphRef} size={size} essence={essence} tone={tone} class={cls} />}

@@ -1,0 +1,133 @@
+/* Essence skins. Load after global.css. A skin repaints an existing element (colour, glass,
+   edge, radius, glow) and never changes its box: no width, height, padding, margin, border
+   width or display. Everything is driven by --a --g --e --r --glow (tokens.css), set by
+   essence-ui.ts or inherited from a [data-essence-lock] block.
+
+   Opt in with data-essence-skin="<kind>": link (.top-link), chip (.chip), cover (.ix-cover,
+   .spot-cover, .track-cover), play (.play, .ix-play), store (.store), search (.ix-search),
+   row (.ix-item in list view), bar (.mini), button (.contact-links), scrub (.scrub).
+
+   Glass is a semi-opaque fill plus an inner highlight plus an edge. There is NO blur unless
+   html[data-tier="hardware"] and the element also carries data-large. Selectors lead with
+   `html` so they outrank the single-class rules in global.css without !important. */
+
+/* the one bridge: existing rules that read --accent follow the essence */
+html [data-essence-skin] { --accent: var(--a); }
+
+/* no blur off the hardware tier, whatever global.css says */
+html:not([data-tier='hardware']) [data-essence-skin] { -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-tier='hardware'] [data-essence-skin][data-large] { -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+
+/* reduced tier: paint once, no colour animation */
+html[data-tier='reduced'] [data-essence-skin],
+html[data-tier='reduced'] [data-essence-skin]::after { transition-duration: 0s !important; }
+
+/* ---- header links and chips: text only, so the skin is a glow and the hairline ---- */
+html [data-essence-skin='link'] {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 7px rgba(2, 2, 4, 0.85), 0 0 14px rgba(2, 2, 4, 0.9), 0 0 26px rgba(2, 2, 4, 0.6), 0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--a) 34%, transparent);
+  transition: color 0.3s, text-shadow 0.5s;
+}
+html [data-essence-skin='chip'] {
+  text-shadow: 0 0 2px rgba(2, 2, 4, 0.95), 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 7px rgba(2, 2, 4, 0.85), 0 0 14px rgba(2, 2, 4, 0.9), 0 0 30px rgba(2, 2, 4, 0.7), 0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--a) 30%, transparent);
+  transition: color 0.3s, text-shadow 0.5s;
+}
+html [data-essence-skin='link']::after,
+html [data-essence-skin='chip']::after { background: linear-gradient(90deg, transparent, var(--a), transparent); }
+
+/* ---- cover frame: the radius language, an edge ring and a glass mat outside the picture ---- */
+html [data-essence-skin='cover'] {
+  border-radius: var(--r);
+  box-shadow: 0 0 0 1px var(--e), 0 0 0 5px var(--g), 0 0 calc(34px * var(--glow)) color-mix(in srgb, var(--a) 60%, transparent), 0 18px 40px -22px rgba(0, 0, 0, 0.95);
+  transition: transform 0.6s var(--ease), box-shadow 0.5s, border-radius 0.5s;
+}
+
+/* ---- play ring: round, accent-tinted bone, accent progress ring ---- */
+html [data-essence-skin='play'] {
+  background-color: color-mix(in srgb, var(--a) 26%, rgb(231, 233, 234));
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--e), 0 0 calc(26px * var(--glow)) color-mix(in srgb, var(--a) 60%, transparent);
+  transition: transform 0.35s var(--ease), box-shadow 0.5s, background-color 0.5s;
+}
+html [data-essence-skin='play'] .play-ring,
+html [data-essence-skin='play'].play-ring { background: conic-gradient(var(--a) calc(var(--p, 0) * 360deg), transparent 0); }
+
+/* ---- store circles: round glass ---- */
+html [data-essence-skin='store'] {
+  border-radius: min(50%, calc(var(--r) * 2.2));
+  border-color: var(--e);
+  background-color: color-mix(in srgb, var(--g) 45%, rgb(4, 4, 7));
+  background-image: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.1), transparent 62%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 calc(30px * var(--glow)) color-mix(in srgb, var(--a) 55%, transparent), 0 14px 34px -14px rgba(0, 0, 0, 0.95);
+  transition: transform 0.45s var(--ease), border-color 0.5s, border-radius 0.5s, background-color 0.5s, box-shadow 0.5s;
+}
+
+/* Text-bearing glass (search, row, bar) mixes --g 45/55 with an opaque near-black floor.
+   Measured (FLOOR_SHARE=0.55 node scripts/measure_contrast.mjs): the lowest p99 on text glass is
+   dawn at night+peak (flame and prism at their brightest): bone 6.76, ink3 5.16, so every text
+   colour holds 4.5:1 at p99 in every blend; the single brightest pixel (max) of that case is a
+   named exception. At the earlier 72/28 mix it was bone 3.46, ink3 2.40. Store circles carry a glyph, so they get the same floor.
+   Only the cover mat, which carries nothing, uses --g as is. */
+
+/* ---- bare tile text (grid index, no glass behind it): a dark halo carries the contrast ---- */
+html .ix-grid .ix-title,
+html .ix-grid .ix-sub,
+html .ix-grid .ix-meta { text-shadow: 0 0 2px rgba(2, 2, 4, 0.95), 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 5px rgba(2, 2, 4, 0.9), 0 0 9px rgba(2, 2, 4, 0.9), 0 0 18px rgba(2, 2, 4, 0.75); }
+
+/* ---- poster tiles take the cover frame's radius so a reel and a video match the covers ---- */
+html .poster-art[data-essence-skin='cover'] { border-radius: var(--r); }
+
+/* ---- search pill: glass that takes the radius language ---- */
+html [data-essence-skin='search'] {
+  border-radius: var(--r);
+  border-color: var(--e);
+  background-color: color-mix(in srgb, var(--g) 45%, rgb(4, 4, 7));
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 calc(30px * var(--glow)) color-mix(in srgb, var(--a) 45%, transparent), 0 20px 44px -26px rgba(0, 0, 0, 0.95);
+  transition: border-color 0.5s, border-radius 0.5s, background-color 0.5s, box-shadow 0.5s;
+}
+
+/* ---- index row (list view only; the grid tile is the cover skin) ---- */
+html[data-view='list'] [data-essence-skin='row'],
+.ix-grid--list [data-essence-skin='row'] {
+  border-bottom-color: var(--e);
+  border-radius: var(--r);
+  background-color: color-mix(in srgb, var(--g) 45%, rgb(4, 4, 7));
+  transition: background-color 0.5s, border-color 0.5s, border-radius 0.5s;
+}
+
+/* ---- mini player bar: the one glass surface that must stay legible on any plate ---- */
+html [data-essence-skin='bar'] {
+  border-color: var(--e);
+  border-radius: var(--r);
+  background-color: color-mix(in srgb, var(--g) 45%, rgb(4, 4, 7));
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 55%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 60px -20px rgba(0, 0, 0, 0.95), 0 -1px calc(40px * var(--glow)) -10px color-mix(in srgb, var(--a) 60%, transparent);
+  transition: border-color 0.5s, border-radius 0.5s, background-color 0.5s, box-shadow 0.5s;
+}
+
+/* ---- contact button: text only, glow follows the essence ---- */
+html [data-essence-skin='button'] { text-shadow: 0 0 calc(22px * var(--glow)) color-mix(in srgb, var(--a) 70%, transparent); transition: color 0.3s, text-shadow 0.5s; }
+
+/* ---- toast: the bone pill takes the edge ring and a glow, text stays dark on bone ---- */
+html [data-essence-skin='toast'] {
+  box-shadow: 0 0 0 1px var(--e), 0 0 calc(24px * var(--glow)) color-mix(in srgb, var(--a) 50%, transparent), 0 18px 40px -14px rgba(0, 0, 0, 0.95);
+  transition: opacity 0.35s var(--ease), transform 0.45s var(--ease), box-shadow 0.5s;
+}
+
+/* ---- scrubber: rail edge, accent fill, accent marks and thumb ---- */
+html [data-essence-skin='scrub'] .scrub-rail { background: color-mix(in srgb, var(--e) 62%, transparent); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(2, 2, 4, 0.55); transition: background-color 0.5s; }
+html [data-essence-skin='scrub'] .scrub-fill { background: linear-gradient(90deg, var(--ess-text), var(--a)); }
+html [data-essence-skin='scrub'] .scrub-mark { box-shadow: 0 0 calc(14px * var(--glow) + 4px) color-mix(in srgb, var(--a) 80%, transparent); }
+html [data-essence-skin='scrub'] .scrub-input::-webkit-slider-thumb { background: radial-gradient(circle at 35% 30%, #fff, var(--a) 75%); }
+html [data-essence-skin='scrub'] .scrub-input::-moz-range-thumb { background: radial-gradient(circle at 35% 30%, #fff, var(--a) 75%); }
+
+/* ---- tier guards that do not depend on the opt-in attribute ----
+   global.css still blurs these surfaces; off the hardware tier the backdrop is not blurred
+   (a full re-blur each frame over the scene is too costly on a software rasteriser). */
+html:not([data-tier='hardware']) .mini,
+html:not([data-tier='hardware']) .poster-play,
+html:not([data-tier='hardware']) .back,
+html:not([data-tier='hardware']) .sheet::backdrop { -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* ---- software tier: only compositor-cheap properties animate ----
+   Shadows, text shadows and radii repaint on the main thread, so they snap to the new value. */
+html[data-tier='software'] [data-essence-skin][data-essence-skin] { transition-property: color, background-color, border-color, transform; }

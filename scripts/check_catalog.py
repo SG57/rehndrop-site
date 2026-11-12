@@ -29,6 +29,7 @@ MANIFEST_PATH = TRACKS_DIR / "once-manifest.json"
 ERA_2021_SLUGS = ("now-die", "dont-screw-with-me", "marauder", "drugs")
 NOT_ON_APPLE = {"drugs"}  # released on SoundCloud and YouTube only
 EXCLUDED_SLUGS = {"drugs"}
+ROOM_NAMES = ("candle", "chrome", "dawn")
 
 failures = []
 warnings = []
@@ -265,6 +266,24 @@ def main():
             if mean_after <= mean_before:
                 warn(f"{label}: low-band mean does not rise across the hit "
                      f"(before={mean_before:.2f}, after={mean_after:.2f})")
+    print()
+
+    # --- rooms (curation.room) ---------------------------------------------
+    print("-- rooms (curation.room picks) --------------------------------------")
+    curation = json.loads((DATA_DIR / "curation.json").read_text(encoding="utf-8"))
+    picks = curation.get("room", {})
+    era_of = {t["slug"]: t["era"] for t in tracks}  # slugs not in catalog.json may be live-only tracks: allowed
+    bad_values = {s: v for s, v in picks.items() if v not in ROOM_NAMES}
+    unknown = [s for s in picks if era_of.get(s, "current") != "current"]
+    missing = [t["slug"] for t in tracks if t["era"] == "current" and t["slug"] not in picks]
+    if bad_values:
+        fail(f"curation.room has invalid values: {bad_values}")
+    if unknown:
+        fail(f"curation.room lists slugs that are not current-era tracks: {unknown}")
+    if missing:
+        warn(f"{len(missing)} current-era track(s) with no curation.room pick (default rule applies): {missing}")
+    if not (bad_values or unknown or missing):
+        ok(f"all current-era tracks have a valid room pick")
     print()
 
     print("=" * 70)

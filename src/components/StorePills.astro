@@ -13,9 +13,9 @@ const marks = [
   { name: 'youtube', label: 'youtube', href: s.youtube },
 ] as const;
 ---
-<nav class:list={['stores', `stores--${size}`]} aria-label="listen">
+<nav class:list={['stores', `stores--${size}`]} aria-label={size === 'lg' ? 'streaming' : 'listen'}>
   {marks.map((m, i) => (
-    <a class="store" href={m.href} rel="noopener" target="_blank" aria-label={m.label} title={m.label} style={`--i:${i}`}>
+    <a class="store" data-essence-skin="store" href={m.href} rel="noopener" target="_blank" aria-label={m.label} title={m.label} style={`--i:${i}`}>
       <Icon name={m.name} size={size === 'sm' ? 20 : 26} />
     </a>
   ))}

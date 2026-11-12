@@ -1,0 +1,105 @@
+/* Interaction layer: every interactive element answers the pointer and the keyboard.
+   Hover lifts and glows in the local essence colour (--a), press sinks and springs back, a click
+   throws one ripple ring (interact.ts sets [data-pop] for 450 ms), text links sweep an underline.
+   Only transform, opacity, colour and box-shadow animate: no filters, no blur, nothing per frame. */
+
+:root {
+  --spring: cubic-bezier(0.2, 0.9, 0.3, 1.25);
+  --glide: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- small controls: pills, chips, circles, icon buttons ---- */
+html :is(.top-link, .chip, .compass-b, .store, .play, .ix-play, .ix-view, .ix-more, .ix-letter, .stage-contact,
+  .contact-links, .reel-ring, .spot-step, .tick, .back, .mini-btn, .mini-link, .sheet-btn, .sheet-close,
+  .tv-share, .listen a, .foot-social a, .ix-search, .pill, .poster-play) {
+  transition: transform 0.32s var(--spring), box-shadow 0.4s var(--glide), background-color 0.3s, border-color 0.3s, color 0.3s, opacity 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) and (pointer: fine) {
+  html :is(.top-link, .chip, .compass-b, .store, .ix-view, .ix-more, .ix-letter, .stage-contact, .contact-links,
+    .reel-ring, .spot-step, .back, .mini-btn, .mini-link, .sheet-btn, .sheet-close, .tv-share, .listen a, .foot-social a, .pill):hover {
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 6px 22px -8px color-mix(in srgb, var(--a, #c9ced6) 70%, transparent), 0 0 0 1px color-mix(in srgb, var(--a, #c9ced6) 35%, transparent);
+    color: var(--bone);
+  }
+  html :is(.play, .ix-play):hover { transform: scale(1.1); box-shadow: 0 0 0 5px color-mix(in srgb, var(--a, #c9ced6) 28%, transparent), 0 10px 28px -8px color-mix(in srgb, var(--a, #c9ced6) 60%, transparent); }
+  html .tick:hover { transform: scaleY(1.9); }
+  html .ix-search:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--a, #c9ced6) 40%, transparent), 0 8px 26px -12px color-mix(in srgb, var(--a, #c9ced6) 60%, transparent); }
+  /* glyphs inside controls tilt a little: the control feels like it noticed you */
+  html :is(.chip, .compass-b, .top-link, .ix-view, .ix-more, .tv-share) .glyph { transition: transform 0.4s var(--spring); }
+  html :is(.chip, .compass-b, .top-link, .ix-view, .ix-more, .tv-share):hover .glyph { transform: rotate(-8deg) scale(1.14); }
+}
+
+/* press: sink under the finger, spring back on release (declared after :hover so it wins) */
+html :is(.top-link, .chip, .compass-b, .store, .play, .ix-play, .ix-view, .ix-more, .ix-letter, .stage-contact,
+  .contact-links, .reel-ring, .spot-step, .tick, .back, .mini-btn, .mini-link, .sheet-btn, .sheet-close,
+  .tv-share, .listen a, .foot-social a, .pill, .poster-play):active {
+  transform: translateY(0) scale(0.9);
+  transition-duration: 0.08s;
+}
+html .ix-search:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--a, #c9ced6) 55%, transparent), 0 10px 30px -10px color-mix(in srgb, var(--a, #c9ced6) 65%, transparent); transition: box-shadow 0.3s var(--glide); }
+html .ix-search:focus-within .glyph, html .ix-search:focus-within svg { transform: scale(1.15) rotate(-6deg); transition: transform 0.4s var(--spring); }
+
+/* ---- cards and covers: lift is already in global.css; add the press and keep the glow ---- */
+html :is(.ix-cover, .poster-art, .spot-cover, .track-cover) { transition: transform 0.5s var(--spring), box-shadow 0.6s var(--glide); }
+html :is(.ix-cover, .poster-art):active { transform: translateY(-1px) scale(0.97); transition-duration: 0.1s; }
+@media (hover: hover) and (pointer: fine) {
+  html .ix-cover:hover, html .poster-art:hover { box-shadow: 0 30px 60px -24px color-mix(in srgb, var(--a, #000) 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--a, #fff) 40%, transparent); }
+}
+
+/* ---- text links: an underline that sweeps in from the left (a scaled pseudo-element: paints nothing at rest), colour warms ---- */
+html :is(.ix-title, .spot-title, .mini-title) { position: relative; transition: color 0.3s, transform 0.3s var(--spring); text-decoration: none; }
+html :is(.ix-title, .spot-title, .mini-title)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--a, currentColor);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.45s var(--glide);
+  pointer-events: none;
+}
+html :is(.sheet-links a, .foot-line a, .tv-more a) { transition: color 0.3s, transform 0.3s var(--spring); text-decoration: none; }
+@media (hover: hover) and (pointer: fine) {
+  html :is(.ix-title, .spot-title, .mini-title):hover::after { transform: scaleX(1); }
+  html :is(.ix-title, .spot-title, .mini-title, .sheet-links a, .foot-line a, .tv-more a):hover { color: #fff; text-decoration: none; }
+}
+html :is(.ix-title, .spot-title, .mini-title, .sheet-links a, .foot-line a):active { transform: translateY(1px); }
+
+/* ---- keyboard focus: the ring grows in instead of snapping ---- */
+html :focus-visible { outline: 2px solid color-mix(in srgb, var(--a, #e7e9ea) 80%, #fff); outline-offset: 3px; animation: focus-in 0.25s var(--glide); }
+@keyframes focus-in { from { outline-offset: 9px; outline-color: transparent; } }
+
+/* ---- the click ripple: one ring leaves the control (set by interact.ts) ---- */
+html [data-pop] { animation: pop-ring 0.45s var(--glide) 1; }
+@keyframes pop-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--a, #e7e9ea) 60%, transparent); }
+  100% { box-shadow: 0 0 0 16px color-mix(in srgb, var(--a, #e7e9ea) 0%, transparent); }
+}
+html :is(.ix-title, .spot-title, .mini-title)[data-pop] { animation: pop-text 0.45s var(--glide) 1; }
+@keyframes pop-text { 0% { text-shadow: 0 0 0 transparent; } 35% { text-shadow: 0 0 18px color-mix(in srgb, var(--a, #fff) 80%, transparent); } 100% { text-shadow: none; } }
+
+/* ---- the scrubber thumb ---- */
+html .scrub-input::-webkit-slider-thumb { transition: transform 0.25s var(--spring), box-shadow 0.3s; }
+html .scrub-input:hover::-webkit-slider-thumb { transform: scale(1.3); box-shadow: 0 0 0 6px color-mix(in srgb, var(--a, #fff) 30%, transparent); }
+html .scrub-input:active::-webkit-slider-thumb { transform: scale(1.6); }
+html .scrub-input::-moz-range-thumb { transition: transform 0.25s var(--spring); }
+html .scrub-input:hover::-moz-range-thumb { transform: scale(1.3); }
+
+/* ---- reduced motion and the software tier: no springs, no ripples, colour changes only ---- */
+@media (prefers-reduced-motion: reduce) {
+  html [data-pop], html :focus-visible { animation: none !important; }
+}
+html[data-tier='software'] [data-pop] { animation-duration: 0.3s; }
+
+/* ---- the logo lockup ---- */
+html .top-home { transition: transform 0.32s var(--spring); }
+html .top-home .top-mark { transition: transform 0.45s var(--spring); }
+@media (hover: hover) and (pointer: fine) {
+  html .top-home:hover { transform: scale(1.03); }
+  html .top-home:hover .top-mark { transform: rotate(-6deg) scale(1.1); }
+}
+html .top-home:active { transform: scale(0.96); transition-duration: 0.08s; }
