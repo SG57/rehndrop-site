@@ -139,7 +139,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
       import { startSheet } from '../scripts/sheet';
       import { focusTitle, startNav } from '../scripts/nav';
 
-      type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number; sceneSets: Record<SetKey, SceneSet>; scenePlates?: string[] };
+      type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number; sceneSets: Record<SetKey, SceneSet>; scenePlates?: string[]; scenePlatesL?: string[] };
       const cfg = (window as unknown as { __rehndrop: Cfg }).__rehndrop;
 
       // Two kinds of setup. Once per visit: the player (its <audio> is a persisted element),
@@ -162,6 +162,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
             // one plate set is fetched, chosen by the viewport aspect; the engine swaps if it crosses the threshold.
             // scenePlates is the set in use at start (the water reads it).
             cfg.scenePlates = cfg.sceneSets[pickSet(innerWidth, innerHeight, new URLSearchParams(location.search).get('plates'))].plates;
+            cfg.scenePlatesL = cfg.sceneSets.l.plates; // the optional alternate-refraction atlas assumes landscape plates
             const scene = startScene({ canvas, sets: cfg.sceneSets, base: cfg.base });
             if (scene.gl) {
               // water on glass is pass 2 of the scene frame; the old 2D drop sprites are not started

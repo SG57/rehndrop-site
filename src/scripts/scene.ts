@@ -694,7 +694,7 @@ export function startScene(opts: SceneOptions): SceneHandle {
   const RETRY_MS = 10000;
   const maybeSwap = () => {
     if (!ready || stopped || loadingKey) return;
-    const want = pickSet(innerWidth, innerHeight, q.get('plates'));
+    const want = pickSet(innerWidth, innerHeight, q.get('plates'), setKey);
     if (want === setKey) {
       failedKey = null;
       return;

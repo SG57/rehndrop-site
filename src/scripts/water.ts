@@ -369,7 +369,8 @@ export function startWater({ scene }: { scene: SceneHandle }): WaterHandle {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
     gl.activeTexture(gl.TEXTURE0);
-    const urls = ((window.__rehndrop?.scenePlates as string[] | undefined) ?? []).slice(0, 3);
+    // the atlas is only used by the optional alternate refraction: with that off, skip the fetch, decode and upload
+    const urls = SEEDS_ON ? ((((window.__rehndrop?.scenePlatesL ?? window.__rehndrop?.scenePlates) as string[] | undefined)) ?? []).slice(0, 3) : [];
     if (urls.length === 3) {
       const vw = REFRACT_ALT.view;
       const vh = Math.round((vw * 2) / 3);

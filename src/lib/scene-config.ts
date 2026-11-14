@@ -11,6 +11,7 @@ export const SWELL_EASE_S = 0.3; // time constant: about 1 s to settle
 export const PLATE_ASPECT = 1344 / 896; // landscape plates
 export const PLATE_ASPECT_P = 896 / 1344; // portrait plates
 export const PORTRAIT_BELOW = 1.0; // viewport aspect under this uses the portrait set
+export const PORTRAIT_HYST = 0.06; // a set already in use is kept until the aspect is this far past the threshold (no flip-flop near a square window)
 
 // Where each LANDSCAPE plate is cropped when the screen is narrower than the plate (aspect under about 1.3, shown
 // down to 1.0; narrower screens use the portrait plates, which are cropped at the centre): 0 = left edge
