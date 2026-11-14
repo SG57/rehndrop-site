@@ -56,8 +56,8 @@ adds up, and the envelope the visuals run on was measured from that exact audio.
 
 ## Moving to the custom domain
 
-Commit `public/CNAME` containing the domain (e.g. `rehndrop.sg57.dev`) after the DNS record exists
-(`CNAME rehndrop -> sg57.github.io.`). `astro.config.mjs` switches the site URL and base path from
+Commit `public/CNAME` containing the domain (e.g. `rehndrop.com`) after the DNS record exists
+(`A`/`AAAA` records for GitHub Pages, `CNAME www -> sg57.github.io.`). `astro.config.mjs` switches the site URL and base path from
 that one file, and GitHub Pages picks the domain up from the deployed artifact.
 
 ## Visual system
