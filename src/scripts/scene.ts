@@ -17,14 +17,16 @@ import { frozen, hash32, seeded, wallNow } from './clock';
 import { CALM_GLSL, CalmGL, EXPOSURE, type CalmLocs } from '../lib/calm';
 import { createTierProbe, detectTier, getTier, rendererString, setTier, type Tier } from '../lib/tier';
 import {
-  CROP_X, DEG, dayFactor, FOG_DIV, FOG_EVERY, NOISE, PERIOD_S, PLATE_ASPECT, SCALE, SOFTNESS, SWELL_EASE_S,
+  CROP_X, CROP_XP, DEG, dayFactor, FOG_DIV, FOG_EVERY, LEAN_END, NOISE, PERIOD_S, PORTRAIT_LEAN_END, PORTRAIT_LEAN_START, SCALE, SOFTNESS, SWELL_EASE_S,
   SWELL_GAIN, smoothstep, timeCycleSwell,
 } from '../lib/scene-config';
+import { pickSet, type SceneSet, type SetKey } from '../lib/scene-assets';
 
 export interface SceneOptions {
   canvas: HTMLCanvasElement;
-  plates: string[]; // 3 urls: candle, chrome, dawn
-  masks: string[]; // 3 urls: R flame/lamp flicker, G sway, B glints
+  // the landscape (l) and portrait (p) sets; each holds 3 plate urls (candle, chrome, dawn) and 3 mask urls
+  // (R flame/lamp flicker, G sway, B glints). Only the set that fits the viewport is fetched.
+  sets: Record<SetKey, SceneSet>;
   base: string; // prefix for urls that are not absolute
 }
 
@@ -378,17 +380,21 @@ export function startScene(opts: SceneOptions): SceneHandle {
   let asp = 1;
   let cropX = 1;
   let cropY = 1;
+  // which plate set is on screen, and its aspect: the uv crop is computed from the plates, not a constant
+  let setKey: SetKey = pickSet(innerWidth, innerHeight, q.get('plates'));
+  let plateAsp = opts.sets[setKey].aspect;
   const measure = () => {
     cw = canvas.clientWidth || innerWidth;
     ch = canvas.clientHeight || innerHeight;
     asp = cw / ch;
-    cropX = asp > PLATE_ASPECT ? 1 : asp / PLATE_ASPECT;
-    cropY = asp > PLATE_ASPECT ? PLATE_ASPECT / asp : 1;
-    lean = smoothstep(1, 0.75, asp);
+    cropX = asp > plateAsp ? 1 : asp / plateAsp;
+    cropY = asp > plateAsp ? plateAsp / asp : 1;
+    // narrow screens lean the crop to the art-directed detail. Portrait plates: by the horizontal slack (none at
+    // 2:3, full at PORTRAIT_LEAN_END). Landscape plates on a squarish screen: full at 1:1, none from LEAN_END up
+    lean = setKey === 'p' ? smoothstep(PORTRAIT_LEAN_START, PORTRAIT_LEAN_END, asp) : smoothstep(LEAN_END, 1, asp);
   };
-  // the focus only leans in portrait: full strength at 3:4 and narrower, none at 1:1 and wider
   let lean = 0;
-  const anchor = (i: number) => 0.5 + (CROP_X[i] - 0.5) * lean;
+  const anchor = (i: number) => 0.5 + ((setKey === 'p' ? CROP_XP : CROP_X)[i] - 0.5) * lean;
   measure();
   const makeFB = () => {
     warm = Math.max(warm, SCALE.warmRealloc);
@@ -420,11 +426,12 @@ export function startScene(opts: SceneOptions): SceneHandle {
     new Promise<HTMLImageElement>((res, rej) => {
       const im = new Image();
       im.decoding = 'async';
-      im.onload = () => res(im);
+      // decode off the thread now, so the upload later does not stall a frame
+      im.onload = () => (im.decode ? im.decode().catch(() => undefined) : Promise.resolve()).then(() => res(im));
       im.onerror = () => rej(new Error(url));
       im.src = abs(url);
     });
-  const texs: WebGLTexture[] = [];
+  let texs: WebGLTexture[] = [];
   let ready = false;
 
   // ---- swell: events set the target, otherwise the slow time cycle ----
@@ -601,6 +608,7 @@ export function startScene(opts: SceneOptions): SceneHandle {
     makeFB();
     fit();
     kick();
+    maybeSwap();
   };
   ops.refit = () => {
     fit();
@@ -659,22 +667,86 @@ export function startScene(opts: SceneOptions): SceneHandle {
   document.addEventListener('visibilitychange', onVisible);
   canvas.addEventListener('webglcontextlost', onLost);
 
-  Promise.all([...opts.plates, ...opts.masks].map(load))
-    .then((imgs) => {
-      imgs.forEach((im, i) => {
-        const t = gl.createTexture()!;
-        gl.activeTexture(gl.TEXTURE0 + i);
-        setupTex(t, gl.CLAMP_TO_EDGE);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        // masks are data, not colour: no colour-space conversion
-        gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, i < 3 ? gl.BROWSER_DEFAULT_WEBGL : gl.NONE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
-        texs[i] = t;
+  // upload one image into a fresh texture on unit 7, which nothing else binds. Callers run this outside the
+  // frame; the pixel-store flags are put back as they were found.
+  const uploadOne = (im: HTMLImageElement, isMask: boolean) => {
+    const pf = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
+    const pc = gl.getParameter(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL);
+    const t = gl.createTexture()!;
+    gl.activeTexture(gl.TEXTURE7);
+    setupTex(t, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    // masks are data, not colour: no colour-space conversion
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, isMask ? gl.NONE : gl.BROWSER_DEFAULT_WEBGL);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, pf);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, pc);
+    gl.activeTexture(gl.TEXTURE0);
+    return t;
+  };
+  const loadSet = (k: SetKey) => Promise.all([...opts.sets[k].plates, ...opts.sets[k].masks].map(load));
+
+  // a viewport that crosses the aspect threshold swaps sets. The old textures keep drawing until the
+  // new set is fetched, decoded and uploaded; then one assignment swaps them (no black frame, no partial set)
+  let loadingKey: SetKey | null = null;
+  // a set that failed to load is not retried until the viewport wants the other one, or after a backoff
+  let failedKey: SetKey | null = null;
+  const RETRY_MS = 10000;
+  const maybeSwap = () => {
+    if (!ready || stopped || loadingKey) return;
+    const want = pickSet(innerWidth, innerHeight, q.get('plates'));
+    if (want === setKey) {
+      failedKey = null;
+      return;
+    }
+    if (want === failedKey) return;
+    loadingKey = want;
+    loadSet(want)
+      .then(
+        (imgs) =>
+          new Promise<void>((done) => {
+            // an upload costs a few ms (tens in software): one per frame, off the draw, then commit all six at once
+            const fresh: WebGLTexture[] = [];
+            const step = () => {
+              if (stopped) return done();
+              if (fresh.length < imgs.length) {
+                fresh.push(uploadOne(imgs[fresh.length], fresh.length >= 3));
+                requestAnimationFrame(step);
+                return;
+              }
+              const old = texs;
+              texs = fresh;
+              setKey = want;
+              plateAsp = opts.sets[want].aspect;
+              measure();
+              old.forEach((t) => gl.deleteTexture(t));
+              if (still()) kick();
+              done();
+            };
+            requestAnimationFrame(step);
+          }),
+      )
+      .catch(() => {
+        // keep drawing the set that is on screen; one retry after a backoff
+        failedKey = want;
+        setTimeout(() => {
+          if (failedKey === want) failedKey = null;
+          maybeSwap();
+        }, RETRY_MS);
+      })
+      .then(() => {
+        loadingKey = null;
+        maybeSwap(); // the viewport may have flipped again while this set loaded
       });
-      gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.BROWSER_DEFAULT_WEBGL);
+  };
+
+  loadSet(setKey)
+    .then((imgs) => {
+      texs = imgs.map((im, i) => uploadOne(im, i >= 3));
       ready = true;
       document.documentElement.dataset.scene = 'on';
       kick();
+      maybeSwap(); // the viewport may have rotated while the first set loaded
     })
     .catch((err) => {
       fail(`could not load ${err?.message ?? err}`);

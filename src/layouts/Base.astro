@@ -16,6 +16,7 @@ import type { Track } from '../lib/data';
 import curation from '../data/curation.json';
 import { PHONE_VELVET_MQ } from '../lib/config';
 import { BASE, u } from '../lib/site';
+import { sceneSets } from '../lib/scene-assets';
 
 interface Props {
   title: string;
@@ -50,9 +51,7 @@ const player = await Promise.all(
     href: u(`t/${t.slug}/`),
   })),
 );
-const sceneNames = ['candle', 'chrome', 'dawn'];
-const scenePlates = sceneNames.map((n) => u(`scene/room-${n}.webp`));
-const sceneMasks = sceneNames.map((n) => u(`scene/mask-${n}.png`));
+const sceneSetUrls = sceneSets(u);
 const velvet = u('brand/velvet.webp');
 const velvetPhone = u('brand/velvet-phone.webp');
 ---
@@ -114,8 +113,8 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <ContactSheet />
     <p class="toast" data-essence-skin="toast" data-toast role="status" aria-live="polite"></p>
     <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />
-    <script is:inline define:vars={{ scenePlates, sceneMasks, base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
-      window.__rehndrop = Object.assign(window.__rehndrop || {}, { base, sharp, fog, velvet, texAspect: 2560 / 1441, scenePlates, sceneMasks });
+    <script is:inline define:vars={{ sceneSetUrls, base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
+      window.__rehndrop = Object.assign(window.__rehndrop || {}, { base, sharp, fog, velvet, texAspect: 2560 / 1441, sceneSets: sceneSetUrls });
       // portrait phones: the lens reads the same 1080w portrait velvet the CSS layer shows
       if (matchMedia(phoneMq).matches) {
         window.__rehndrop.sharp = phone;
@@ -129,6 +128,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <script>
       import { startLens } from '../scripts/lens';
       import { startScene } from '../scripts/scene';
+      import { pickSet, type SceneSet, type SetKey } from '../lib/scene-assets';
       import { startWater } from '../scripts/water';
       import { startEssenceUI } from '../scripts/essence-ui';
       import { startInteract } from '../scripts/interact';
@@ -139,7 +139,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
       import { startSheet } from '../scripts/sheet';
       import { focusTitle, startNav } from '../scripts/nav';
 
-      type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number; scenePlates: string[]; sceneMasks: string[] };
+      type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number; sceneSets: Record<SetKey, SceneSet>; scenePlates?: string[] };
       const cfg = (window as unknown as { __rehndrop: Cfg }).__rehndrop;
 
       // Two kinds of setup. Once per visit: the player (its <audio> is a persisted element),
@@ -159,7 +159,10 @@ const velvetPhone = u('brand/velvet-phone.webp');
           const canvas = document.querySelector<HTMLCanvasElement>('[data-lens]');
           if (canvas) {
             // the scene (three blended essences) is pass 1; the wet lens is pass 2 on the same canvas
-            const scene = startScene({ canvas, plates: cfg.scenePlates, masks: cfg.sceneMasks, base: cfg.base });
+            // one plate set is fetched, chosen by the viewport aspect; the engine swaps if it crosses the threshold.
+            // scenePlates is the set in use at start (the water reads it).
+            cfg.scenePlates = cfg.sceneSets[pickSet(innerWidth, innerHeight, new URLSearchParams(location.search).get('plates'))].plates;
+            const scene = startScene({ canvas, sets: cfg.sceneSets, base: cfg.base });
             if (scene.gl) {
               // water on glass is pass 2 of the scene frame; the old 2D drop sprites are not started
               startWater({ scene });

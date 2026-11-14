@@ -8,12 +8,22 @@ export const SWELL_CYCLE_S = 180;
 export const SWELL_GAIN = 3.0;
 export const SWELL_EASE_S = 0.3; // time constant: about 1 s to settle
 
-export const PLATE_ASPECT = 1344 / 896;
+export const PLATE_ASPECT = 1344 / 896; // landscape plates
+export const PLATE_ASPECT_P = 896 / 1344; // portrait plates
+export const PORTRAIT_BELOW = 1.0; // viewport aspect under this uses the portrait set
 
-// Where each plate is cropped when the screen is narrower than the plate (portrait): 0 = left edge
+// Where each LANDSCAPE plate is cropped when the screen is narrower than the plate (aspect under about 1.3, shown
+// down to 1.0; narrower screens use the portrait plates, which are cropped at the centre): 0 = left edge
 // of the plate, 0.5 = centre (the old behaviour), 1 = right edge. Candle leans to the tassel (plate x 0.93 to 0.96, so
-// the window must end past it), chrome to the band edge and bright seam at x 0.85 to 0.95, dawn to the bloom. Landscape has no horizontal slack, so it is unchanged.
+// the window must end past it), chrome to the band edge and bright seam at x 0.85 to 0.95, dawn to the bloom. Wide screens have no horizontal slack, so the lean fades out by LEAN_END.
 export const CROP = { candle: 0.97, chrome: 0.88, dawn: 0.95 };
+// Portrait plates: phones narrower than the plate's 2:3 lose plate edges (a 393x852 phone shows the middle 69%), so
+// the crop leans to the focal x of each plate (candle tassel, chrome seam, dawn bloom). The lean scales with the
+// slack: none at the plate's own 2:3 (tablets), full from PORTRAIT_LEAN_END (tall phones) down.
+export const CROP_XP: [number, number, number] = [0.95, 0.9, 0.9];
+export const PORTRAIT_LEAN_START = 2 / 3;
+export const PORTRAIT_LEAN_END = 0.45;
+export const LEAN_END = 1.3; // landscape plates: lean at full strength at aspect 1.0, none from here up
 export const CROP_X: [number, number, number] = [CROP.candle, CROP.chrome, CROP.dawn];
 
 // adaptive scene resolution (fraction of the viewport)

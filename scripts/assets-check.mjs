@@ -5,8 +5,9 @@
 // - a source file name isn't a plain part name (lowercase words, digits, hyphens);
 // - an image that sits behind text (public/brand/velvet*, plate*, room*) isn't in the
 //   BACKDROPS table of scripts/legibility.mjs, or names a device run that doesn't exist there;
-// - a scene plate or mask (public/scene room-*.webp, mask-*.png) is missing metadata-free, has a name that
-//   isn't plain, is over its 120 KB budget, or isn't covered by the essence veil audit in scripts/legibility.mjs
+// - a scene plate or mask (public/scene room-<essence>[-p].webp, mask-<essence>[-p].png; -p is the portrait set,
+//   12 files in all) is missing, carries metadata, has a name that isn't plain, is over its budget (120 KB per
+//   plate, 100 KB per mask), or isn't covered by the essence veil audit in scripts/legibility.mjs
 //   (a missing plate or mask is an explicit SKIP line, counted at the end, never a silent pass);
 // - a built dist/ ships source maps;
 // - public/ or dist/ carries a video file (the site hosts none).
@@ -161,29 +162,33 @@ for (const name of await readdir(brand)) {
 }
 for (const name of Object.keys(backdrops)) if (!existsSync(join(brand, name))) problems.push(`scripts/legibility.mjs BACKDROPS lists a missing file: ${name}`);
 
-// the scene: three plates and three masks, each plain-named, metadata-free (scanned above, with the rest of
-// public/), and under budget; the veil audit in legibility.mjs must cover every essence
-const SCENE_BUDGET = 120 * 1024;
+// the scene: six plates and six masks (landscape, and portrait with a -p suffix), each plain-named,
+// metadata-free (scanned above, with the rest of public/), and under budget; the veil audit in
+// legibility.mjs must cover every essence
+const PLATE_BUDGET = 120 * 1024;
+const MASK_BUDGET = 100 * 1024;
 const ESSENCE_NAMES = ['candle', 'chrome', 'dawn'];
 const sceneDir = join(ROOT, 'public', 'scene');
 const sceneSkips = [];
 let sceneChecked = 0;
-for (const [kind, ext] of [['room', 'webp'], ['mask', 'png']]) {
-  for (const e of ESSENCE_NAMES) {
-    const name = `${kind}-${e}.${ext}`;
-    const file = join(sceneDir, name);
-    if (!existsSync(file)) { sceneSkips.push(`public/scene/${name} is missing (not checked)`); continue; }
-    sceneChecked++;
-    const b = await readFile(file);
-    if (!PLAIN.test(name)) flag(file, 'not a plain part name');
-    if (b.length > SCENE_BUDGET) flag(file, `${(b.length / 1024).toFixed(1)} KB is over the 120 KB budget`);
-    const found = ext === 'webp' ? webp(b) : png(b);
-    for (const f of new Set(found)) flag(file, f);
+for (const suffix of ['', '-p']) {
+  for (const [kind, ext, budget] of [['room', 'webp', PLATE_BUDGET], ['mask', 'png', MASK_BUDGET]]) {
+    for (const e of ESSENCE_NAMES) {
+      const name = `${kind}-${e}${suffix}.${ext}`;
+      const file = join(sceneDir, name);
+      if (!existsSync(file)) { sceneSkips.push(`public/scene/${name} is missing (not checked)`); continue; }
+      sceneChecked++;
+      const b = await readFile(file);
+      if (!PLAIN.test(name)) flag(file, 'not a plain part name');
+      if (b.length > budget) flag(file, `${(b.length / 1024).toFixed(1)} KB is over the ${budget / 1024} KB budget`);
+      const found = ext === 'webp' ? webp(b) : png(b);
+      for (const f of new Set(found)) flag(file, f);
+    }
   }
 }
 if (existsSync(sceneDir)) {
   for (const name of await readdir(sceneDir)) {
-    if (!/^(room|mask)-(candle|chrome|dawn)\.(webp|png)$/.test(name)) flag(join(sceneDir, name), 'unexpected file in public/scene (plates are room-<essence>.webp, masks mask-<essence>.png)');
+    if (!/^(room|mask)-(candle|chrome|dawn)(-p)?\.(webp|png)$/.test(name)) flag(join(sceneDir, name), 'unexpected file in public/scene (plates are room-<essence>[-p].webp, masks mask-<essence>[-p].png)');
   }
 }
 if (sceneChecked) {
@@ -201,5 +206,5 @@ if (problems.length) {
   process.exit(1);
 }
 for (const m of sceneSkips) console.log(`SKIP ${m}`);
-console.log(`scene: ${sceneChecked}/6 plates and masks checked (metadata, plain names, 120 KB budget)${sceneSkips.length ? `; ${sceneSkips.length} SKIPPED, not passed` : ''}`);
+console.log(`scene: ${sceneChecked}/12 plates and masks checked (metadata, plain names, 120 KB budget)${sceneSkips.length ? `; ${sceneSkips.length} SKIPPED, not passed` : ''}`);
 console.log(`assets ok: ${checked} source images${existsSync(dist) ? ' and dist/' : ''} carry no metadata, names are plain, backdrops are covered`);
