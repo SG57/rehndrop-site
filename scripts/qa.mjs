@@ -416,9 +416,9 @@ for (const make of [desk, phone]) {
   await page.waitForTimeout(1200);
   const left = await page.evaluate(() => location.pathname);
   console.log('contact', JSON.stringify({ open, reachMs, copied, esc, back, afterSecondBack: left }));
-  check(open.open && open.mail === 'rehndrop@sg57.dev' && (open.select === 'all' || open.select === 'text'), 'contact: sheet did not open with a selectable address');
-  check(open.links.length === 3 && open.links.every((l) => l.includes('mailto:rehndrop@sg57.dev?subject=')), 'contact: the three mailto links are wrong');
-  check(copied.toast === 'copied.' && copied.clip === 'rehndrop@sg57.dev', 'contact: copy did not copy or toast');
+  check(open.open && open.mail === 'contact@rehndrop.com' && (open.select === 'all' || open.select === 'text'), 'contact: sheet did not open with a selectable address');
+  check(open.links.length === 3 && ['mailto:booking@rehndrop.com?subject=booking', 'mailto:press@rehndrop.com?subject=press', 'mailto:contact@rehndrop.com?subject=management'].every((m, i) => open.links[i].includes(m)), 'contact: the three mailto links are wrong');
+  check(copied.toast === 'copied.' && copied.clip === 'contact@rehndrop.com', 'contact: copy did not copy or toast');
   check(!esc.open && esc.focus && esc.qa === 'page1', 'contact: Esc did not close and return focus without reloading');
   check(!back.open && back.path.endsWith('/t/wobble/') && back.qa === 'page1', 'contact: Back did not close the sheet in place');
   check(reachMs < 5000, `contact: ${reachMs} ms to reach the address`);

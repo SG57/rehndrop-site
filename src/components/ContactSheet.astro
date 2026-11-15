@@ -1,7 +1,8 @@
 ---
 // The contact sheet (sheet.ts): the address as selectable text, copy, the three mailto links.
 import { curation } from '../lib/data';
-const mail = (subject: string) => `mailto:${curation.contact}?subject=${encodeURIComponent(subject)}`;
+const domain = curation.contact.split('@')[1];
+const mail = (box: string, subject: string) => `mailto:${box}@${domain}?subject=${encodeURIComponent(subject)}`;
 ---
 <dialog class="sheet" data-sheet aria-labelledby="sheet-title">
   <div class="sheet-card">
@@ -12,11 +13,11 @@ const mail = (subject: string) => `mailto:${curation.contact}?subject=${encodeUR
       <p class="sheet-toast" role="status" aria-live="polite" data-copied></p>
     </div>
     <nav class="sheet-links" aria-label="email">
-      <a href={mail('booking')}>booking</a>
+      <a href={mail('booking', 'booking')}>booking</a>
       <span aria-hidden="true">·</span>
-      <a href={mail('press')}>press</a>
+      <a href={mail('press', 'press')}>press</a>
       <span aria-hidden="true">·</span>
-      <a href={mail('management')}>management</a>
+      <a href={mail('contact', 'management')}>management</a>
     </nav>
     <button class="sheet-close" type="button" data-sheet-close>close</button>
   </div>
