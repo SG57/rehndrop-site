@@ -1,0 +1,4 @@
+:root { --gap: 10px; --fs: 1.25rem; }
+.a { font-size: var(--fs); padding: var(--gap); }
+.b { font-size: max(1rem, 16px); }
+.c { font-size: clamp(1.25rem, 5.6vw, 2.5rem); }

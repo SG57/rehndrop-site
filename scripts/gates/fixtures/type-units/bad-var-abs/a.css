@@ -1,0 +1,2 @@
+:root { --fs: 10pt; }
+.a { font-size: var(--fs, 1rem); }

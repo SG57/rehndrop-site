@@ -1,0 +1,2 @@
+:root { --a: var(--b); --b: 13px; }
+.a { font-size: var(--a); }

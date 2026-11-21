@@ -1,14 +1,26 @@
 // Type-scale gate: npm run check:type-units
 //   node scripts/gates/check-type-units.mjs [--root <src dir>]
-// Every font-size under the root (.css files) must scale with the visitor's browser font size, so it is written in
-// rem (or em, %, or a keyword), never in px alone. A px value is accepted only as the floor of a rem expression,
-// e.g. `max(1rem, 16px)`. The font shorthand must not carry a px size either. Exit 1 on any px size.
-// Why a gate: the type scale was converted from px to rem once, proven pixel-identical at the default 16px root;
-// this keeps the next edit from putting a px size back, which would stop that text following the reader's setting.
-// Layout lengths (padding, height, calc() offsets) and media queries stay in px on purpose and are not read here.
-// Known limits, left to review: a px term beside a rem term is accepted (`min(2rem, 20px)` passes), and a size that comes
-// from a custom property (`font-size: var(--x)` with `--x: 14px`) is not followed. Only .css files are read (check:focus
-// already bans <style> blocks in .astro files); an inline style="font-size: 12px" attribute would go unseen.
+// Every font size under the root must scale with the visitor's browser font size, so it is written in rem (or em, %, vw
+// inside a clamp, a keyword), never in a fixed length. Exit 1 on any of:
+//   - a px length anywhere in a font-size (or font shorthand), calc(), min(), max() and clamp() included: the ONE px allowed
+//     is the documented floor `max(1rem, 16px)` (the search field: iOS zooms into a field under 16px). A px term that
+//     sits beside a rem term, calc(10px + .001rem) or min(2rem, 20px), is still a px size and fails
+//   - an absolute unit (pt cm mm in pc Q): a physical length does not follow the reader's setting either
+//   - font-size: var(--x) where --x (or a custom property it points at through var()) is declared with a px or absolute
+//     length anywhere in the sources scanned
+//   - the same sizes written outside a stylesheet: font-size / font declarations in .astro and script sources (an inline
+//     style="" attribute, style={`...`}, a cssText string), el.style.fontSize = ..., { fontSize: ... } and
+//     setProperty('font-size', ...). A value that is built at run time is read as text: a literal px (`12px`, `${n}px`,
+//     `n + 'px'`) fails
+// Why a gate: the type scale was converted from px to rem once, proven pixel-identical at the default 16px root; this keeps
+// the next edit from putting a fixed size back, which would stop that text following the reader's setting.
+// vw inside a clamp() middle stays legal: it is the documented fluid-type design (clamp(1.25rem, 5.6vw, 2.5rem) keeps rem
+// bounds). Layout lengths (padding, height, calc() offsets) and media queries stay px on purpose and are not read here.
+// Known limits, left to review: the non-stylesheet scan is lexical (a size assembled from parts in separate statements, or
+// a style object spread in from elsewhere, is not followed); a custom property set only at run time through a variable is
+// not seen; a px custom property is flagged when any use reaches font-size, even if a media query would redefine it in rem;
+// a value coming from computed style or a framework prop is invisible. A stylesheet set with no font-size at all also fails,
+// so the gate cannot pass blind.
 import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
@@ -31,30 +43,104 @@ async function* walk(dir) {
   }
 }
 const css = [];
-for await (const f of walk(root)) if (f.endsWith('.css')) css.push(f);
+const other = [];
+for await (const f of walk(root)) {
+  if (f.endsWith('.css')) css.push(f);
+  else if (/\.(astro|ts|tsx|js|mjs|html)$/.test(f) && !f.endsWith('.d.ts')) other.push(f);
+}
 if (!css.length) { console.error(`FAIL: no .css files under ${rel(root)}`); process.exit(1); }
+css.sort(); other.sort();
 
-// a value is rejected when it has a px length and no rem/em length beside it (the max(1rem, 16px) floor passes)
-const PX_ONLY = '/^(?!.*[0-9](rem|em)(?![a-z])).*[0-9]px(?![a-z])/i';
-const message = (_prop, value) => `font size "${value}" is in px: write it in rem (px / 16) so the reader's browser font size applies`;
-const config = { rules: {
-  'declaration-property-value-disallowed-list': [{ 'font-size': [PX_ONLY], font: [PX_ONLY] }, { message }],
-} };
+// ---- the value check ------------------------------------------------------------------------------------------------
+const FLOOR = /max\(\s*1rem\s*,\s*16px\s*\)/gi;
+const PX = /\d(?:px)(?![a-z0-9-])/i;
+const ABS = /\d(pt|cm|mm|in|pc|q)(?![a-z0-9-])/i;
+// a value assembled at run time: `${n}px`, 'px' appended to something
+const DYNAMIC_PX = /\}\s*px(?![a-z0-9-])|['"`]\s*px(?![a-z0-9-])/i;
+const VAR = /var\(\s*(--[\w-]+)/gi;
+const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '));
+const stripLineComments = (s) => s.replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1');
+
+/** Why a font-size value is not allowed, or null. `tainted` maps a custom property to where it is declared in px. */
+function problem(value, tainted, dynamic = false) {
+  const v = value.replace(/!important/i, '').replace(FLOOR, ' ').trim();
+  const abs = v.match(ABS);
+  if (abs) return `font size "${value.trim()}" uses an absolute unit (${abs[1].toLowerCase()}): write it in rem (px / 16) so the reader's browser font size applies`;
+  if (PX.test(v) || (dynamic && DYNAMIC_PX.test(v))) return `font size "${value.trim()}" is in px: write it in rem (px / 16) so the reader's browser font size applies (a px term inside calc(), min(), max() or clamp() counts; only the floor max(1rem, 16px) is allowed)`;
+  for (const m of v.matchAll(VAR)) {
+    if (tainted.has(m[1])) return `font size "${value.trim()}" comes from ${m[1]}, which is declared in px (${tainted.get(m[1])}): declare it in rem so the reader's browser font size applies`;
+  }
+  return null;
+}
+
+// ---- custom properties declared in a fixed length (transitively through var()) --------------------------------------
+const sources = new Map();
+for (const f of [...css, ...other]) {
+  let text = stripComments(await readFile(f, 'utf8'));
+  if (!f.endsWith('.css') && !f.endsWith('.astro') && !f.endsWith('.html')) text = stripLineComments(text);
+  sources.set(f, text);
+}
+const decls = [];
+for (const [f, text] of sources) {
+  for (const m of text.matchAll(/(--[\w-]+)\s*:\s*((?:\$\{[^}]*\}|[^;"'`<>{}])+)/g)) decls.push({ name: m[1], value: m[2], where: `${rel(f)}:${text.slice(0, m.index).split('\n').length}` });
+}
+const tainted = new Map();
+for (let changed = true; changed;) {
+  changed = false;
+  for (const d of decls) {
+    if (tainted.has(d.name)) continue;
+    const v = d.value.replace(FLOOR, ' ');
+    if (PX.test(v) || ABS.test(v) || [...v.matchAll(VAR)].some((m) => tainted.has(m[1]))) { tainted.set(d.name, `${d.name}: ${d.value.trim().slice(0, 40)} at ${d.where}`); changed = true; }
+  }
+}
+
+// ---- stylesheets: a stylelint rule over every font-size and font declaration -----------------------------------------
+const ruleName = 'local/font-size-units';
+const plugin = stylelint.createPlugin(ruleName, (_primary, opts) => (cssRoot, result) => {
+  cssRoot.walkDecls((d) => {
+    const prop = d.prop.toLowerCase();
+    if (prop !== 'font-size' && prop !== 'font') return;
+    const why = problem(d.value, opts.tainted);
+    if (why) stylelint.utils.report({ ruleName, result, node: d, message: why });
+  });
+});
+const config = { plugins: [plugin], rules: { [ruleName]: [true, { tainted }] } };
 
 const problems = [];
 let declarations = 0;
-for (const file of css.sort()) {
+for (const file of css) {
   const code = await readFile(file, 'utf8');
   declarations += (code.replace(/\/\*[\s\S]*?\*\//g, '').match(/(^|[;{\s])font-size\s*:/g) ?? []).length;
   const out = await stylelint.lint({ code, codeFilename: file, config });
-  for (const w of out.results.flatMap((r) => [...r.warnings, ...r.parseErrors])) problems.push(`${rel(file)}:${w.line}:${w.column} ${w.text.replace(/\s*\(declaration-property-value-disallowed-list\)$/, '')}`);
+  for (const w of out.results.flatMap((r) => [...r.warnings, ...r.parseErrors])) problems.push(`${rel(file)}:${w.line}:${w.column} ${w.text.replace(new RegExp(`\\s*\\(${ruleName}\\)$`), '')}`);
 }
 if (!declarations) problems.push(`${rel(root)}: no font-size declaration found in ${css.length} stylesheet(s): the gate would pass blind`);
 
+// ---- everything else: .astro (inline style attributes, <style> text) and script sources ----------------------------
+const VALUE = String.raw`((?:\$\{[^}]*\}|[^;"'\x60<>{}])+)`;
+const SCANS = [
+  [new RegExp(String.raw`(?<![-\w])font-size\s*:\s*${VALUE}`, 'gi'), 1],
+  [new RegExp(String.raw`(?<![-\w])font\s*:\s*${VALUE}`, 'gi'), 1],
+  [/\bfontSize\s*[:=]\s*([^;\n,}]+)/g, 1],
+  [/setProperty\(\s*['"`]font-size['"`]\s*,\s*([^)\n]+)\)/gi, 1],
+];
+let scanned = 0;
+for (const file of other) {
+  const text = sources.get(file);
+  scanned++;
+  for (const [re, group] of SCANS) {
+    for (const m of text.matchAll(re)) {
+      declarations++;
+      const why = problem(m[group], tainted, true);
+      if (why) problems.push(`${rel(file)}:${text.slice(0, m.index).split('\n').length} ${why}`);
+    }
+  }
+}
+
 if (problems.length) {
-  console.error(`FAIL: ${problems.length} type-scale problem(s) in ${css.length} stylesheet(s)`);
+  console.error(`FAIL: ${problems.length} type-scale problem(s) in ${css.length} stylesheet(s) and ${scanned} other source(s)`);
   for (const p of problems) console.error(`  ${p}`);
-  if (problems.some((p) => p.includes('is in px'))) console.error(`  ${platformGuide('respect-os-text-scale', 'it asks for no root font-size; its meta opt-in is limited availability, look the support up first')}`);
+  if (problems.some((p) => /is in px|absolute unit|declared in px/.test(p))) console.error(`  ${platformGuide('respect-os-text-scale', 'it asks for no root font-size; its meta opt-in is limited availability, look the support up first')}`);
   process.exit(1);
 }
-console.log(`ok: ${declarations} font-size declaration(s) in ${css.length} stylesheet(s), none in px alone`);
+console.log(`ok: ${declarations} font-size declaration(s) in ${css.length} stylesheet(s) and ${scanned} other source(s), none in px alone, an absolute unit or a px custom property (${tainted.size} px custom propert${tainted.size === 1 ? 'y' : 'ies'} seen, none reaches a font size)`);
