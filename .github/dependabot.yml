@@ -1,0 +1,32 @@
+# Reference: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+# One grouped pull request per ecosystem per week. Updates are held back a few days after release
+# (cooldown) so a freshly published, possibly compromised or yanked version is not adopted at once;
+# security updates ignore the cooldown. GitHub Actions supports only default-days there.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+      semver-major-days: 30
+    groups:
+      npm-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+    ignore:
+      # astro check drives the TypeScript 6 language service; @astrojs/check peers ^5 || ^6 and
+      # TypeScript 7 is a different compiler (package.json keeps ^6, so the next major is 7). Move it deliberately, with a gates run, not by PR.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    groups:
+      actions:
+        patterns: ['*']
