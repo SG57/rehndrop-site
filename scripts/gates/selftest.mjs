@@ -228,6 +228,16 @@ for (const [gate, name, expect, msg] of CASES) {
   const out = jsonScript(evil);
   report(!out.includes('<') && JSON.stringify(JSON.parse(out)) === JSON.stringify(evil), 'jsonScript: escapes < and round-trips', out);
 }
+// The reviewed before-the-meta list names the head boot script by sha256 (scripts/gates/csp-before-meta.allow.json). Editing
+// src/lib/boot-script.mjs changes that hash; this turns test:gates red at once, before a build is needed to find out.
+{
+  const { BOOT_JS } = await import('../../src/lib/boot-script.mjs');
+  const { createHash } = await import('node:crypto');
+  const allow = JSON.parse(readFileSync(join(here, 'csp-before-meta.allow.json'), 'utf8'));
+  const want = `sha256-${createHash('sha256').update(BOOT_JS).digest('base64')}`;
+  const have = allow.find((e) => e.kind === 'inline-script')?.sha256;
+  report(have === want, 'csp-before-meta.allow.json carries the current boot script hash', `allow list has ${have}, src/lib/boot-script.mjs hashes to ${want}: review the script change, then update the entry`);
+}
 // Platform-currency pointers: a failing gate may point at a guide of the platform-currency pack, never instead of its
 // own message (every CASES row above still asserts that). Each row names a fixture that fails, and whether the pointer
 // must be there, so a footer that drifts onto an unrelated failure, or is dropped, turns this red. PACK_GUIDE_IDS was
@@ -269,7 +279,7 @@ for (const [gate, name, text, expected] of POINTERS) {
   const bad = cited.filter(([, id]) => !PACK_GUIDE_IDS.has(id));
   report(cited.length >= 3 && bad.length === 0, `platform guide ids cited by the gates are verified pack ids (${cited.length} cited)`, bad.map(([f, id]) => `${f}: ${id}`).join('\n') || 'no citation found');
 }
-const POINTER_CHECKS = POINTERS.length + 1;
+const POINTER_CHECKS = POINTERS.length + 1 + 1;
 
 if (skipAstro) console.log('SKIP astro-check fixtures (--skip-astro-check)');
 else {
