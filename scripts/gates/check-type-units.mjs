@@ -7,7 +7,8 @@
 // this keeps the next edit from putting a px size back, which would stop that text following the reader's setting.
 // Layout lengths (padding, height, calc() offsets) and media queries stay in px on purpose and are not read here.
 // Known limits, left to review: a px term beside a rem term is accepted (`min(2rem, 20px)` passes), and a size that comes
-// from a custom property (`font-size: var(--x)` with `--x: 14px`) is not followed.
+// from a custom property (`font-size: var(--x)` with `--x: 14px`) is not followed. Only .css files are read (check:focus
+// already bans <style> blocks in .astro files); an inline style="font-size: 12px" attribute would go unseen.
 import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
