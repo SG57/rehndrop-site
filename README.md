@@ -103,3 +103,39 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
   reopen the preload question with real-network field data (CrUX) if the site ever has it. Dist went from 456 files and
   12 font files (202,352 bytes) to 448 files and 4 font files (94,108 bytes); what a visitor downloads is unchanged (the
   same four woff2 files, as the unicode ranges already kept the other subsets from loading).
+
+## Security: Content Security Policy
+
+`security.csp` in `astro.config.mjs` writes a `<meta http-equiv="content-security-policy">` into every page: Astro's
+hashes for the scripts and styles it bundles or inlines, plus `default-src 'self'`, `img-src 'self' data:
+https://i.ytimg.com` (YouTube thumbnails are the only thing the site loads from another origin; `data:` is the grain
+and a few SVG backgrounds in the stylesheet), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+`frame-src 'none'`. Audio, the WebGL canvases, the dialog, search, the spotlight and client-router transitions all run
+under it (`scripts/gates/csp-crawl.mjs`: every route at 375 and 1440 px, zero `securitypolicyviolation` events and
+console messages, plus those behaviours; `npm run check:csp`: the static half on `dist/`).
+
+What shipping it took, and what to keep true:
+
+- **One identical policy on every page.** Meta policies accumulate across client-router swaps (each swap adds the new
+  page's tag and the old one stays in force), so a page-specific hash would make the policy of the page you came from
+  block the page you go to. Astro emits the union of hashes everywhere; `check:csp` fails if two pages differ.
+- **No inline module script.** The client router injects a `data:` script to wait for one, which no policy short of
+  `data:` allows. `vite.build.assetsInlineLimit` in `astro.config.mjs` keeps every script (and every font and image)
+  a file; only small stylesheets may inline, and Astro hashes those.
+- **One inline script, written by hand: the head boot script.** `src/lib/boot-script.mjs` holds its text; `Base.astro`
+  prints it and `astro.config.mjs` hashes the same string into `script-src`. The build's first-party URLs travel as a
+  JSON block (`#rehndrop-config`), not an inline script. A new inline script is a deliberate act: it must be added the
+  same way, or `check:csp` and the crawl fail.
+- **Known gap, recorded here: `style-src-attr 'unsafe-inline'`.** Markup carries inline `style=""` attributes (per-track
+  accent colours and the like) and `nav.ts` copies the root element's across swaps. Astro 6.4 cannot hash attributes
+  (its `kind` option arrives in 7.1) and rejects a `style-src-attr` directive, so a small integration in
+  `astro.config.mjs` appends it to the meta tag after the build and fails the build if a page has no tag. Only the
+  attribute channel is open: `<style>` elements and scripts stay hash-only. Remove the integration when Astro offers
+  the option, then replace the attributes with hashes or classes.
+- **What a meta tag cannot do on GitHub Pages:** `frame-ancestors` (clickjacking protection), `report-uri` and `sandbox`
+  are ignored in a meta policy and Pages sets no headers, so the site can be framed and violations are not reported.
+  Putting a CDN with header control in front would close both.
+- Astro's docs list `ClientRouter` as unsupported with the CSP feature. It works here for the reasons above, and it is
+  checked in Chromium only: Firefox and Safari are UNVERIFIED. `qa.mjs` and the crawl set smooth scrolling off through
+  the CSSOM (an injected `<style>` is blocked by the policy); `legibility.mjs` runs with `bypassCSP` because it injects
+  styles to measure, and measures contrast, not the policy.

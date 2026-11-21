@@ -94,7 +94,8 @@ const sceneState = (page) => page.evaluate(() => {
   const r = c?.getBoundingClientRect();
   return { tier: document.documentElement.dataset.tier || '', canvas: !!c, w: r ? Math.round(r.width) : 0, h: r ? Math.round(r.height) : 0, snap: !!(window.__rehndrop && window.__rehndrop.scene) };
 });
-const calm = 'html{scroll-behavior:auto!important}';
+// smooth scrolling off, through the CSSOM: a <style> injected by addStyleTag is blocked by the site's Content Security Policy
+const calmDown = (page) => page.evaluate(() => document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important'));
 const desk = () => browser.newContext({ viewport: { width: 1440, height: 900 } });
 const phone = () => browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
 const audioState = (page) => page.evaluate(() => {
@@ -267,7 +268,7 @@ for (const d of DEVICES.filter((x) => !only || only.includes(x.name))) {
   const ctx = await phone();
   const page = await ctx.newPage();
   await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   const slug = 'wobble';
   const sel = `#heavy [data-play="${slug}"]`;
   await page.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), sel);
@@ -299,7 +300,7 @@ for (const make of [desk, phone]) {
   const ctx = await make();
   const page = await ctx.newPage();
   await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   await page.evaluate(() => {
     document.querySelector('[data-audio]').dataset.qa = 'a1';
     document.querySelector('[data-lens]').dataset.qa = 'l1';
@@ -351,7 +352,7 @@ for (const make of [desk, phone]) {
   const ctx = await desk();
   const page = await ctx.newPage();
   await page.goto(origin, { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   await page.locator('#pretty a.ix-title[href$="/t/pretty-lights/"]').click();
   await page.waitForURL(/pretty-lights/);
   await page.waitForTimeout(1200);
@@ -434,7 +435,7 @@ for (const make of [desk, phone]) {
   const ctx = await desk();
   const page = await ctx.newPage();
   await page.goto(origin, { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   const sel = await page.evaluate(() => Object.fromEntries(['.ix-h', '.ix-title', '.top-link', '.chip', '.spot-title', '.ix-view', '.contact-mail'].map((s) => [s, getComputedStyle(document.querySelector(s)).userSelect])));
   await page.locator('#heavy [data-play="wobble"]').click();
   await page.waitForTimeout(1000);
@@ -454,7 +455,7 @@ for (const make of [desk, phone]) {
   const ctx = await desk();
   const page = await ctx.newPage();
   await page.goto(origin, { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   const here = () => page.evaluate(() => {
     const e = document.activeElement;
     const name = e?.getAttribute('aria-label') || e?.textContent?.trim().replace(/\s+/g, ' ').slice(0, 40) || e?.getAttribute('placeholder') || '';
@@ -507,7 +508,7 @@ for (const make of [desk, phone]) {
   const ctx = await desk();
   const page = await ctx.newPage();
   await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   await page.waitForTimeout(800);
   const t0 = await page.evaluate(() => document.querySelector('[data-drops]').getClientRects()[0].top);
   await page.evaluate(() => window.scrollTo(0, 300));
@@ -575,7 +576,7 @@ if (!skipLong) {
   const ctx = await desk();
   const page = await ctx.newPage();
   await page.goto(origin + '?lens', { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   const liveState = () => page.evaluate(() => {
     const spot = document.querySelector('.spot.is-current .spot-cover');
     return { spotSlug: spot.dataset.cover, spotLive: spot.classList.contains('is-live'), spotScale: getComputedStyle(spot).scale };
@@ -600,7 +601,7 @@ if (!skipLong) {
   const ctx = await desk();
   const page = await ctx.newPage();
   await page.goto(origin + 't/wild-beauty/?lens', { waitUntil: 'networkidle' });
-  await page.addStyleTag({ content: calm });
+  await calmDown(page);
   await page.locator('.tv-more [data-play]').first().click();
   await page.waitForTimeout(3000);
   const cover = await page.evaluate(() => {

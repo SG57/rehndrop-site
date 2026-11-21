@@ -30,6 +30,7 @@ jobs:
       - run: npm run test:gates
       - run: npm run build
       - run: npm run check:html
+      - run: npm run check:csp
 
   browser:
     if: github.event_name == 'workflow_dispatch'

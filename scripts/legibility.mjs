@@ -73,7 +73,8 @@ const DEVICES = [
   ['laptop-hd', 1440, 900, false, 2],
 ];
 for (const [dev, w, h, mobile, dpr] of DEVICES.filter(([d]) => !only || only.includes(d))) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: mobile, hasTouch: mobile });
+  // bypassCSP: the measurement injects <style> to hide text, which the site's Content Security Policy (meta tag) would block; this tool measures contrast, not the policy (scripts/gates/csp-crawl.mjs does)
+  const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: mobile, hasTouch: mobile, bypassCSP: true });
   const page = await ctx.newPage();
   await page.goto(url + lens, { waitUntil: 'networkidle' });
   const used = await page.evaluate(() => ({

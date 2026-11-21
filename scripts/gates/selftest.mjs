@@ -8,6 +8,7 @@
 //   focus      fixtures are .css (+ .astro, optional allow.json)
 //   html       fixtures are dist-like folders
 //   modes      fixtures are folders holding an a11y-modes.css
+//   csp        fixtures are dist-like folders whose pages carry a policy meta tag
 //   astro-check fixtures are tiny Astro projects; they are type-checked with the repo's own astro check
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
@@ -77,6 +78,20 @@ const CASES = [
   ['modes', 'bad-wrong-media', 'fail', /top-level block "@media \(min-width: 700px\)" is not an @media/],
   ['modes', 'bad-import', 'fail', /top-level statement "@import 'other\.css';"/],
   ['modes', 'bad-trailing-rule', 'fail', /top-level block "\.after" is not an @media/],
+
+  ['csp', 'good', 'pass', /ok: 2 page\(s\), one policy/],
+  ['csp', 'bad-no-meta', 'fail', /no <meta http-equiv="content-security-policy"> tag/],
+  ['csp', 'bad-unhashed-script', 'fail', /inline <script> \(18 bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
+  ['csp', 'bad-unhashed-style', 'fail', /inline <style> \(14 bytes, starts "body\{margin:0\}"\) has no hash in style-src/],
+  ['csp', 'bad-unsafe-inline', 'fail', /script-src carries a weak source: 'unsafe-inline'/],
+  ['csp', 'bad-style-unsafe-inline', 'fail', /style-src carries a weak source: 'unsafe-inline'/],
+  ['csp', 'bad-data-source', 'fail', /script-src carries a weak source: data:/],
+  ['csp', 'bad-inline-module', 'fail', /inline <script type="module">: the client router would inject a data: script/],
+  ['csp', 'bad-external-script', 'fail', /external <script src="https:\/\/cdn\.example\.com\/a\.js"> \(not same-origin\)/],
+  ['csp', 'bad-no-object-src', 'fail', /policy object-src is "missing", not 'none'/],
+  ['csp', 'bad-no-base-uri', 'fail', /policy has no base-uri/],
+  ['csp', 'bad-default-src-wide', 'fail', /policy default-src is "'self' https:", not 'self'/],
+  ['csp', 'bad-policy-differs', 'fail', /pages carry 2 different policies/],
 ];
 const ASTRO_CASES = [
   ['astro-check', 'good', 'pass', /0 errors/],
@@ -90,7 +105,7 @@ const report = (ok, label, detail = '') => {
 };
 
 // the table and the folders must agree
-for (const gate of ['page-load', 'focus', 'html', 'modes', 'astro-check']) {
+for (const gate of ['page-load', 'focus', 'html', 'modes', 'csp', 'astro-check']) {
   const dir = join(here, 'fixtures', gate);
   const have = existsSync(dir) ? readdirSync(dir) : [];
   const want = [...CASES, ...ASTRO_CASES].filter((c) => c[0] === gate).map((c) => c[1]);
@@ -104,6 +119,7 @@ for (const [gate, name, expect, msg] of CASES) {
     gate === 'page-load' ? run('check-page-load.mjs', ['--root', join(dir, 'src'), ...allowArg(gate, name)])
     : gate === 'focus' ? run('focus-visible.mjs', ['--root', dir, ...allowArg(gate, name)])
     : gate === 'modes' ? run('check-modes.mjs', ['--css', join(dir, 'a11y-modes.css')])
+    : gate === 'csp' ? run('check-csp.mjs', ['--dist', dir])
     : run('check-html.mjs', ['--dist', dir]);
   const exitOk = expect === 'pass' ? r.code === 0 : r.code === 1;
   report(exitOk && msg.test(r.out), `${gate}/${name}: expect ${expect}${exitOk ? '' : ` (exit ${r.code})`}${exitOk && !msg.test(r.out) ? ` (message ${msg} missing)` : ''}`, r.out);

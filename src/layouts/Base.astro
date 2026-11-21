@@ -16,6 +16,7 @@ import curation from '../data/curation.json';
 import { PHONE_VELVET_MQ } from '../lib/config';
 import { BASE, u } from '../lib/site';
 import { sceneSets } from '../lib/scene-assets';
+import { BOOT_JS } from '../lib/boot-script.mjs';
 
 interface Props {
   title: string;
@@ -81,20 +82,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <link rel="preload" as="image" href={velvetPhone} type="image/webp" media={PHONE_VELVET_MQ} fetchpriority="high" />
     <link rel="preload" as="image" href={velvet} type="image/webp" media={`not all and ${PHONE_VELVET_MQ}`} fetchpriority="high" />
     <link rel="preconnect" href="https://i.ytimg.com" crossorigin />
-    <script is:inline>
-      (function () {
-        var d = document.documentElement;
-        d.classList.add('js');
-        try { if (localStorage.getItem('index-view') === 'list') d.dataset.view = 'list'; } catch (e) {}
-        if (/[?&]t=-?\d/.test(location.search)) d.classList.add('is-frozen');
-        // a popstate gate that runs ahead of the client router's own listener (this script runs
-        // before the router module loads); the contact sheet uses it so Back only closes the sheet
-        var r = (window.__rehndrop = window.__rehndrop || {});
-        addEventListener('popstate', function (e) {
-          if (r.popGate && r.popGate(e)) e.stopImmediatePropagation();
-        });
-      })();
-    </script>
+    <script is:inline set:html={BOOT_JS}></script>
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <ClientRouter />
   </head>
@@ -112,18 +100,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <ContactSheet />
     <p class="toast" data-essence-skin="toast" data-toast role="status" aria-live="polite"></p>
     <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />
-    <script is:inline define:vars={{ sceneSetUrls, base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' }}>
-      window.__rehndrop = Object.assign(window.__rehndrop || {}, { base, sharp, fog, velvet, texAspect: 2560 / 1441, sceneSets: sceneSetUrls });
-      // portrait phones: the lens reads the same 1080w portrait velvet the CSS layer shows
-      if (matchMedia(phoneMq).matches) {
-        window.__rehndrop.sharp = phone;
-        window.__rehndrop.texAspect = 1080 / 1919;
-      } else if (innerWidth * (devicePixelRatio || 1) > 2600) {
-        // retina laptops and 4K screens get the 3840px velvet for both the CSS layer and the lens
-        window.__rehndrop.sharp = sharp4k;
-        document.querySelector('.velvet')?.style.setProperty('--velvet', 'url(' + sharp4k + ')');
-      }
-    </script>
+    <script type="application/json" id="rehndrop-config" set:html={JSON.stringify({ sceneSetUrls, base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' })} />
     <script>
       import { startLens } from '../scripts/lens';
       import { startScene } from '../scripts/scene';
@@ -137,6 +114,21 @@ const velvetPhone = u('brand/velvet-phone.webp');
       import { startList } from '../scripts/list';
       import { startSheet } from '../scripts/sheet';
       import { focusTitle, startNav } from '../scripts/nav';
+
+      // The build's first-party URLs travel as a JSON block (#rehndrop-config), not an inline script, so the
+      // Content Security Policy needs no hash for them. The module runs after parsing, before astro:page-load.
+      type PageConf = { sceneSetUrls: Record<SetKey, SceneSet>; base: string; sharp: string; phone: string; phoneMq: string; sharp4k: string; fog: string; velvet: string };
+      const conf = JSON.parse(document.getElementById('rehndrop-config')?.textContent || '{}') as PageConf;
+      const rd = (window.__rehndrop = Object.assign(window.__rehndrop || {}, { base: conf.base, sharp: conf.sharp, fog: conf.fog, velvet: conf.velvet, texAspect: 2560 / 1441, sceneSets: conf.sceneSetUrls }));
+      // portrait phones: the lens reads the same 1080w portrait velvet the CSS layer shows
+      if (matchMedia(conf.phoneMq).matches) {
+        rd.sharp = conf.phone;
+        rd.texAspect = 1080 / 1919;
+      } else if (innerWidth * (devicePixelRatio || 1) > 2600) {
+        // retina laptops and 4K screens get the 3840px velvet for both the CSS layer and the lens
+        rd.sharp = conf.sharp4k;
+        document.querySelector<HTMLElement>('.velvet')?.style.setProperty('--velvet', 'url(' + conf.sharp4k + ')');
+      }
 
       type Cfg = { base: string; sharp: string; fog: string; velvet: string; texAspect: number; sceneSets: Record<SetKey, SceneSet>; scenePlates?: string[]; scenePlatesL?: string[] };
       const cfg = (window as unknown as { __rehndrop: Cfg }).__rehndrop;

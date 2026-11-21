@@ -36,6 +36,7 @@ jobs:
       - run: npm run test:gates
       - run: npm run build
       - run: npm run check:html
+      - run: npm run check:csp
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
