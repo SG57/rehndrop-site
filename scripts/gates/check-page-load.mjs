@@ -142,6 +142,7 @@ for (const r of report) console.log(r);
 if (problems.length) {
   console.error(`FAIL: ${problems.length} page-load problem(s)`);
   for (const p of problems) console.error('  ' + p);
+  if (problems.some((p) => p.includes('never binds astro:page-load'))) console.error('  platform-currency: pack guides that show DOMContentLoaded do not apply here (repo rules still win)');
   process.exit(1);
 }
 console.log(`ok: ${blocks} bundled script block(s) in ${astro.length} .astro file(s), each tied to astro:page-load or reviewed in the allow list`);

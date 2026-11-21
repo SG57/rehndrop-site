@@ -102,6 +102,9 @@ if (distinct.size > 1) {
 }
 
 for (const p of problems) console.log(`FAIL ${p}`);
+if (problems.some((p) => /inline <script|external <script|external stylesheet/.test(p))) {
+  console.log('  platform-currency: some pack guides show inline scripts, inline module scripts or CDN lines; keep the code in a bundled file, never loosen this policy (repo rules still win)');
+}
 console.log(problems.length
   ? `FAIL: ${problems.length} CSP problem(s) in ${pages} page(s)`
   : `ok: ${pages} page(s), one policy on all of them, every inline script and style hashed, no unsafe-inline in script-src or style-src, no inline module script`);

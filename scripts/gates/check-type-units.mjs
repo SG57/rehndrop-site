@@ -14,6 +14,7 @@ import { existsSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import stylelint from 'stylelint';
+import { platformGuide } from './platform-guide.mjs';
 
 const args = process.argv.slice(2);
 const i = args.indexOf('--root');
@@ -53,6 +54,7 @@ if (!declarations) problems.push(`${rel(root)}: no font-size declaration found i
 if (problems.length) {
   console.error(`FAIL: ${problems.length} type-scale problem(s) in ${css.length} stylesheet(s)`);
   for (const p of problems) console.error(`  ${p}`);
+  if (problems.some((p) => p.includes('is in px'))) console.error(`  ${platformGuide('respect-os-text-scale', 'it asks for no root font-size; its meta opt-in is limited availability, look the support up first')}`);
   process.exit(1);
 }
 console.log(`ok: ${declarations} font-size declaration(s) in ${css.length} stylesheet(s), none in px alone`);

@@ -11,8 +11,11 @@ import { existsSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { HtmlValidate } from 'html-validate';
+import { platformGuide } from './platform-guide.mjs';
 
 export const HARD = ['no-multiple-main', 'valid-id', 'empty-heading', 'hidden-focusable'];
+// the hard rules that a guide of the platform-currency pack covers (landmarks, aria-hidden on focusable content)
+const GUIDED = ['no-multiple-main', 'hidden-focusable'];
 const args = process.argv.slice(2);
 const argAfter = (flag) => { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] : null; };
 const dist = resolve(argAfter('--dist') ?? fileURLToPath(new URL('../../dist/', import.meta.url)));
@@ -46,13 +49,14 @@ if (!files.length) {
 files.sort();
 
 const hard = [];
+const hardRules = new Set();
 const warn = new Map();
 for (const f of files) {
   const report = await hv.validateFile(f);
   for (const r of report.results) {
     for (const m of r.messages) {
       const rel = relative(dist, f).split(sep).join('/');
-      if (HARD.includes(m.ruleId)) hard.push(`${rel}:${m.line}:${m.column} ${m.ruleId}: ${m.message}`);
+      if (HARD.includes(m.ruleId)) hardRules.add(m.ruleId), hard.push(`${rel}:${m.line}:${m.column} ${m.ruleId}: ${m.message}`);
       else {
         const w = warn.get(m.ruleId) ?? { n: 0, files: new Set(), sample: `${rel}:${m.line} ${m.message}` };
         w.n++; w.files.add(rel);
@@ -73,6 +77,7 @@ if (warn.size) {
 if (hard.length) {
   console.error(`\nFAIL: ${hard.length} hard error(s) (${HARD.join(', ')})`);
   for (const h of hard) console.error('  ' + h);
+  if (GUIDED.some((r) => hardRules.has(r))) console.error('  ' + platformGuide('accessibility'));
   process.exit(1);
 }
 console.log(`ok: no hard errors (${HARD.join(', ')})`);

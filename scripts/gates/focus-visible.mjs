@@ -12,6 +12,7 @@ import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import stylelint from 'stylelint';
 import plugin, { ruleName } from './focus-outline-plugin.mjs';
+import { platformGuide } from './platform-guide.mjs';
 
 const args = process.argv.slice(2);
 const argAfter = (flag) => { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] : null; };
@@ -59,6 +60,7 @@ for (const sel of Object.keys(allow)) {
 if (problems.length) {
   console.error(`FAIL: ${problems.length} focus-ring problem(s) in ${css.length} stylesheet(s)`);
   for (const p of problems) console.error('  ' + p);
+  if (problems.some((p) => p.includes('outline removed on'))) console.error('  ' + platformGuide('accessibility'));
   process.exit(1);
 }
 console.log(`ok: ${css.length} stylesheet(s), no outline removed without a forced-colors-safe replacement (${used.size} reviewed allow entr${used.size === 1 ? 'y' : 'ies'})`);

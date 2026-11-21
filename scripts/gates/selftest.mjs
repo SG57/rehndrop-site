@@ -12,7 +12,7 @@
 //   type-units fixtures are folders of .css files
 //   astro-check fixtures are tiny Astro projects; they are type-checked with the repo's own astro check
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -144,6 +144,48 @@ for (const [gate, name, expect, msg] of CASES) {
   const out = jsonScript(evil);
   report(!out.includes('<') && JSON.stringify(JSON.parse(out)) === JSON.stringify(evil), 'jsonScript: escapes < and round-trips', out);
 }
+// Platform-currency pointers: a failing gate may point at a guide of the platform-currency pack, never instead of its
+// own message (every CASES row above still asserts that). Each row names a fixture that fails, and whether the pointer
+// must be there, so a footer that drifts onto an unrelated failure, or is dropped, turns this red. PACK_GUIDE_IDS was
+// read from gen/guides.json of the pack at version 1.0.1 (2026-11-21): it catches a typo or an invented id in a
+// message, it does not prove the pack still carries the guide.
+const PACK_GUIDE_IDS = new Set(['accessibility', 'respect-os-text-scale']);
+const A11Y_POINTER = 'platform-currency guide: accessibility (repo rules still win)';
+const POINTERS = [
+  ['focus', 'bad-none', A11Y_POINTER, true],
+  ['focus', 'bad-stale-allow', A11Y_POINTER, false],
+  ['html', 'bad-multiple-main', A11Y_POINTER, true],
+  ['html', 'bad-hidden-focusable', A11Y_POINTER, true],
+  ['html', 'bad-valid-id', A11Y_POINTER, false],
+  ['html', 'bad-empty-heading', A11Y_POINTER, false],
+  ['type-units', 'bad-px', 'platform-currency guide: respect-os-text-scale (repo rules still win; it asks for no root font-size', true],
+  ['type-units', 'bad-blind', 'platform-currency guide', false],
+  ['page-load', 'bad-no-handler', 'platform-currency: pack guides that show DOMContentLoaded do not apply here (repo rules still win)', true],
+  ['page-load', 'bad-unresolved', 'platform-currency', false],
+  ['csp', 'bad-unhashed-script', 'platform-currency: some pack guides show inline scripts', true],
+  ['csp', 'bad-external-script', 'platform-currency: some pack guides show inline scripts', true],
+  ['csp', 'bad-no-base-uri', 'platform-currency', false],
+];
+const runCase = (gate, name) =>
+  gate === 'page-load' ? run('check-page-load.mjs', ['--root', join(fx(gate, name), 'src'), ...allowArg(gate, name)])
+  : gate === 'focus' ? run('focus-visible.mjs', ['--root', fx(gate, name), ...allowArg(gate, name)])
+  : gate === 'type-units' ? run('check-type-units.mjs', ['--root', fx(gate, name)])
+  : gate === 'csp' ? run('check-csp.mjs', ['--dist', fx(gate, name)])
+  : run('check-html.mjs', ['--dist', fx(gate, name)]);
+for (const [gate, name, text, expected] of POINTERS) {
+  const r = runCase(gate, name);
+  const has = r.out.includes(text);
+  report(r.code === 1 && has === expected, `${gate}/${name}: pointer ${expected ? 'present' : 'absent'}${r.code === 1 ? '' : ` (exit ${r.code}, expected 1)`}${has === expected ? '' : ` (pointer ${has ? 'found' : 'missing'})`}`, r.out);
+}
+{
+  const cited = [];
+  for (const f of readdirSync(here).filter((n) => /\.mjs$/.test(n) && n !== 'selftest.mjs')) {
+    for (const m of readFileSync(join(here, f), 'utf8').matchAll(/platformGuide\(\s*['"]([^'"]+)['"]/g)) cited.push([f, m[1]]);
+  }
+  const bad = cited.filter(([, id]) => !PACK_GUIDE_IDS.has(id));
+  report(cited.length >= 3 && bad.length === 0, `platform guide ids cited by the gates are verified pack ids (${cited.length} cited)`, bad.map(([f, id]) => `${f}: ${id}`).join('\n') || 'no citation found');
+}
+const POINTER_CHECKS = POINTERS.length + 1;
 
 if (skipAstro) console.log('SKIP astro-check fixtures (--skip-astro-check)');
 else {
@@ -154,6 +196,6 @@ else {
   }
 }
 
-const total = CASES.length + (skipAstro ? 0 : ASTRO_CASES.length);
+const total = CASES.length + POINTER_CHECKS + (skipAstro ? 0 : ASTRO_CASES.length);
 console.log(failures ? `\nFAIL: ${failures} of ${total} gate self-test case(s) wrong` : `\nok: all ${total} gate self-test cases behaved (good fixtures pass, bad fixtures fail with the expected message)`);
 process.exit(failures ? 1 : 0);
