@@ -1,0 +1,2 @@
+.s:focus { outline: none; }
+@media (max-width: 1px) { .s:focus-visible { outline: 2px solid red; } }

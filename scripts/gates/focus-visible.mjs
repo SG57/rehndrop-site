@@ -46,7 +46,7 @@ if (!css.length) { console.error(`FAIL: no .css files under ${rel(root)}`); proc
 const used = new Set();
 // round 1 pools every stylesheet's replacement rings (a forced-colors ring in a11y-modes.css covers an outline removed in
 // global.css); round 2 reports, with the pool filled
-const shared = { forced: new Set(), visibleRing: new Set() };
+const shared = { rings: [], removals: [] };
 const sources = new Map();
 for (const file of css.sort()) {
   const code = await readFile(file, 'utf8');

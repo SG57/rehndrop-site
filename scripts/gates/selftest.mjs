@@ -100,6 +100,15 @@ const CASES = [
   ['focus', 'good-forced-screen-and', 'pass', /^ok:|\nok:/],
   ['focus', 'good-longhand-ring', 'pass', /^ok:|\nok:/],
   ['focus', 'good-cross-file', 'pass', /^ok: 2 stylesheet/],
+  // a replacement ring counts only where it is unconditional, and only while no later removal on the same element cancels it
+  ['focus', 'bad-ring-media-print', 'fail', /outline removed on "\.s:focus"/],
+  ['focus', 'bad-ring-media-width', 'fail', /outline removed on "\.s:focus"/],
+  ['focus', 'bad-ring-supports', 'fail', /outline removed on "\.s"/],
+  ['focus', 'bad-ring-unknown-wrapper', 'fail', /outline removed on "\.s"/],
+  ['focus', 'bad-ring-forced-in-print', 'fail', /outline removed on "\.s"/],
+  ['focus', 'bad-ring-cancelled-forced', 'fail', /outline removed on "\.s"/],
+  ['focus', 'bad-ring-cancelled-focus', 'fail', /outline removed on "\.s:focus"/],
+  ['focus', 'good-ring-in-layer-screen', 'pass', /^ok:|\nok:/],
 
   ['html', 'good', 'pass', /ok: no hard errors/],
   ['html', 'good-warnings-only', 'pass', /WARN no-redundant-role[\s\S]*ok: no hard errors/],

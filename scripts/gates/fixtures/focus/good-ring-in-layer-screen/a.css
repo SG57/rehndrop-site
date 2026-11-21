@@ -1,0 +1,4 @@
+@layer base {
+  @media screen and (forced-colors: active) { .s:focus-visible { outline: 2px solid Highlight; } }
+}
+.s { outline: none; }

@@ -1,0 +1,5 @@
+.s { outline: none; }
+@media (forced-colors: active) {
+  .s:focus-visible { outline: 2px solid Highlight; }
+  .s:focus-visible { outline: none; }
+}

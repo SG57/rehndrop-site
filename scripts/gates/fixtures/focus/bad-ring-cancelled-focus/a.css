@@ -1,0 +1,3 @@
+.s:focus { outline: none; }
+.s:focus-visible { outline: 2px solid red; }
+.s:focus { outline: none; }
