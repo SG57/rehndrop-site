@@ -1,0 +1,3 @@
+{
+  "components/X.astro": "one delegated document listener, resolves its elements at event time"
+}

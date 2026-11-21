@@ -1,0 +1,3 @@
+{
+  "components/Spotlight.astro": "startStructure() (scripts/structure.ts) installs ONE delegated document-level click listener behind a started flag and resolves [data-spotlight] and its ticks at click time (closest()), so it needs no rebind after a router swap. The page-local carousel logic lives in ui.ts, which does bind per page. Reproduced in a browser across ClientRouter swaps on 2026-11-20: not a defect."
+}
