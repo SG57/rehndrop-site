@@ -105,11 +105,14 @@ for (const file of astro.sort()) {
   let satisfiedBy = null;
   let any = false;
   let failure = null;
-  for (const m of text.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
-    if (SKIP_SCRIPT.test(m[1])) continue;
+  // a self-closing <script ... /> (a JSON data block, say) has no body and no </script>; matched as an opening tag
+  // it would pair with the NEXT </script> and swallow the bundled script that follows it
+  for (const m of text.matchAll(/<script\b([^>]*?)\s*\/>|<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    if (m[1] !== undefined) continue;
+    if (SKIP_SCRIPT.test(m[2])) continue;
     any = true;
     blocks++;
-    const body = stripComments(m[2]);
+    const body = stripComments(m[3]);
     const { files, unresolved } = await closure(file, body);
     if (unresolved.length) { failure = `unresolved relative import ${unresolved.join(', ')}: the gate cannot follow it`; break; }
     const hit = HANDLER.test(body) ? name : (await Promise.all(files.map(async (f) => (HANDLER.test(await read(f)) ? f : null)))).find(Boolean);

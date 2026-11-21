@@ -46,6 +46,8 @@ const CASES = [
   ['page-load', 'bad-stale-allow', 'fail', /stale allow entry "components\/X\.astro" \(it now handles/],
   ['page-load', 'bad-stale-missing', 'fail', /stale allow entry "components\/Gone\.astro" \(file does not exist/],
   ['page-load', 'bad-bundled-beside-inline', 'fail', /never binds astro:page-load/],
+  ['page-load', 'good-self-closing', 'pass', /ok: 1 bundled/],
+  ['page-load', 'bad-self-closing-hides', 'fail', /never binds astro:page-load/],
 
   ['focus', 'good-transparent', 'pass', /^ok:|\nok:/],
   ['focus', 'good-forced', 'pass', /^ok:|\nok:/],
