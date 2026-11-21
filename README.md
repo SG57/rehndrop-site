@@ -74,4 +74,12 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
   everything document-level starts once (`Base.astro`).
 - Decorative code reads time through `src/scripts/clock.ts` and never calls `Math.random`; add
   `?t=<unix ms>` to any URL for a still, reproducible frame.
-- Text doesn't select, except the contact address and full lyrics (`.selectable`).
+- The page is a stage, so text doesn't select by default. The exceptions are the words you would want to copy:
+  the contact address and full lyrics (`.selectable`), a track page's title, its line and liner note and its
+  quote, the line under a title in the index, and the credit line. This was a taste-versus-function call
+  (owner Cord, approved): copying a title is a basic expectation, and none of these has a pointer handler of
+  its own. Left unselectable on purpose: the home spotlight (`ui.ts` reads a mouse drag there as a swipe, so
+  selectable text would select while swiping) and every title that is a link (a drag on a link starts a link
+  drag). The site has no on-page bio; `BIO` is only the meta description. `npm run gates:local` runs
+  `scripts/gates/selection.mjs`, which triple-clicks each of these with a real mouse and checks the stage
+  controls still do not select.

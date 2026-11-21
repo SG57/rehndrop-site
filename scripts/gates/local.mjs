@@ -6,6 +6,7 @@
 //   3. gates             assets:check, astro check, page-load, focus-visible, html-validate on dist
 //   4. qa                10 device viewports and the behaviour checks (scripts/qa.mjs)
 //   5. router-spotlight  the spotlight buttons across client-router swaps
+//      selection         the words worth copying select, the stage still does not
 //   6. legibility        text contrast over the live background, on a local preview server
 // --quick limits qa to two devices and legibility to the laptop run, and skips the 40 s teaser test. The
 // full legibility pass (3 devices, every plate) took about 13 minutes on the author's machine.
@@ -57,5 +58,6 @@ for (let i = 0; ; i++) {
   await new Promise((r) => setTimeout(r, 500));
 }
 step('router-spotlight', node, ['scripts/gates/router-spotlight.mjs', origin]);
+step('selection', node, ['scripts/gates/selection.mjs', origin]);
 step('legibility', node, ['scripts/legibility.mjs', origin, ...(quick ? ['--only', 'laptop'] : [])]);
 finish(0);
