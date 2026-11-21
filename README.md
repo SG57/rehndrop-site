@@ -118,7 +118,7 @@ What shipping it took, and what to keep true:
 
 - **One identical policy on every page.** Meta policies accumulate across client-router swaps (each swap adds the new
   page's tag and the old one stays in force), so a page-specific hash would make the policy of the page you came from
-  block the page you go to. Astro emits the union of hashes everywhere; `check:csp` fails if two pages differ.
+  block the page you go to. Astro writes one policy for the whole site (every page's hashes in each tag); `check:csp` fails if two pages differ.
 - **No inline module script.** The client router injects a `data:` script to wait for one, which no policy short of
   `data:` allows. `vite.build.assetsInlineLimit` in `astro.config.mjs` keeps every script (and every font and image)
   a file; only small stylesheets may inline, and Astro hashes those.

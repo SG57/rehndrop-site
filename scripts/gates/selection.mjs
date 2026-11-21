@@ -33,7 +33,7 @@ const title = track.locator('.track-title');
 await tripleClick(track, title);
 const titleText = await text(title);
 expect(titleText.length > 0 && (await sel(track)) === titleText, `track title selects (${JSON.stringify(titleText)})`);
-await track.keyboard.press('Control+C');
+await track.keyboard.press('ControlOrMeta+C');
 const clip = await track.evaluate(() => navigator.clipboard.readText());
 expect(clip.replace(/\s+/g, ' ').trim() === titleText, `Ctrl+C copies the title (clipboard ${JSON.stringify(clip.trim())})`);
 

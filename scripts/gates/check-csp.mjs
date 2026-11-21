@@ -12,9 +12,12 @@
 //   - an inline <script type="module">: the client router injects a data: script to wait for it, which no
 //     policy short of 'data:' allows (the crawl in csp-crawl.mjs shows it as a violation)
 //   - an external <script src> or stylesheet <link> that is not same-origin
+//   - an inline style="" attribute on a page whose policy has no style-src-attr (the browser blocks them all), or a
+//     data block (application/json, ld+json) holding a raw "<" (a title with "</script>" would end the block and
+//     inject markup: write data blocks through src/lib/json-script.mjs)
 //   - pages whose policies differ: meta policies accumulate across client-router swaps, so a page-specific
 //     hash would make the policy of the page you came from block the page you go to
-// Data blocks (type application/json, application/ld+json) are not executed and are not checked.
+// Data blocks are not executed, so their content is only checked for a raw "<".
 // This is the static half; scripts/gates/csp-crawl.mjs is the browser half (real violations, real behaviour).
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -68,6 +71,7 @@ for await (const file of walk(dist)) {
     const [, attrs, body] = m;
     const src = attr(attrs, 'src');
     const type = (attr(attrs, 'type') ?? '').toLowerCase();
+    if (src === null && /json/.test(type) && body.includes('<')) fail(file, `data block <script type="${type}"${attr(attrs, 'id') ? ` id="${attr(attrs, 'id')}"` : ''}> holds a raw "<" (a "</script>" in it would inject markup; use jsonScript from src/lib/json-script.mjs)`);
     if (src !== null) {
       if (/^(https?:)?\/\//i.test(src) || /^(data|blob):/i.test(src)) fail(file, `external <script src="${src.slice(0, 60)}"> (not same-origin)`);
       continue;
@@ -76,6 +80,8 @@ for await (const file of walk(dist)) {
     if (type === 'module') fail(file, 'inline <script type="module">: the client router would inject a data: script for it; keep module scripts external (vite.build.assetsInlineLimit)');
     if (scriptSrc !== undefined && !scriptSrc.includes(sha256(body))) fail(file, `inline <script> (${body.length} bytes, starts "${body.trim().slice(0, 40).replace(/\s+/g, ' ')}") has no hash in script-src`);
   }
+  const markup = html.replace(/<script\b[\s\S]*?<\/script>/gi, '').replace(/<style\b[\s\S]*?<\/style>/gi, '');
+  if (/\sstyle\s*=\s*["']/i.test(markup) && !dir.has('style-src-attr') && !/'unsafe-inline'/.test(styleSrc ?? '')) fail(file, 'inline style="" attributes on the page, but the policy has no style-src-attr: the browser blocks every one');
   for (const m of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
     if (styleSrc !== undefined && !styleSrc.includes(sha256(m[1]))) fail(file, `inline <style> (${m[1].length} bytes, starts "${m[1].trim().slice(0, 40)}") has no hash in style-src`);
   }

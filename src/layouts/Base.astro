@@ -17,6 +17,7 @@ import { PHONE_VELVET_MQ } from '../lib/config';
 import { BASE, u } from '../lib/site';
 import { sceneSets } from '../lib/scene-assets';
 import { BOOT_JS } from '../lib/boot-script.mjs';
+import { jsonScript } from '../lib/json-script.mjs';
 
 interface Props {
   title: string;
@@ -83,7 +84,7 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <link rel="preload" as="image" href={velvet} type="image/webp" media={`not all and ${PHONE_VELVET_MQ}`} fetchpriority="high" />
     <link rel="preconnect" href="https://i.ytimg.com" crossorigin />
     <script is:inline set:html={BOOT_JS}></script>
-    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    {jsonLd && <script type="application/ld+json" set:html={jsonScript(jsonLd)} />}
     <ClientRouter />
   </head>
   <body>
@@ -99,8 +100,8 @@ const velvetPhone = u('brand/velvet-phone.webp');
     <MiniPlayer />
     <ContactSheet />
     <p class="toast" data-essence-skin="toast" data-toast role="status" aria-live="polite"></p>
-    <script type="application/json" id="player-data" set:html={JSON.stringify(player)} />
-    <script type="application/json" id="rehndrop-config" set:html={JSON.stringify({ sceneSetUrls, base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' })} />
+    <script type="application/json" id="player-data" set:html={jsonScript(player)} />
+    <script type="application/json" id="rehndrop-config" set:html={jsonScript({ sceneSetUrls, base: BASE, sharp: velvet, phone: velvetPhone, phoneMq: PHONE_VELVET_MQ, sharp4k: u('brand/velvet-4k.webp'), fog: u('brand/velvet-fog.jpg'), velvet: curation.velvetTint ?? 'little' })} />
     <script>
       import { startLens } from '../scripts/lens';
       import { startScene } from '../scripts/scene';

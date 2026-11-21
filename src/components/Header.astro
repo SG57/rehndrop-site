@@ -4,6 +4,7 @@
 // link marks itself current and does nothing (nav.ts). The room map is the one small JSON the
 // compass reads to put the playing track's essence glyph in the mini player (compass.ts).
 import { u } from '../lib/site';
+import { jsonScript } from '../lib/json-script.mjs';
 import '../styles/structure.css';
 import { data } from '../lib/data';
 import EssenceCompass from './EssenceCompass.astro';
@@ -24,5 +25,5 @@ const roomMap = Object.fromEntries(data.tracks.filter((t) => t.room).map((t) => 
     </nav>
     <EssenceCompass variant="mini" class="top-compass" />
   </div>
-  <script type="application/json" id="room-map" set:html={JSON.stringify(roomMap)} />
+  <script type="application/json" id="room-map" set:html={jsonScript(roomMap)} />
 </header>

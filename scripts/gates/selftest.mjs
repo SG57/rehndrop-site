@@ -92,6 +92,8 @@ const CASES = [
   ['csp', 'bad-no-base-uri', 'fail', /policy has no base-uri/],
   ['csp', 'bad-default-src-wide', 'fail', /policy default-src is "'self' https:", not 'self'/],
   ['csp', 'bad-policy-differs', 'fail', /pages carry 2 different policies/],
+  ['csp', 'bad-style-attr-no-directive', 'fail', /inline style="" attributes on the page, but the policy has no style-src-attr/],
+  ['csp', 'bad-json-lt', 'fail', /data block <script type="application\/json" id="player-data"> holds a raw "<"/],
 ];
 const ASTRO_CASES = [
   ['astro-check', 'good', 'pass', /0 errors/],
@@ -123,6 +125,14 @@ for (const [gate, name, expect, msg] of CASES) {
     : run('check-html.mjs', ['--dist', dir]);
   const exitOk = expect === 'pass' ? r.code === 0 : r.code === 1;
   report(exitOk && msg.test(r.out), `${gate}/${name}: expect ${expect}${exitOk ? '' : ` (exit ${r.code})`}${exitOk && !msg.test(r.out) ? ` (message ${msg} missing)` : ''}`, r.out);
+}
+
+// jsonScript (src/lib/json-script.mjs): a title that tries to close the data block is escaped, and parses back unchanged
+{
+  const { jsonScript } = await import('../../src/lib/json-script.mjs');
+  const evil = { title: '</script><img src=x onerror=alert(1)>', n: 1 };
+  const out = jsonScript(evil);
+  report(!out.includes('<') && JSON.stringify(JSON.parse(out)) === JSON.stringify(evil), 'jsonScript: escapes < and round-trips', out);
 }
 
 if (skipAstro) console.log('SKIP astro-check fixtures (--skip-astro-check)');
