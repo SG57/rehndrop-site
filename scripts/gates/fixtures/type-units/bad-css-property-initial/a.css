@@ -1,0 +1,2 @@
+@property --x { syntax: '<length>'; inherits: false; initial-value: 12px; }
+.t { font-size: var(--x); }
