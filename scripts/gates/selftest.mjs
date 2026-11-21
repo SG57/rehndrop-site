@@ -93,6 +93,11 @@ const CASES = [
   ['html', 'bad-empty-heading', 'fail', /empty-heading/],
   ['html', 'bad-hidden-focusable', 'fail', /hidden-focusable/],
   ['html', 'bad-no-html', 'fail', /no \.html files/],
+  ['html', 'bad-dup-id', 'fail', /no-dup-id/],
+  ['html', 'bad-no-main', 'fail', /one-visible-main: 0 visible/],
+  ['html', 'bad-role-main', 'fail', /one-visible-main: 2 visible/],
+  ['html', 'bad-hidden-only-main', 'fail', /one-visible-main: 0 visible/],
+  ['html', 'good-hidden-second-main', 'pass', /ok: no hard errors/],
 
   ['modes', 'good', 'pass', /ok: .* 2 top-level block\(s\).*no mode query in the other 1 stylesheet\(s\)/],
   ['modes', 'bad-bare-rule', 'fail', /top-level block "\.leak" is not an @media/],
