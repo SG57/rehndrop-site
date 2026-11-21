@@ -66,6 +66,12 @@ const CASES = [
   ['page-load', 'bad-unrelated-handler-type-only', 'fail', /scripts\/h\.ts binds it, but the script never uses anything from there/],
   ['page-load', 'good-dynamic-import', 'pass', /page-load handled in scripts\/x\.ts/],
   ['page-load', 'good-namespace-import', 'pass', /page-load handled in scripts\/x\.ts/],
+  ['page-load', 'bad-import-name-in-string', 'fail', /scripts\/h\.ts binds it, but the script never uses anything from there/],
+  ['page-load', 'bad-import-shadowed-param', 'fail', /scripts\/h\.ts binds it, but the script never uses anything from there/],
+  ['page-load', 'bad-handler-in-string', 'fail', /never binds astro:page-load/],
+  ['page-load', 'good-shadow-and-use', 'pass', /page-load handled in scripts\/h\.ts/],
+  ['page-load', 'good-js-extension', 'pass', /page-load handled in scripts\/x\.ts/],
+  ['page-load', 'good-define-vars', 'pass', /ok: 0 bundled script block\(s\) in 2 \.astro file\(s\)/],
 
   ['focus', 'good-transparent', 'pass', /^ok:|\nok:/],
   ['focus', 'good-forced', 'pass', /^ok:|\nok:/],
