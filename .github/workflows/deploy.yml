@@ -36,7 +36,15 @@ jobs:
       - run: npm run check:type-units
       - run: npm run test:gates
       - run: npm run build
-      - run: npm run check:html
+      # The build re-reads Apple and YouTube, so a title or description from live feed data can trip a hard html-validate
+      # rule. On the 6-hourly rebuild that must not stop the site updating: the failure is shown as a warning annotation and
+      # the run goes on. A push or a manual dispatch is a human at the keyboard, so there it still blocks. Everything else
+      # (check:csp included) stays blocking on every trigger; test:gates runs on fixtures only and never touches feed data.
+      - id: html
+        run: npm run check:html
+        continue-on-error: ${{ github.event_name == 'schedule' }}
+      - if: github.event_name == 'schedule' && steps.html.outcome == 'failure'
+        run: 'echo "::warning title=html check failed on the scheduled rebuild::A hard html-validate error in the built pages, likely from live feed data. This run carried on to deploy; the other gates still blocked it. Run npm run build then npm run check:html to see the error."'
       - run: npm run check:csp
       - uses: actions/upload-pages-artifact@v5
         with:

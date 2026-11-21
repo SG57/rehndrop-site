@@ -1,6 +1,6 @@
 # Testing
 
-All checks run from the repo root. None of them publish anything. The browser is always muted.
+All checks run from the repo root. None of them publish anything. The browser is always muted. Node: `engines.node` in `package.json` is the range the dev dependencies (stylelint, html-validate) require, `.nvmrc` says 22 and CI runs 22.
 
 ## Quick list
 
@@ -43,7 +43,7 @@ When the scene is not there yet, those checks print a `SKIP` line and the final 
 
 ## Gates (CI and before a push)
 
-A push to `main` deploys, so the gates below run in `.github/workflows/deploy.yml` before the artifact is uploaded. If one fails the previous deployment stays live. The scheduled 6-hourly rebuild runs them too: `check:html` reads the freshly built pages, which carry live Apple and YouTube data, so a failure there on the cron means a new release waits until it is fixed (GitHub emails the failure).
+A push to `main` deploys, so the gates below run in `.github/workflows/deploy.yml` before the artifact is uploaded. If one fails the previous deployment stays live. The scheduled 6-hourly rebuild runs them too, with one difference: `check:html` reads the freshly built pages, which carry live Apple and YouTube data, so on `schedule` that single step is allowed to fail (`continue-on-error`) and prints a `::warning` annotation, and the run goes on to deploy. A push, a pull request or a manual dispatch still blocks on it. Every other gate blocks on every trigger, `check:csp` included; `test:gates` runs on fixtures only and never reads feed data. UNVERIFIED: the workflow itself (it parses as YAML, but a scheduled run is the only real test); the first scheduled run after merge should be watched.
 
 | Command | Needs | What it fails on |
 |---|---|---|
@@ -58,6 +58,8 @@ A push to `main` deploys, so the gates below run in `.github/workflows/deploy.ym
 | `npm run test:gates` | nothing | The gates themselves: each runs against fixtures that must pass and fixtures that must fail with a named message (`scripts/gates/fixtures/`). A gate gone blind turns this red. |
 | `npm run gates` | `npm run build` | All of the above except `test:gates`, plus `assets:check`. The local mirror of the CI checks. |
 | `npm run gates:local` | Edge or Chrome | Everything: `test:gates`, build, `gates`, `qa`, a browser check that the spotlight buttons survive client-router swaps, a browser check that the words worth copying select with a real mouse while the stage and the spotlight still do not (`scripts/gates/selection.mjs`), a browser crawl of every route at 375 and 1440 px under the Content Security Policy, failing on any violation and checking the WebGL stage, dialog, audio, search, spotlight and router swaps still work (`scripts/gates/csp-crawl.mjs`), a browser check of the forced-colors and prefers-contrast modes by computed style (`scripts/gates/modes.mjs`: the stage layers are not drawn, text reaches 7:1 on Canvas, the dialog, play disc, selected state and focus ring use system colors, the default mode is unmoved; and on one track page per room, where `trackpage.css` loads after the modes file: every scrub mark and seam is CanvasText, the scrub input ring is a Highlight outline, the title carries the contrast halo on both tiers), and `legibility` on a local preview. Run it before pushing to `main`. `--quick` limits `qa` to two devices and `legibility` to the laptop run (the full legibility pass alone took about 13 minutes here), `--skip-long` skips the 40 second teaser test, `--no-build` reuses `dist/`. |
+
+Not covered by any gate, UNVERIFIED: touch long-press selection (the `selection.mjs` check drives a mouse; the device procedure is in the README next to the selection notes).
 
 `qa` and `legibility` are not in `deploy.yml`: they drive a real browser, and a flaky browser step must not be able to stop the site from deploying. `.github/workflows/gates.yml` runs the static gates on every pull request, and has a manual `browser` job that runs `gates:local` on the runner's own Edge. That job has not been proven on a runner yet; treat a first run there as an experiment. Both scripts take `QA_BROWSER_CHANNEL` (`msedge` by default, or `chrome`, or `bundled` for Playwright's own chromium) so they run where Edge is not installed.
 

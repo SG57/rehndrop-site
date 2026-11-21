@@ -82,8 +82,13 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
   selectable text would select while swiping) and every title that is a link (a drag on a link starts a link
   drag). The site has no on-page bio; `BIO` is only the meta description. `npm run gates:local` runs
   `scripts/gates/selection.mjs`, which triple-clicks each of these with a real mouse and checks the stage
-  controls still do not select.
-- Visitor-preference modes live in `src/styles/a11y-modes.css`, loaded last, every rule inside `@media (forced-colors: active)`
+  controls still do not select. UNVERIFIED: touch long-press selection. The check drives a mouse; a finger long-press (the
+  iOS and Android selection handles, the callout) was never run on a device or an emulated touch context. To test it: open a
+  track page on a phone, long-press the title, the line under it and the credit line (each should offer a selection), and
+  long-press a section heading and the spotlight text (neither should); also confirm a horizontal swipe on the spotlight
+  still moves the slides and does not start a selection.
+- Visitor-preference modes live in `src/styles/a11y-modes.css` (the layout's last import; page stylesheets such as `trackpage.css`
+  still load after it, so rules for elements they restyle carry extra specificity), every rule inside `@media (forced-colors: active)`
   or `@media (prefers-contrast: more)` (`npm run check:modes` fails on anything else, so the default look cannot depend
   on it). Forced colors: the velvet, lens, grain and water are not drawn, so the text sits on Canvas in CanvasText, and
   the dialog, play discs, selected state, scrubber and focus ring use system colors. Increased contrast: the grain
@@ -110,10 +115,16 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
   "Large" font setting, set through a real profile preference, and `html{font-size:125%}`) every size scales by 1.25 except the `clamp()` titles, whose `vw`
   middle is deliberately not tied to the root (their rem floor and ceiling do scale), and the range input's own
   UA font (it draws no text); nothing overflows sideways, and
-  no text spills out of its box; at 24px the one real spill (the 16px `.badge` square around a 10px letter) is fixed
+  no text spills out of its box except as the clamp design allows (below); at 24px the one real spill (the 16px `.badge` square around a 10px letter) is fixed
   by sizing the square in rem. What stays px on purpose: layout lengths, `calc()` offsets, media queries, canvas and
   WebGL sizes, and the `max(1rem, 16px)` floor on the search field (iOS zooms into a field under 16px).
   `npm run check:type-units` fails on a px font size, so the next edit cannot undo this.
+  Accepted, by the clamp design: titles sized with `clamp(rem, vw, rem)` follow the viewport in the middle, so at a larger
+  root they barely scale (the rem floor and ceiling do). Measured 2026-11-21 with the root set to 20px through the CSSOM at
+  375 px wide: the index's single-line titles (`nowrap` with an ellipsis) are cut sooner, three or more more of them than at
+  16px in the grid, and the home spotlight title overflows its box by about 3px. A verifier reported two list titles that
+  start clipping at 20px. These are the ellipsis and clamp behaviours working, not a defect to fix with px; a visitor who needs
+  the full title opens the track page, where it wraps (`text-wrap: balance`). No gate covers this.
 
 ## Security: Content Security Policy
 
