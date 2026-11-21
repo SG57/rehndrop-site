@@ -46,12 +46,8 @@ export interface SceneHandle {
   info(): { scale: number; width: number; height: number; renderer: string; tier: Tier; lens: boolean };
 }
 
-declare global {
-  interface Window {
-    __rehndrop?: Record<string, unknown>;
-  }
-}
-
+// Window.__rehndrop is declared once, with its scene snapshot type, in essence-ui.ts (two differing
+// global declarations of one property is a type error).
 const VERT = `attribute vec2 a;varying vec2 u;void main(){u=a*.5+.5;gl_Position=vec4(a,0.,1.);}`;
 
 const PREC = `

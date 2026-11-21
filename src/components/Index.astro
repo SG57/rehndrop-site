@@ -5,6 +5,7 @@
 import type { Track, Reel, Video } from '../lib/data';
 import { INDEX_CAP, LETTER_STRIP_AFTER } from '../lib/config';
 import { letterOf } from '../lib/fold';
+import type { GlyphRef } from '../lib/glyphs';
 import IndexRow from './IndexRow.astro';
 import Poster from './Poster.astro';
 import StorePills from './StorePills.astro';
@@ -21,7 +22,7 @@ const { sections, total } = Astro.props;
 // which essence a lane section swells toward while it is in view
 const ROOM_OF_SECTION: Record<string, string | undefined> = { detox: 'candle', heavy: 'chrome', pretty: 'dawn' };
 // each section's glyph: the three lanes wear their essence glyph, the rest their own
-const GLYPH_OF_SECTION: Record<string, string> = {
+const GLYPH_OF_SECTION: Record<string, GlyphRef> = {
   picks: 'sec-picks',
   newest: 'sec-new',
   reels: 'sec-reels',

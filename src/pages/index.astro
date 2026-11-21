@@ -9,6 +9,7 @@ import EssenceCompass from '../components/EssenceCompass.astro';
 import Glyph from '../components/Glyph.astro';
 import '../styles/phone.css';
 import { data, rows, curation, type Track } from '../lib/data';
+import type { GlyphRef } from '../lib/glyphs';
 import { BIO, u } from '../lib/site';
 
 const r = rows();
@@ -57,7 +58,7 @@ const chips = [
   <main id="main">
     <nav class="chips" aria-label="sections">
       {chips.map(([id, label, glyph]) => (
-        <a class:list={['chip', { 'chip--essence': glyph.startsWith('essence-') }]} data-essence-skin="chip" data-chip={id} title={label} href={`#${id}`}><Glyph name={glyph} size={19} class="chip-g" /><span class="sr-only">{label}</span></a>
+        <a class:list={['chip', { 'chip--essence': glyph.startsWith('essence-') }]} data-essence-skin="chip" data-chip={id} title={label} href={`#${id}`}><Glyph name={glyph as GlyphRef} size={19} class="chip-g" /><span class="sr-only">{label}</span></a>
       ))}
     </nav>
     <div class="stage">
