@@ -28,8 +28,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "html-validate": "11.21.1",
     "playwright-core": "^1.64.0",
     "simple-icons": "^16.34.0",
+    "stylelint": "18.1.0",
     "typescript": "^6.0.3"
   }
 }
