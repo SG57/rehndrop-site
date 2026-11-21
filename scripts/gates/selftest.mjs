@@ -190,6 +190,18 @@ const CASES = [
   ['csp', 'bad-before-meta-boot-edited', 'fail', /sits before the policy meta[\s\S]*stale entry \(inline-script/],
   ['csp', 'bad-before-meta-stale', 'fail', /stale entry \(script \^\/_astro\/Router/],
   ['csp', 'good-benign-text', 'pass', /ok: 1 page\(s\)/],
+  // a comment closes at <!--> , <!---> and --!>, so the script after it is live: the old tokenizer ran on to the next -->
+  ['csp', 'bad-comment-empty', 'fail', /inline <script> \(18 bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
+  ['csp', 'bad-comment-empty-dash', 'fail', /inline <script> \(18 bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
+  ['csp', 'bad-comment-bang-close', 'fail', /inline <script> \(18 bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
+  // a policy meta a browser ignores must not be counted as the page's policy
+  ['csp', 'bad-meta-noscript', 'fail', /<meta http-equiv="content-security-policy"> sits inside <html > head > noscript>, where a browser ignores it/],
+  ['csp', 'bad-meta-template', 'fail', /sits inside <html > head > template>, where a browser ignores it/],
+  ['csp', 'bad-meta-body', 'fail', /sits inside <html > body>, where a browser ignores it[\s\S]*no <meta http-equiv="content-security-policy"> tag/],
+  ['csp', 'bad-no-form-action', 'fail', /policy form-action is "missing", not 'self'/],
+  ['csp', 'bad-before-meta-second-router', 'fail', /<script src="\/_astro\/Router\.evil1\.js"> sits before the policy meta.*not on the reviewed list/],
+  // in HTML a trailing slash does not close a script: its text is a live inline script
+  ['csp', 'bad-script-self-closing', 'fail', /inline <script> \(18 bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
 ];
 const ASTRO_CASES = [
   ['astro-check', 'good', 'pass', /0 errors/],

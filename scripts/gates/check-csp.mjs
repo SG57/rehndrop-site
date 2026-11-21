@@ -11,7 +11,8 @@
 //       style-src / style-src-elem     'self' and hashes only
 //       style-src-attr                 'none' or 'unsafe-inline': the one reviewed gap (inline style="" attributes)
 //       img-src                        'self', data: and https://i.ytimg.com (justified at POLICY)
-//       default-src, base-uri, form-action 'self'; object-src and frame-src 'none'
+//       default-src, base-uri, form-action 'self' (form-action is required: it has no default-src fallback); object-src and
+//       frame-src 'none'
 //       every other fetch directive    'none' or 'self'
 //     so 'unsafe-inline', 'unsafe-eval', 'unsafe-hashes', 'strict-dynamic', a wildcard, a scheme-only source such as
 //     https: or blob:, and any host source fail wherever they appear. A directive written twice (the browser keeps the
@@ -32,11 +33,15 @@
 //   - the scripts and stylesheets that sit BEFORE the policy meta in the document. A meta policy governs only what is
 //     parsed after it, so those run with no policy at all. The set must equal the reviewed list in
 //     scripts/gates/csp-before-meta.allow.json (the boot script and the client router today) and every entry must still
-//     match something; anything else ahead of the meta, or a stale entry, fails
+//     match something; each entry covers at most one match per page ("max", default 1), so a second script whose name fits
+//     the router pattern is not vouched for; anything else ahead of the meta, or a stale entry, fails
+//   - where the policy meta sits: a browser applies it only as a direct child of <head>. A meta inside <noscript>, <template>
+//     or <body> is ignored, so it is reported and not counted as the page's policy (the tokenizer walks an element stack)
 //   - pages whose policies differ: meta policies accumulate across client-router swaps, so a page-specific
 //     hash would make the policy of the page you came from block the page you go to
-// Lexical limits, left to review: the page is scanned as text by a small tokenizer (comments, script/style/title/textarea
-// bodies handled), not by a browser; only http-equiv spelled content-security-policy is read; javascript: is looked for
+// Lexical limits, left to review: the page is scanned as text by a small tokenizer (comments in all their forms: <!-->, <!--->,
+// --!> close, bogus comments; script/style/title/textarea/iframe bodies; an element stack for the meta's parent), not by a
+// browser: no foster parenting, no optional-end-tag modelling beyond the head, no script double-escape states; only http-equiv spelled content-security-policy is read; javascript: is looked for
 // in the URL-carrying attributes listed in URL_ATTRS; a script injected at run time is the crawl's job (csp-crawl.mjs).
 // This is the static half; scripts/gates/csp-crawl.mjs is the browser half (real violations, real behaviour).
 import { createHash } from 'node:crypto';
@@ -44,7 +49,7 @@ import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { get, tokenize } from './html-tokens.mjs';
+import { ancestors, get, tokenize } from './html-tokens.mjs';
 
 const args = process.argv.slice(2);
 const argAfter = (flag) => { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] : null; };
@@ -119,7 +124,13 @@ for await (const file of walk(dist)) {
   pages++;
   const html = await readFile(file, 'utf8');
   const nodes = tokenize(html);
-  const metas = nodes.filter((n) => n.name === 'meta' && (get(n, 'http-equiv') ?? '').trim().toLowerCase() === 'content-security-policy');
+  const allMetas = nodes.filter((n) => n.name === 'meta' && (get(n, 'http-equiv') ?? '').trim().toLowerCase() === 'content-security-policy');
+  // a browser applies a policy meta only as a direct child of <head>: one inside <noscript>, <template> or <body> is ignored
+  // (and one inside a raw-text element is text, never tokenized), so it must not be counted as the page's policy
+  const metas = allMetas.filter((n) => n.parent?.name === 'head');
+  for (const n of allMetas) {
+    if (!metas.includes(n)) fail(file, `<meta http-equiv="content-security-policy"> sits inside <${ancestors(n).join(' > ') || 'the document'}>, where a browser ignores it: a policy meta must be a direct child of <head>, outside <noscript> and <template>`);
+  }
   if (!metas.length) { fail(file, 'no <meta http-equiv="content-security-policy"> tag'); continue; }
   if (metas.length > 1) fail(file, `${metas.length} <meta http-equiv="content-security-policy"> tags: the browser enforces the intersection, so the gate must see exactly one policy per page`);
   const meta = metas[0];
@@ -154,6 +165,7 @@ for await (const file of walk(dist)) {
   if (val('default-src')?.join(' ') !== SELF) fail(file, `policy default-src is "${val('default-src')?.join(' ') ?? 'missing'}", not 'self'`);
   if (val('object-src')?.join(' ') !== NONE) fail(file, `policy object-src is "${val('object-src')?.join(' ') ?? 'missing'}", not 'none'`);
   if (!dir.has('base-uri')) fail(file, 'policy has no base-uri');
+  if (val('form-action')?.join(' ') !== SELF) fail(file, `policy form-action is "${val('form-action')?.join(' ') ?? 'missing'}", not 'self' (form-action does not fall back to default-src, so without it a form may post anywhere)`);
   // the directive the browser really consults for an inline script / style element
   const scriptHashes = new Set((val('script-src-elem') ?? val('script-src') ?? []).filter((v) => HASH.test(v)));
   const styleHashes = new Set((val('style-src-elem') ?? val('style-src') ?? []).filter((v) => HASH.test(v)));
@@ -196,10 +208,12 @@ for await (const file of walk(dist)) {
     fail(file, 'inline style="" attributes on the page, but the policy has no style-src-attr: the browser blocks every one');
   }
 
-  // ---- what runs before the policy exists
+  // ---- what runs before the policy exists. A reviewed entry covers at most `max` (default 1) matches on a page: a second
+  // same-origin script whose name also fits the entry's pattern is a new script ahead of the meta, not the reviewed one
+  const taken = new Map();
   for (const item of before) {
-    const entry = beforeMetaAllow.find((e) => matchesEntry(e, item));
-    if (entry) usedBeforeMeta.add(entry);
+    const entry = beforeMetaAllow.find((e) => matchesEntry(e, item) && (taken.get(e) ?? 0) < (e.max ?? 1));
+    if (entry) { usedBeforeMeta.add(entry); taken.set(entry, (taken.get(entry) ?? 0) + 1); }
     else {
       const seen = unreviewedBefore.get(item.label) ?? { n: 0, first: file };
       seen.n++;

@@ -1,11 +1,13 @@
 [
   {
     "kind": "inline-script",
+    "max": 1,
     "sha256": "sha256-H/5+3PVGIOxnFozMduk1x3w+0fzfFrCBfvhx5owAnNE=",
     "reason": "the head boot script (src/lib/boot-script.mjs): sets html.js, the saved list view and the frozen-clock flag before first paint, and installs the popstate gate. It must run before the client router module and before paint, so it sits ahead of the meta and runs under no policy; its hash in script-src is therefore not enforced on first load. Edit the script and this hash changes: review the new text, then update the entry."
   },
   {
     "kind": "script",
+    "max": 1,
     "match": "(^|/)_astro/ClientRouter\\.astro_astro_type_script_index_0_lang\\.[\\w-]+\\.js$",
     "reason": "Astro's own <ClientRouter /> module script. Astro emits it before the CSP meta; it is the framework's code, same-origin and bundled, and 'self' would allow it anyway. Not ours to reorder; if Astro moves the meta ahead of it, this entry goes stale and the gate says so."
   }
