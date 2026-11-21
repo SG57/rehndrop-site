@@ -91,8 +91,8 @@ html:not([data-tier='software']):not([data-tier='reduced']) .track-page .scrub-m
 /* ---------- reels column: a framed poster, a hairline spine ---------- */
 .track-page .tv-posters .poster { gap: 8px; }
 .track-page .tv-posters .poster-art { border-radius: var(--r); }
-.track-page .tv-posters .poster-title { font-size: 14px; color: var(--ess-text); }
-.track-page .tv-posters .poster-sub { font-size: 13px; letter-spacing: 0.06em; }
+.track-page .tv-posters .poster-title { font-size: 0.875rem; color: var(--ess-text); }
+.track-page .tv-posters .poster-sub { font-size: 0.8125rem; letter-spacing: 0.06em; }
 .track-page .tv-posters .poster-mark { color: var(--a); }
 /* one rule only: global's border-left on the side column, tinted by the essence accent */
 @media (min-width: 900px) and (min-height: 541px) {
