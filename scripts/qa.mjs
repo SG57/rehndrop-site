@@ -27,7 +27,7 @@ const gpu = args.includes('--gpu') && !software;
 const skipLong = args.includes('--skip-long');
 // Browser: the installed Edge unless QA_BROWSER_CHANNEL says otherwise (chrome, msedge, ... or 'bundled' for
 // Playwright's own chromium, which needs `npx playwright-core install chromium`). CI runners set it.
-const BROWSER = process.env.QA_BROWSER_CHANNEL ?? 'msedge';
+const BROWSER = process.env.QA_BROWSER_CHANNEL || 'msedge';
 const CHANNEL = BROWSER === 'bundled' ? {} : { channel: BROWSER };
 
 const DEVICES = [

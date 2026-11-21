@@ -54,6 +54,7 @@ const CASES = [
   ['focus', 'bad-none', 'fail', /outline removed on "\.scrub-input"/],
   ['focus', 'bad-zero', 'fail', /outline removed on "\.a:focus-visible"/],
   ['focus', 'bad-style-none', 'fail', /outline removed on "\.a"/],
+  ['focus', 'bad-width-zero', 'fail', /outline removed on "\.a:focus-visible"/],
   ['focus', 'bad-important', 'fail', /outline removed on "\.a:focus"/],
   ['focus', 'bad-pair-without-ring', 'fail', /outline removed on "\.h:focus"/],
   ['focus', 'bad-stale-allow', 'fail', /stale allow entry "\.gone"/],

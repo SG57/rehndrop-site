@@ -12,7 +12,7 @@ import { chromium } from 'playwright-core';
 
 const origin = process.argv[2];
 if (!origin) { console.error('usage: node scripts/gates/router-spotlight.mjs <origin-with-base>'); process.exit(2); }
-const BROWSER = process.env.QA_BROWSER_CHANNEL ?? 'msedge';
+const BROWSER = process.env.QA_BROWSER_CHANNEL || 'msedge';
 const browser = await chromium.launch({ ...(BROWSER === 'bundled' ? {} : { channel: BROWSER }), headless: true, args: ['--mute-audio'] });
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
 

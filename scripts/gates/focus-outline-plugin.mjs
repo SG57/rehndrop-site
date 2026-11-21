@@ -1,6 +1,6 @@
 // stylelint plugin: local/focus-outline-replacement
 //
-// Fails a rule that removes an element's outline (outline: none | 0, outline-style: none) unless the
+// Fails a rule that removes an element's outline (outline: none | 0, outline-style: none, outline-width: 0) unless the
 // focus indication survives somewhere the browser still draws it. Removing the outline is only safe
 // when something replaces it, and box-shadow is NOT a replacement: forced-colors mode (Windows
 // contrast themes) drops box-shadow, so a ring built from one vanishes for exactly the people who need it.
@@ -30,7 +30,8 @@ const norm = (s) => s.replace(/\s+/g, ' ').trim();
 const value = (d) => d.value.replace(/!important/i, '').trim();
 const isNone = (d) =>
   (d.prop === 'outline' && /^(none|0)(\s|$)/i.test(value(d))) ||
-  (d.prop === 'outline-style' && /^none$/i.test(value(d)));
+  (d.prop === 'outline-style' && /^none$/i.test(value(d))) ||
+  (d.prop === 'outline-width' && /^0(px)?$/i.test(value(d)));
 const isRealOutline = (d) =>
   (d.prop === 'outline' && !isNone(d) && !/transparent/i.test(d.value)) ||
   (d.prop === 'outline-width' && !/^0(px)?$/i.test(value(d))) ||

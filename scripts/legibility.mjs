@@ -52,7 +52,7 @@ const BACKDROPS = { 'velvet.webp': 'laptop', 'velvet-phone.webp': 'phone', 'velv
 // window for when headless only gets SwiftShader (the renderer string is printed); default is SwiftShader
 const gpu = process.argv.includes('--gpu');
 // installed Edge unless QA_BROWSER_CHANNEL says otherwise (chrome, msedge, ... or 'bundled' for Playwright's chromium)
-const BROWSER = process.env.QA_BROWSER_CHANNEL ?? 'msedge';
+const BROWSER = process.env.QA_BROWSER_CHANNEL || 'msedge';
 const CHANNEL = BROWSER === 'bundled' ? {} : { channel: BROWSER };
 const headed = process.argv.includes('--headed');
 const MUTED = ['--mute-audio', '--disable-features=MediaSessionService,HardwareMediaKeyHandling,GlobalMediaControls', '--autoplay-policy=no-user-gesture-required'];
