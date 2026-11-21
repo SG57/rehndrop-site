@@ -1,13 +1,7 @@
 /* rehndrop — velvet, chrome, rain. Core tokens from resources/brand/03-color/palette.md. */
 
-/* the rehndrop display face (prototype "mix focus": chamfer cuts, the wordmark's open
-   top-left on r/p/R/P, the sigil's drip on r and p). Derived from Michroma under the
-   OFL (public/fonts/OFL.txt). Large sizes only: the drip falls below a pixel under ~18px. */
-@font-face {
-  font-family: 'rehndrop';
-  src: url('/fonts/rehndrop-mix-focus.woff2') format('woff2');
-  font-display: swap;
-}
+/* the font faces (rehndrop, Michroma, Manrope, Instrument Serif and their metric-matched fallbacks) live in
+   fonts.css, imported ahead of this file by Base.astro */
 
 :root {
   --void: #020204;
@@ -23,10 +17,10 @@
   --glass: rgba(6, 6, 10, 0.5);
   --accent: #c9ced6;
   --pulse: 0;
-  --font-display: 'Michroma', 'Eurostile', 'Bank Gothic', system-ui, sans-serif;
-  --font-text: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-brand: 'rehndrop', 'Michroma', 'Eurostile', system-ui, sans-serif;
-  --font-lyric: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; /* lyrics only: a true italic */
+  --font-display: 'Michroma', 'Michroma Fallback', 'Eurostile', 'Bank Gothic', system-ui, sans-serif;
+  --font-text: 'Manrope Variable', 'Manrope Fallback', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-brand: 'rehndrop', 'Michroma', 'Michroma Fallback', 'Eurostile', system-ui, sans-serif;
+  --font-lyric: 'Instrument Serif', 'Instrument Serif Fallback', 'Iowan Old Style', Georgia, serif; /* lyrics only: a true italic */
   --gutter: clamp(18px, 5vw, 64px);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-heavy: cubic-bezier(0.65, 0, 0.35, 1);

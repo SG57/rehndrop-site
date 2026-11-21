@@ -1,0 +1,77 @@
+/* Web fonts. Latin only: the site's copy is English lowercase and nothing in the checked-in data (catalog, notes,
+   lyrics, Apple snapshot) or the built pages falls outside the Latin subset below, so the Cyrillic, Greek,
+   Vietnamese and Latin Extended subsets, and the .woff copies of each file that the fontsource stylesheets also
+   ship, are not carried. A character outside the Latin range (a future Apple or YouTube title, read at build
+   time) falls through to the system font instead of failing.
+   Files come from the fontsource packages (woff2 only) and from src/assets/fonts. Vite hashes and emits each one
+   and rewrites the URLs for the site's base path. Not preloaded: all four faces draw above the fold on both page
+   types, and preloading one (or all four) measured worse than none (README, "Fonts"). */
+
+/* the rehndrop display face (prototype "mix focus": chamfer cuts, the wordmark's open top-left on r/p/R/P, the
+   sigil's drip on r and p). Derived from Michroma under the OFL (public/fonts/OFL.txt). Large sizes only: the
+   drip falls below a pixel under ~18px. */
+@font-face {
+  font-family: 'rehndrop';
+  src: url('../assets/fonts/rehndrop-mix-focus.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Michroma';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('../../node_modules/@fontsource/michroma/files/michroma-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: 'Manrope Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('../../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url('../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2') format('woff2');
+}
+
+/* Fallbacks that take the web font's space while it loads, so the swap moves nothing. The numbers are computed
+   from the font files by scripts/font_metrics.py (python scripts/font_metrics.py --check fails if they drift).
+   The rehndrop face shares the Michroma one: same advance widths and vertical metrics. */
+@font-face {
+  font-family: 'Michroma Fallback';
+  font-style: normal;
+  src: local('Arial'), local('Helvetica');
+  size-adjust: 142.03%;
+  ascent-override: 81.41%;
+  descent-override: 18.70%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: 'Manrope Fallback';
+  font-style: normal;
+  font-weight: 200 800;
+  src: local('Arial'), local('Helvetica');
+  size-adjust: 100.58%;
+  ascent-override: 105.99%;
+  descent-override: 29.83%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: 'Instrument Serif Fallback';
+  font-style: italic;
+  src: local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'), local('Times New Roman');
+  size-adjust: 89.04%;
+  ascent-override: 111.18%;
+  descent-override: 34.82%;
+  line-gap-override: 0.00%;
+}

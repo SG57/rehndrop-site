@@ -89,3 +89,17 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
   the dialog, play discs, selected state, scrubber and focus ring use system colors. Increased contrast: the grain
   becomes a plain dark veil, inks go to near-white, hairlines and glass firm up, and the focus ring thickens.
   Verified with Playwright's media emulation, not a real Windows contrast theme.
+- Fonts (`src/styles/fonts.css`): Latin subsets only, woff2 only, files hashed by Vite and base-aware (the rehndrop face
+  lives in `src/assets/fonts`). The copy is English lowercase and nothing in the checked-in data leaves the Latin range;
+  a character outside it (a future live title) falls to the system font. Each web font has a metric-matched fallback
+  face (`size-adjust` and the ascent, descent and line-gap overrides, named in the `--font-*` stacks), computed from the
+  real font files by `python scripts/font_metrics.py` (`--check` fails if `fonts.css` drifts; needs fontTools and the
+  Windows Arial and Times New Roman files). The rehndrop face shares Michroma's fallback: same widths and metrics.
+  **No preload**, deliberately. All four faces draw above the fold on both page types, so one preload makes the display
+  face arrive ahead of the rest and creates a second swap. Measured with every font response delayed 1200 ms (headless
+  Edge, SwiftShader, three runs): desktop home CLS 0.072 to 0.179 before this change, 0.018 with the fallbacks and no
+  preload, 0.157 with the fallbacks and the display face preloaded, 0.157 with all four preloaded; phone home 0.106
+  before, 0 after. LCP did not improve with a preload (noise of about 200 ms in this setup). The harness is synthetic;
+  reopen the preload question with real-network field data (CrUX) if the site ever has it. Dist went from 456 files and
+  12 font files (202,352 bytes) to 448 files and 4 font files (94,108 bytes); what a visitor downloads is unchanged (the
+  same four woff2 files, as the unicode ranges already kept the other subsets from loading).

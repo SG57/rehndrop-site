@@ -1,7 +1,7 @@
 // Pre-push gate run: npm run gates:local [-- --quick] [-- --skip-long]
 // Everything CI runs, plus what needs a real browser. Run it before pushing to main: a push to main
 // deploys. Steps, stopping at the first failure:
-//   1. test:gates        the gates against their good and bad fixtures
+//   1. test:gates        the gates against their good and bad fixtures (Windows: and font_metrics.py --check)
 //   2. build             npm run build (re-reads Apple and YouTube, falls back to snapshots)
 //   3. gates             assets:check, astro check, page-load, focus-visible, modes, html-validate on dist
 //   4. qa                10 device viewports and the behaviour checks (scripts/qa.mjs)
@@ -47,6 +47,7 @@ function finish(code) {
 }
 
 step('test:gates', npm, ['run', 'test:gates']);
+if (process.platform === 'win32') step('font-metrics', 'python', ['scripts/font_metrics.py', '--check']); // needs the Windows Arial and Times New Roman files
 if (!noBuild) step('build', npm, ['run', 'build']);
 step('gates', npm, ['run', 'gates']);
 step('qa', node, ['scripts/qa.mjs', ...(quick ? ['--only', 'iphone-15,laptop'] : []), ...(skipLong ? ['--skip-long'] : [])]);
