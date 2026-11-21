@@ -1,0 +1,5 @@
+{
+  "section[tabindex='-1']:focus": "section that takes programmatic focus from an in-page jump (nav.ts); never a Tab stop, so Tab continues inside it and no ring is wanted",
+  ".track-title": "heading that takes programmatic focus on arrival at a track page; never a Tab stop",
+  ".ix-search input": "the search field: its keyboard ring comes from html :focus-visible in interact.css (same specificity, loaded last, so it wins); verified with a forced-colors browser probe on 2026-11-20. Brittle by design of the skin: if interact.css stops drawing it, replace this entry with a forced-colors rule like .scrub-input has"
+}

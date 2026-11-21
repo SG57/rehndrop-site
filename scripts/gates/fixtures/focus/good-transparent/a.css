@@ -1,0 +1,2 @@
+.a { outline: 2px solid transparent; }
+.b { outline: none; outline: 2px solid transparent; }

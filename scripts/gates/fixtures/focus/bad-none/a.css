@@ -1,0 +1,2 @@
+.scrub-input { cursor: pointer; outline: none; touch-action: pan-y; }
+.scrub-input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 5px rgba(231, 233, 234, 0.35); }
