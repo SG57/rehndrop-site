@@ -41,7 +41,9 @@ equality at the default settings), as the rem type scale did. A visual change is
 - The client router runs a bundled script once. Page-local scripts bind on `astro:page-load` (never `DOMContentLoaded`);
   document-level setup starts once, in `Base.astro`. `check:page-load`.
 - One policy on every page, hash-only `script-src` and `style-src`, no inline module script, no external script or
-  stylesheet. A new inline script is a deliberate act (`src/lib/boot-script.mjs`). `check:csp`.
+  stylesheet, no `on*=` handler or `javascript:` URL. A meta policy governs only what follows it, so only the reviewed boot and
+  router scripts (`scripts/gates/csp-before-meta.allow.json`) may sit ahead of it. A new inline script is a deliberate act
+  (`src/lib/boot-script.mjs`). `check:csp`.
 - One `<main>`, valid ids, no empty heading, no focusable content under `aria-hidden`. `check:html`.
 
 ## Rules reviewed by hand (no gate)

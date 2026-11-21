@@ -15,7 +15,11 @@ const cname = existsSync('./public/CNAME') ? readFileSync('./public/CNAME', 'utf
 // Content Security Policy, delivered as a <meta http-equiv> tag on every page (GitHub Pages cannot set headers, so
 // frame-ancestors, report-uri and sandbox, which a meta tag ignores, are not available: see README, "Security").
 // Astro hashes the scripts and styles it bundles or inlines; the one inline script we write ourselves (the head boot
-// script) is hashed here from the same string Base.astro prints. Everything else the site loads is same-origin,
+// script) is hashed here from the same string Base.astro prints. A meta policy only governs what is parsed AFTER it,
+// and Astro writes it behind the boot script and the client router's module script: those two run with no policy, so
+// the boot hash is not enforced today (tested: removing it changes nothing on first load or across router swaps, which
+// do not re-run it). It stays so the page works if the meta ever moves ahead of it; scripts/gates/check-csp.mjs fails
+// if anything else sits ahead of the meta. Everything else the site loads is same-origin,
 // except YouTube thumbnails (i.ytimg.com). style-src-attr 'unsafe-inline' is the known gap: markup carries inline
 // style="" attributes (per-track accent colours and the like) and nav.ts copies them across page swaps; Astro 6.4
 // cannot hash attributes, so only the attribute channel is open, never <style> elements or scripts. Astro's config

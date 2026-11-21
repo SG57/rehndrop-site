@@ -36,6 +36,12 @@ const allowArg = (gate, name) => {
   return ['--allow', existsSync(a) ? a : join(fx(gate, name), 'no-allow-file.json')];
 };
 
+// csp fixtures carry their own reviewed before-the-meta list (before-meta.json), or none
+const beforeMetaArg = (name) => {
+  const a = join(fx('csp', name), 'before-meta.json');
+  return ['--before-meta', existsSync(a) ? a : join(fx('csp', name), 'no-before-meta-file.json')];
+};
+
 // [gate, case, expected exit ('pass' | 'fail'), message that must appear]
 const CASES = [
   ['page-load', 'good', 'pass', /ok: 1 bundled script block/],
@@ -104,6 +110,40 @@ const CASES = [
   ['csp', 'bad-policy-differs', 'fail', /pages carry 2 different policies/],
   ['csp', 'bad-style-attr-no-directive', 'fail', /inline style="" attributes on the page, but the policy has no style-src-attr/],
   ['csp', 'bad-json-lt', 'fail', /data block <script type="application\/json" id="player-data"> holds a raw "<"/],
+  ['csp', 'bad-script-src-host', 'fail', /script-src allows https:\/\/cdn\.evil\.example, which is not on the reviewed list/],
+  ['csp', 'bad-script-src-elem-unsafe-inline', 'fail', /script-src-elem carries a weak source: 'unsafe-inline'/],
+  ['csp', 'bad-script-src-attr-unsafe-inline', 'fail', /script-src-attr carries a weak source: 'unsafe-inline'/],
+  ['csp', 'bad-unsafe-hashes', 'fail', /script-src carries a weak source: 'unsafe-hashes'/],
+  ['csp', 'bad-strict-dynamic', 'fail', /script-src carries a weak source: 'strict-dynamic'/],
+  ['csp', 'bad-connect-src-wildcard', 'fail', /connect-src carries a weak source: \*/],
+  ['csp', 'bad-connect-src-host', 'fail', /connect-src allows https:\/\/api\.evil\.example/],
+  ['csp', 'bad-img-src-wildcard', 'fail', /img-src carries a weak source: \*/],
+  ['csp', 'bad-img-src-scheme', 'fail', /img-src carries a weak source: https:/],
+  ['csp', 'bad-img-src-host', 'fail', /img-src allows https:\/\/evil\.example/],
+  ['csp', 'bad-style-src-attr-wide', 'fail', /style-src-attr allows https:\/\/evil\.example/],
+  ['csp', 'bad-font-src-data', 'fail', /font-src carries a weak source: data:/],
+  ['csp', 'bad-duplicate-directive', 'fail', /policy writes script-src twice/],
+  ['csp', 'bad-unknown-directive', 'fail', /unknown directive "script-scr"/],
+  ['csp', 'bad-meta-ignored-directive', 'fail', /carries frame-ancestors, which a meta tag ignores/],
+  ['csp', 'bad-inline-handler', 'fail', /<button> carries an inline event handler onclick="alert\(1\)"/],
+  ['csp', 'bad-inline-handler-upper', 'fail', /<img> carries an inline event handler onerror=/],
+  ['csp', 'bad-inline-handler-slash', 'fail', /<svg> carries an inline event handler onload=/],
+  ['csp', 'bad-javascript-url', 'fail', /<a href="javascript:alert\(1\)"> is a javascript: URL/],
+  ['csp', 'bad-javascript-url-entity', 'fail', /<a href="javascript:alert\(1\)"> is a javascript: URL/],
+  ['csp', 'bad-javascript-url-tab', 'fail', /is a javascript: URL/],
+  ['csp', 'bad-script-type-ecmascript', 'fail', /inline <script type="text\/ecmascript"> \(\d+ bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
+  ['csp', 'bad-script-type-unknown', 'fail', /inline <script type="text\/x-evil"> \(\d+ bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
+  ['csp', 'bad-script-type-importmap', 'fail', /inline <script type="importmap"> .* has no hash in script-src/],
+  ['csp', 'bad-stylesheet-rel-token', 'fail', /external stylesheet <link href="https:\/\/cdn\.example\.com\/a\.css"> \(not same-origin\)/],
+  ['csp', 'bad-two-metas', 'fail', /2 <meta http-equiv="content-security-policy"> tags/],
+  ['csp', 'bad-second-meta-weak', 'fail', /2 <meta http-equiv="content-security-policy"> tags/],
+  ['csp', 'good-before-meta', 'pass', /ok: 1 page\(s\).*2 reviewed script\/stylesheet\(s\) ahead of the meta/],
+  ['csp', 'bad-before-meta-extra-inline', 'fail', /inline <script> \(16 bytes, starts "window\.__ok = 1;".*sits before the policy meta.*not on the reviewed list/],
+  ['csp', 'bad-before-meta-extra-src', 'fail', /<script src="\/_astro\/extra\.js"> sits before the policy meta/],
+  ['csp', 'bad-before-meta-stylesheet', 'fail', /<link rel="stylesheet" href="\/a\.css"> sits before the policy meta/],
+  ['csp', 'bad-before-meta-boot-edited', 'fail', /sits before the policy meta[\s\S]*stale entry \(inline-script/],
+  ['csp', 'bad-before-meta-stale', 'fail', /stale entry \(script \^\/_astro\/Router/],
+  ['csp', 'good-benign-text', 'pass', /ok: 1 page\(s\)/],
 ];
 const ASTRO_CASES = [
   ['astro-check', 'good', 'pass', /0 errors/],
@@ -132,7 +172,7 @@ for (const [gate, name, expect, msg] of CASES) {
     : gate === 'focus' ? run('focus-visible.mjs', ['--root', dir, ...allowArg(gate, name)])
     : gate === 'modes' ? run('check-modes.mjs', ['--css', join(dir, 'a11y-modes.css')])
     : gate === 'type-units' ? run('check-type-units.mjs', ['--root', dir])
-    : gate === 'csp' ? run('check-csp.mjs', ['--dist', dir])
+    : gate === 'csp' ? run('check-csp.mjs', ['--dist', dir, ...beforeMetaArg(name)])
     : run('check-html.mjs', ['--dist', dir]);
   const exitOk = expect === 'pass' ? r.code === 0 : r.code === 1;
   report(exitOk && msg.test(r.out), `${gate}/${name}: expect ${expect}${exitOk ? '' : ` (exit ${r.code})`}${exitOk && !msg.test(r.out) ? ` (message ${msg} missing)` : ''}`, r.out);
@@ -171,7 +211,7 @@ const runCase = (gate, name) =>
   gate === 'page-load' ? run('check-page-load.mjs', ['--root', join(fx(gate, name), 'src'), ...allowArg(gate, name)])
   : gate === 'focus' ? run('focus-visible.mjs', ['--root', fx(gate, name), ...allowArg(gate, name)])
   : gate === 'type-units' ? run('check-type-units.mjs', ['--root', fx(gate, name)])
-  : gate === 'csp' ? run('check-csp.mjs', ['--dist', fx(gate, name)])
+  : gate === 'csp' ? run('check-csp.mjs', ['--dist', fx(gate, name), ...beforeMetaArg(name)])
   : run('check-html.mjs', ['--dist', fx(gate, name)]);
 for (const [gate, name, text, expected] of POINTERS) {
   const r = runCase(gate, name);

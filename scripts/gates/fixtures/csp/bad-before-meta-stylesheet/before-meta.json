@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "inline-script",
+    "sha256": "sha256-p4fog/PoMfTRwIgAx7/rX5t6LD+lqdAe5A4b/VrJvc4=",
+    "reason": "fixture boot script"
+  },
+  {
+    "kind": "script",
+    "match": "^/_astro/Router\\.[a-z0-9]+\\.js$",
+    "reason": "fixture router"
+  }
+]

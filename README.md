@@ -137,6 +137,15 @@ What shipping it took, and what to keep true:
   prints it and `astro.config.mjs` hashes the same string into `script-src`. The build's first-party URLs travel as a
   JSON block (`#rehndrop-config`), not an inline script. A new inline script is a deliberate act: it must be added the
   same way, or `check:csp` and the crawl fail.
+- **The policy only governs what is parsed after the meta tag.** Astro writes the meta late in `<head>`, behind the boot
+  script and the client router's module script, so those two run with no policy at all, on every page. That is the honest
+  reading of the boot script's hash in `script-src`: it is not enforced today. Tested (2026-11-21, Chromium): with the hash
+  removed from every page's policy there are zero violations on first load and across three client-router swaps, and the
+  boot script is evaluated once, on the first load; a swap does not re-run it (the incoming head equals the one on screen,
+  so the router keeps the old elements). The hash stays so the page keeps working if Astro moves the meta ahead of the boot
+  script or a swap ever does re-evaluate it, and so "every inline script is hashed" stays a true sentence. `check:csp`
+  fails when anything other than the reviewed pair (`scripts/gates/csp-before-meta.allow.json`: the boot script by sha256
+  and the router script by path) sits ahead of the meta, and when an entry on that list matches nothing.
 - **Known gap, recorded here: `style-src-attr 'unsafe-inline'`.** Markup carries inline `style=""` attributes (per-track
   accent colours and the like) and `nav.ts` copies the root element's across swaps. Astro 6.4 cannot hash attributes
   (its `kind` option arrives in 7.1) and rejects a `style-src-attr` directive, so a small integration in
