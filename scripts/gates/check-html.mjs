@@ -3,11 +3,16 @@
 // Runs html-validate (recommended preset, no-inline-style off: the scene styles through custom
 // properties on purpose) over every dist/**/*.html. Five rules are hard errors and fail the run (exit 1):
 //   no-multiple-main, valid-id, no-dup-id, empty-heading, hidden-focusable
-// A sixth hard check is ours, not html-validate's: one-visible-main, exactly one visible <main> or role="main" per page.
+// Two more hard checks are ours, not html-validate's:
+//   one-visible-main: exactly one visible <main> or role="main" per page.
 // no-multiple-main ignores role="main" and a hidden <main>, and says nothing about a page with no main at all, so a second
 // landmark made from a <div role="main"> or a page that lost its <main> passes it. A main counts as visible unless it carries
 // the hidden attribute or an inline display:none / visibility:hidden. Lexical limits: a main inside a hidden ancestor or a
 // <template> is read as visible (html-validate's own no-multiple-main still flags the template case).
+//   unique-id: no id used twice on a page when either element is inside an inline <svg> or <math>. html-validate's no-dup-id
+//   does not look inside inline svg (the index carries hundreds of them), where a repeated gradient or clip-path id makes
+//   url(#id) and <use href="#id"> resolve to the first one. Every element of the page is read through the tokenizer; two
+//   plain HTML elements sharing an id stay no-dup-id's. The content of a <template> is a separate document and is skipped.
 // Every other finding is a warning: printed with a count per rule, never failing. Folders whose name
 // starts with an underscore (screenshot or scratch output such as _shots) are skipped; _astro holds
 // no HTML. A missing or empty dist fails: a gate that finds nothing to check must not pass.
@@ -17,10 +22,12 @@ import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { HtmlValidate } from 'html-validate';
 import { platformGuide } from './platform-guide.mjs';
-import { get, tokenize } from './html-tokens.mjs';
+import { ancestors, get, lineOf, tokenize } from './html-tokens.mjs';
 
 export const HARD = ['no-multiple-main', 'valid-id', 'no-dup-id', 'empty-heading', 'hidden-focusable'];
 const ONE_MAIN = 'one-visible-main';
+const UNIQUE_ID = 'unique-id';
+const FOREIGN = new Set(['svg', 'math']);
 // the hard rules that a guide of the platform-currency pack covers (landmarks, aria-hidden on focusable content)
 const GUIDED = ['no-multiple-main', 'hidden-focusable', ONE_MAIN];
 const isMain = (n) => n.name === 'main' || (get(n, 'role') ?? '').trim().toLowerCase().split(/\s+/)[0] === 'main';
@@ -61,7 +68,23 @@ const hard = [];
 const hardRules = new Set();
 const warn = new Map();
 for (const f of files) {
-  const visibleMains = tokenize(await readFile(f, 'utf8')).filter((n) => isMain(n) && !isHidden(n));
+  const source = await readFile(f, 'utf8');
+  const tokens = tokenize(source);
+  const pageRel = relative(dist, f).split(sep).join('/');
+  const firstId = new Map();
+  for (const n of tokens) {
+    const id = get(n, 'id');
+    if (!id) continue;
+    const up = ancestors(n);
+    if (up.includes('template')) continue;
+    const foreign = FOREIGN.has(n.name) || up.some((a) => FOREIGN.has(a));
+    const first = firstId.get(id);
+    if (!first) { firstId.set(id, { line: lineOf(source, n), foreign, name: n.name }); continue; }
+    if (!first.foreign && !foreign) continue;
+    hardRules.add(UNIQUE_ID);
+    hard.push(`${pageRel}:${lineOf(source, n)}:1 ${UNIQUE_ID}: id "${id}" on <${n.name}> repeats <${first.name}> at line ${first.line}${foreign && first.foreign ? ' (both inline svg/math)' : ' (one of them inline svg/math)'}: url(#${id}) and href="#${id}" resolve to the first one`);
+  }
+  const visibleMains = tokens.filter((n) => isMain(n) && !isHidden(n));
   if (visibleMains.length !== 1) {
     hardRules.add(ONE_MAIN);
     hard.push(`${relative(dist, f).split(sep).join('/')}:1:1 ${ONE_MAIN}: ${visibleMains.length} visible <main> / role="main" element(s) on the page; exactly one is required (a hidden one does not count)`);
@@ -91,9 +114,9 @@ if (warn.size) {
   }
 }
 if (hard.length) {
-  console.error(`\nFAIL: ${hard.length} hard error(s) (${[...HARD, ONE_MAIN].join(', ')})`);
+  console.error(`\nFAIL: ${hard.length} hard error(s) (${[...HARD, ONE_MAIN, UNIQUE_ID].join(', ')})`);
   for (const h of hard) console.error('  ' + h);
   if (GUIDED.some((r) => hardRules.has(r))) console.error('  ' + platformGuide('accessibility'));
   process.exit(1);
 }
-console.log(`ok: no hard errors (${[...HARD, ONE_MAIN].join(', ')})`);
+console.log(`ok: no hard errors (${[...HARD, ONE_MAIN, UNIQUE_ID].join(', ')})`);

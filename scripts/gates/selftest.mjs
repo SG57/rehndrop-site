@@ -108,6 +108,9 @@ const CASES = [
   ['html', 'bad-role-main', 'fail', /one-visible-main: 2 visible/],
   ['html', 'bad-hidden-only-main', 'fail', /one-visible-main: 0 visible/],
   ['html', 'good-hidden-second-main', 'pass', /ok: no hard errors/],
+  ['html', 'bad-dup-id-svg-svg', 'fail', /unique-id: id "g" on <lineargradient> repeats <lineargradient> at line 5 \(both inline svg\/math\)/],
+  ['html', 'bad-dup-id-svg-html', 'fail', /unique-id: id "mark" on <symbol> repeats <p> at line 5 \(one of them inline svg\/math\)/],
+  ['html', 'good-dup-id-template', 'pass', /ok: no hard errors/],
 
   ['modes', 'good', 'pass', /ok: .* 2 top-level block\(s\).*no mode query in the other 1 stylesheet\(s\)/],
   ['modes', 'bad-bare-rule', 'fail', /top-level block "\.leak" is not an @media/],
