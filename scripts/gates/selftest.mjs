@@ -9,6 +9,7 @@
 //   html       fixtures are dist-like folders
 //   modes      fixtures are folders holding an a11y-modes.css
 //   csp        fixtures are dist-like folders whose pages carry a policy meta tag
+//   type-units fixtures are folders of .css files
 //   astro-check fixtures are tiny Astro projects; they are type-checked with the repo's own astro check
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
@@ -79,6 +80,14 @@ const CASES = [
   ['modes', 'bad-import', 'fail', /top-level statement "@import 'other\.css';"/],
   ['modes', 'bad-trailing-rule', 'fail', /top-level block "\.after" is not an @media/],
 
+  ['type-units', 'good', 'pass', /ok: 6 font-size declaration\(s\) in 1 stylesheet\(s\), none in px alone/],
+  ['type-units', 'bad-px', 'fail', /font size "13px" is in px/],
+  ['type-units', 'bad-clamp-px', 'fail', /font size "clamp\(20px, 5\.6vw, 40px\)" is in px/],
+  ['type-units', 'bad-decimal-px', 'fail', /font size "13\.5px" is in px/],
+  ['type-units', 'bad-shorthand', 'fail', /font size "13px\/1\.4 serif" is in px/],
+  ['type-units', 'bad-nested-media', 'fail', /a\.css:2:\d+ font size "14px" is in px/],
+  ['type-units', 'bad-blind', 'fail', /no font-size declaration found/],
+
   ['csp', 'good', 'pass', /ok: 2 page\(s\), one policy/],
   ['csp', 'bad-no-meta', 'fail', /no <meta http-equiv="content-security-policy"> tag/],
   ['csp', 'bad-unhashed-script', 'fail', /inline <script> \(18 bytes, starts "window\.__evil = 1;"\) has no hash in script-src/],
@@ -107,7 +116,7 @@ const report = (ok, label, detail = '') => {
 };
 
 // the table and the folders must agree
-for (const gate of ['page-load', 'focus', 'html', 'modes', 'csp', 'astro-check']) {
+for (const gate of ['page-load', 'focus', 'html', 'modes', 'type-units', 'csp', 'astro-check']) {
   const dir = join(here, 'fixtures', gate);
   const have = existsSync(dir) ? readdirSync(dir) : [];
   const want = [...CASES, ...ASTRO_CASES].filter((c) => c[0] === gate).map((c) => c[1]);
@@ -121,6 +130,7 @@ for (const [gate, name, expect, msg] of CASES) {
     gate === 'page-load' ? run('check-page-load.mjs', ['--root', join(dir, 'src'), ...allowArg(gate, name)])
     : gate === 'focus' ? run('focus-visible.mjs', ['--root', dir, ...allowArg(gate, name)])
     : gate === 'modes' ? run('check-modes.mjs', ['--css', join(dir, 'a11y-modes.css')])
+    : gate === 'type-units' ? run('check-type-units.mjs', ['--root', dir])
     : gate === 'csp' ? run('check-csp.mjs', ['--dist', dir])
     : run('check-html.mjs', ['--dist', dir]);
   const exitOk = expect === 'pass' ? r.code === 0 : r.code === 1;

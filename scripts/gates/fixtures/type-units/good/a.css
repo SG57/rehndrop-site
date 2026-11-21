@@ -1,0 +1,8 @@
+/* rem, a rem clamp, a px floor under a rem expression, em, a keyword, the font shorthand without a size,
+   and px on things that are not type (layout lengths, media queries) */
+body { font-size: 0.9375rem; padding: 13px; }
+.a { font-size: clamp(1.25rem, 5.6vw, 2.5rem); }
+.b { font: inherit; font-size: max(1rem, 16px); }
+.c { font-size: 0.8em; }
+.d { font-size: larger; height: calc(100svh - 452px); }
+@media (max-width: 700px) { .e { font-size: 0.875rem; width: 44px; } }

@@ -27,6 +27,7 @@ jobs:
       - run: npm run check:page-load
       - run: npm run check:focus
       - run: npm run check:modes
+      - run: npm run check:type-units
       - run: npm run test:gates
       - run: npm run build
       - run: npm run check:html
