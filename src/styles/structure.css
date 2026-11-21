@@ -164,12 +164,12 @@ html .chip:hover { border-color: color-mix(in srgb, var(--e, var(--line-2)) 75%,
   transform: rotate(45deg);
   opacity: 0.9;
 }
-.ix-count { order: 3; margin-left: -4px; font-family: var(--font-display); font-size: 13px; letter-spacing: 0.14em; color: var(--ink-2, var(--ink-3)); font-variant-numeric: tabular-nums; text-shadow: 0 0 2px rgba(2, 2, 4, 0.95), 0 1px 3px rgba(0, 0, 0, 0.85); }
+.ix-count { order: 3; margin-left: -4px; font-family: var(--font-display); font-size: 0.8125rem; letter-spacing: 0.14em; color: var(--ink-2, var(--ink-3)); font-variant-numeric: tabular-nums; text-shadow: 0 0 2px rgba(2, 2, 4, 0.95), 0 1px 3px rgba(0, 0, 0, 0.85); }
 .ix-sec.is-filtered .ix-count { display: none; }
 /* a phone: one line, a shorter rule, and the rule gives way before the words do */
 @media (max-width: 379px) {
   .ix-hd { gap: 10px; }
-  .ix-h { white-space: nowrap; letter-spacing: 0.16em; font-size: 13px; }
+  .ix-h { white-space: nowrap; letter-spacing: 0.16em; font-size: 0.8125rem; }
   .ix-rule { min-width: 0; flex-basis: 0; }
 }
 .ix-h:focus { outline: none; }
