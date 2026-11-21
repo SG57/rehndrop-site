@@ -74,11 +74,12 @@ const CASES = [
   ['html', 'bad-hidden-focusable', 'fail', /hidden-focusable/],
   ['html', 'bad-no-html', 'fail', /no \.html files/],
 
-  ['modes', 'good', 'pass', /ok: .* 2 top-level block\(s\)/],
+  ['modes', 'good', 'pass', /ok: .* 2 top-level block\(s\).*no mode query in the other 1 stylesheet\(s\)/],
   ['modes', 'bad-bare-rule', 'fail', /top-level block "\.leak" is not an @media/],
   ['modes', 'bad-wrong-media', 'fail', /top-level block "@media \(min-width: 700px\)" is not an @media/],
   ['modes', 'bad-import', 'fail', /top-level statement "@import 'other\.css';"/],
   ['modes', 'bad-trailing-rule', 'fail', /top-level block "\.after" is not an @media/],
+  ['modes', 'bad-mode-query-elsewhere', 'fail', /global\.css:3: "@media \(forced-colors" belongs in .*a11y-modes\.css/],
 
   ['type-units', 'good', 'pass', /ok: 6 font-size declaration\(s\) in 1 stylesheet\(s\), none in px alone/],
   ['type-units', 'bad-px', 'fail', /font size "13px" is in px/],

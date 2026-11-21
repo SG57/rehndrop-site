@@ -10,6 +10,12 @@
 //                    CanvasText edge; the selected view button is Highlight; the play disc has a ButtonText
 //                    edge; the keyboard focus ring is a 2px Highlight outline
 //   prefers-contrast the grain is a dark veil (not noise), the inks are #f4f6f7, the focus ring is 3px
+//   track pages      one page per room (candle, chrome, dawn; found from the index links, each with scrubber hit marks):
+//                    page stylesheets (trackpage.css) load after a11y-modes.css and out-specify a plain mode rule, so
+//                    this is where a mode rule silently loses. Forced colors: every .scrub-mark and .scrub-seam is
+//                    CanvasText with no gradient. prefers-contrast: .track-title has the hard halo, on both the
+//                    default and the software tier (a different trackpage.css rule sets each). Default: the title
+//                    keeps its accent glow, the mark keeps the room's own paint.
 // Part of `npm run gates:local` (needs a browser). Exit 1 on any failed expectation.
 // Playwright emulates the media features; real Windows contrast themes and a real GPU are not covered.
 // Browser: installed Edge, or QA_BROWSER_CHANNEL (see scripts/qa.mjs). Muted, never on screen.
@@ -28,13 +34,13 @@ const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? 
 const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 const rgb = (s) => (s.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
 
-async function session(label, options, fn) {
+async function session(label, options, fn, path = '?lens&t=1700000000000') {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...options });
   const errors = [];
   const page = await ctx.newPage();
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto(base + '?lens&t=1700000000000', { waitUntil: 'networkidle' });
+  await page.goto(base + path, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1800);
   await fn(page);
   expect(!errors.length, `${label}: no console or page errors${errors.length ? ` (${errors.slice(0, 2).join(' | ')})` : ''}`);
@@ -121,6 +127,59 @@ await session('prefers-contrast', { contrast: 'more' }, async (page) => {
   expect(ring && ring['outline-width'] === '3px', `contrast: the focus ring is 3px (${ring && ring['outline-width']})`);
 });
 
+// one track page per room that has hit marks, found through the index links (a gate that finds none must not pass)
+const trackPages = new Map();
+{
+  const index = await (await fetch(base)).text();
+  const hrefs = [...new Set([...index.matchAll(/href="([^"#]*\/t\/[^"#/]+\/?)"/g)].map((m) => m[1]))];
+  for (const href of hrefs) {
+    if (trackPages.size === 3) break;
+    const url = new URL(href, base).href;
+    const html = await (await fetch(url)).text();
+    const room = (html.match(/class="track-page"[^>]*data-room="(\w+)"/) || [])[1];
+    if (room && !trackPages.has(room) && /class="scrub-mark"/.test(html)) trackPages.set(room, url.slice(base.length) + '?lens&t=1700000000000');
+  }
+}
+expect(trackPages.size === 3, `track pages: found one per room with hit marks (${[...trackPages.keys()].join(', ') || 'none'})`);
+
+const HALO = 'rgb(0, 0, 0) 0px 0px 2px, rgba(0, 0, 0, 0.95) 0px 0px 6px, rgba(2, 2, 4, 0.95) 0px 0px 16px, rgba(2, 2, 4, 0.8) 0px 0px 34px';
+const setTier = (page, tier) => page.evaluate((t) => { document.documentElement.dataset.tier = t; }, tier);
+for (const [room, path] of trackPages) {
+  await session(`track ${room} default`, {}, async (page) => {
+    const r = await css(page, '.track-title', ['text-shadow']);
+    const mark = await css(page, '.scrub-mark', ['background-color', 'background-image']);
+    for (const tier of ['hardware', 'software']) {
+      await setTier(page, tier);
+      const t = await css(page, '.track-title', ['text-shadow']);
+      expect(t && t['text-shadow'] !== HALO && t['text-shadow'] !== 'none', `track ${room} default (${tier}): the title keeps its own glow, not the contrast halo`);
+    }
+    expect(r && mark && (mark['background-image'] !== 'none' || mark['background-color'] !== 'rgba(0, 0, 0, 0)'), `track ${room} default: the hit mark keeps the room's paint (${mark && JSON.stringify(mark)})`);
+  }, path);
+
+  await session(`track ${room} forced colors`, { forcedColors: 'active' }, async (page) => {
+    const c = await sys(page, ['CanvasText']);
+    const paint = await page.evaluate(() => [...document.querySelectorAll('.scrub-mark, .scrub-seam')].map((el) => { const cs = getComputedStyle(el); return [el.className, cs.backgroundColor, cs.backgroundImage]; }));
+    const bad = paint.filter(([, bg, img]) => bg !== c.CanvasText || img !== 'none');
+    expect(paint.length > 0 && !bad.length, `track ${room} forced: all ${paint.length} scrub marks and seams are plain CanvasText (${bad.length ? JSON.stringify(bad[0]) : 'ok'})`);
+    // the scrubber thumb ring is a box-shadow that forced colors drop: the input itself carries a 2px Highlight outline
+    // (the rule lives in a11y-modes.css, moved there from global.css with these values unchanged)
+    const hl = await sys(page, ['Highlight']);
+    await page.keyboard.press('Tab');
+    await page.evaluate(() => document.querySelector('.scrub-input').focus());
+    await page.waitForTimeout(450);
+    const ring = await css(page, '.scrub-input', ['outline-style', 'outline-width', 'outline-color', 'outline-offset']);
+    expect(ring && ring['outline-style'] === 'solid' && ring['outline-width'] === '2px' && ring['outline-color'] === hl.Highlight && ring['outline-offset'] === '3px', `track ${room} forced: the scrub input ring is a 2px Highlight outline, offset 3px (${ring && JSON.stringify(ring)})`);
+  }, path);
+
+  await session(`track ${room} prefers-contrast`, { contrast: 'more' }, async (page) => {
+    for (const tier of ['hardware', 'software']) {
+      await setTier(page, tier);
+      const t = await css(page, '.track-title', ['text-shadow']);
+      expect(t && t['text-shadow'] === HALO, `track ${room} contrast (${tier}): the title has the hard halo (${t && t['text-shadow'].slice(0, 70)})`);
+    }
+  }, path);
+}
+
 await browser.close();
-console.log(fails ? `FAIL: ${fails} mode expectation(s) failed` : 'ok: default, forced-colors and prefers-contrast behave as specified');
+console.log(fails ? `FAIL: ${fails} mode expectation(s) failed` : 'ok: default, forced-colors and prefers-contrast behave as specified, on the index and on a track page per room');
 process.exit(fails ? 1 : 0);

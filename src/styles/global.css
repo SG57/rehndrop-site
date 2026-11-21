@@ -1277,9 +1277,6 @@ html[data-view='list'] .poster-mark { display: none; }
 .scrub-input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 0 5px rgba(231, 233, 234, 0.35); }
 .scrub-input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 0 5px rgba(231, 233, 234, 0.35); }
 .scrub:has(.scrub-input:focus-visible) .scrub-rail { outline: 1.5px solid var(--bone); outline-offset: 9px; border-radius: 4px; }
-/* forced colours drop box-shadow, so the thumb ring above disappears and the input itself needs a real outline.
-   Today interact.css (`html :focus-visible`, higher specificity) supplies it; this makes the ring not depend on that */
-@media (forced-colors: active) { .scrub-input:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; } }
 .scrub-time { position: absolute; right: 0; top: 36px; font-size: 0.875rem; letter-spacing: 0.04em; color: var(--ink-3); font-variant-numeric: tabular-nums; pointer-events: none; }
 .tv-stores { display: grid; justify-items: center; gap: 12px; margin-top: 6px; }
 .tv-stores .listen--labels { margin-top: 0; gap: 8px; }

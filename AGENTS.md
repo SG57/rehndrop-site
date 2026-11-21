@@ -33,7 +33,9 @@ equality at the default settings), as the rem type scale did. A visual change is
 - Focus: never remove an outline without a replacement that survives forced-colors mode (a transparent outline, a
   forced-colors outline or a `:focus-visible` ring; a box-shadow ring alone vanishes there). `check:focus`.
 - Forced colors and increased contrast live only in `src/styles/a11y-modes.css`, every rule inside
-  `@media (forced-colors: active)` or `@media (prefers-contrast: more)`, so the default look cannot depend on it. `check:modes`.
+  `@media (forced-colors: active)` or `@media (prefers-contrast: more)`, so the default look cannot depend on it; `check:modes`
+  also fails when either query appears in any other stylesheet. Page stylesheets (`trackpage.css`) load after it, so a mode
+  rule for an element they restyle needs more specificity than theirs; the browser check `modes.mjs` covers a track page per room.
 - Type is in rem, so the reader's browser font size applies. No px `font-size`, except as the floor of a rem expression
   such as `max(1rem, 16px)`. `check:type-units`.
 - The client router runs a bundled script once. Page-local scripts bind on `astro:page-load` (never `DOMContentLoaded`);

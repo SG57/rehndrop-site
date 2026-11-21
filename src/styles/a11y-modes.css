@@ -1,5 +1,7 @@
 /* Visitor-preference modes: forced colours (Windows contrast themes, Edge and Chrome forced
-   colours) and increased contrast. Loaded last. EVERY rule here sits inside one of the two media
+   colours) and increased contrast. Last import of the layout (page
+   stylesheets such as trackpage.css still load after it: rules for elements they restyle carry extra specificity,
+   see the notes below). EVERY rule here sits inside one of the two media
    queries below, so the default look is untouched; scripts/gates/check-modes.mjs fails the build
    if a rule appears outside them. */
 
@@ -36,8 +38,14 @@
   html .scrub .scrub-rail { background: GrayText; }
   html .scrub .scrub-fill { background: Highlight; }
   html .scrub .scrub-mark, html .scrub .scrub-seam { background: CanvasText; }
+  /* trackpage.css loads after this file and paints each room's mark shape with .track-page[data-room] .scrub-mark
+     (0,3,0): the extra .track-page here makes this rule (0,3,1) so the mark stays CanvasText on a track page */
+  html .track-page .scrub .scrub-mark { background: CanvasText; }
   html .scrub .scrub-input::-webkit-slider-thumb { background: ButtonText; border: 2px solid ButtonFace; }
   html .scrub .scrub-input::-moz-range-thumb { background: ButtonText; }
+  /* the thumb ring is a box-shadow, which forced colours drop, so the input itself needs a real outline. It used to sit
+     in global.css; (0,2,0) beats html :focus-visible above and the prefers-contrast width below, as it did there */
+  .scrub-input:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
 }
 
 /* ---------- increased contrast ----------
@@ -59,4 +67,10 @@
     text-shadow: 0 0 2px #000, 0 0 6px rgba(0, 0, 0, 0.95), 0 0 16px rgba(2, 2, 4, 0.95), 0 0 34px rgba(2, 2, 4, 0.8);
   }
   html :focus-visible { outline-width: 3px; outline-offset: 4px; }
+  /* trackpage.css loads after this file: .track-page .track-title (0,2,0) and, on the software tier,
+     html[data-tier='software'] .track-page .track-title (0,3,1) both set text-shadow. html:root body adds the (0,3,2)
+     needed to beat them without depending on stylesheet order */
+  html:root body .track-page .track-title {
+    text-shadow: 0 0 2px #000, 0 0 6px rgba(0, 0, 0, 0.95), 0 0 16px rgba(2, 2, 4, 0.95), 0 0 34px rgba(2, 2, 4, 0.8);
+  }
 }
