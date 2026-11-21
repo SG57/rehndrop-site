@@ -56,8 +56,10 @@ for (const f of files) {
   for (const r of report.results) {
     for (const m of r.messages) {
       const rel = relative(dist, f).split(sep).join('/');
-      if (HARD.includes(m.ruleId)) hardRules.add(m.ruleId), hard.push(`${rel}:${m.line}:${m.column} ${m.ruleId}: ${m.message}`);
-      else {
+      if (HARD.includes(m.ruleId)) {
+        hardRules.add(m.ruleId);
+        hard.push(`${rel}:${m.line}:${m.column} ${m.ruleId}: ${m.message}`);
+      } else {
         const w = warn.get(m.ruleId) ?? { n: 0, files: new Set(), sample: `${rel}:${m.line} ${m.message}` };
         w.n++; w.files.add(rel);
         warn.set(m.ruleId, w);
