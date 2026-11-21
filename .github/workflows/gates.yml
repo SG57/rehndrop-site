@@ -1,0 +1,46 @@
+name: Gates
+
+# The deploy workflow's checks, run without deploying, so a pull request (Dependabot's included)
+# is judged before it can reach main. The browser job is manual: it drives the runner's own Edge
+# and has not been proven on a runner yet, so it is not allowed to gate anything until someone has
+# watched it pass there once (run it from the Actions tab: Gates, Run workflow).
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run assets:check
+      - run: npm run check
+      - run: npm run check:page-load
+      - run: npm run check:focus
+      - run: npm run test:gates
+      - run: npm run build
+      - run: npm run check:html
+
+  browser:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      QA_BROWSER_CHANNEL: msedge
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/gates/local.mjs --no-build --skip-long
