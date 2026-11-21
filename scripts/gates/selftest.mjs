@@ -118,6 +118,11 @@ const CASES = [
   ['modes', 'bad-import', 'fail', /top-level statement "@import 'other\.css';"/],
   ['modes', 'bad-trailing-rule', 'fail', /top-level block "\.after" is not an @media/],
   ['modes', 'bad-mode-query-elsewhere', 'fail', /global\.css:3: "@media \(forced-colors" belongs in .*a11y-modes\.css/],
+  ['modes', 'bad-mode-query-astro', 'fail', /Card\.astro:4: "@media \(forced-colors" belongs in/],
+  ['modes', 'bad-mode-query-ts', 'fail', /inject\.ts:2: "@media \(prefers-contrast" belongs in/],
+  ['modes', 'bad-mode-query-import', 'fail', /global\.css:1: "@import url\("extra\.css"\) \(forced-colors" belongs in/],
+  ['modes', 'bad-mode-query-media-attr', 'fail', /Head\.astro:1: "media="\(prefers-contrast" belongs in/],
+  ['modes', 'good-script-matchmedia', 'pass', /ok: .*no mode query in the other 1 stylesheet\(s\)/],
 
   ['type-units', 'good', 'pass', /ok: 6 font-size declaration\(s\) in 1 stylesheet\(s\) and 0 other source\(s\), none in px alone/],
   ['type-units', 'good-mixed-sources', 'pass', /ok: \d+ font-size declaration\(s\) in 1 stylesheet\(s\) and 2 other source\(s\)/],

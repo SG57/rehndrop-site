@@ -4,10 +4,13 @@
 // the DEFAULT look is untouched, so every top-level block in it must be an
 // `@media (forced-colors: active)` or `@media (prefers-contrast: more)` block, and nothing else may
 // sit at the top level (no bare rule, no other at-rule, no @import, no declaration). Exit 1 otherwise.
-// The same promise needs the media queries to live ONLY there: every other .css under the root (default src/, or the
-// folder of --css) is scanned for forced-colors, prefers-contrast and inverted-colors queries, and one found there
-// fails, except the reviewed files in EXCEPTIONS (a stale entry fails too). A mode rule in global.css would sit in the
-// cascade out of sight of the file the rest of the gate and the browser check (modes.mjs) are written around.
+// The same promise needs the media queries to live ONLY there: every other file under the root (default src/, or the
+// folder of --css) is scanned for forced-colors, prefers-contrast and inverted-colors in an @media or @import condition or a
+// media="" attribute, and one found there fails, except the reviewed files in EXCEPTIONS (a stale entry fails too).
+// Stylesheets are .css; the same text in an .astro or .html <style> block, a .ts/.js/.mjs template string or a <link media> is a
+// mode rule out of sight of the file the rest of the gate and the browser check (modes.mjs) are written around, so those
+// are read too. A query asked from script (matchMedia('(forced-colors: active)')) is behaviour, not a rule, and is not
+// flagged. Lexical: a condition assembled from parts, or a stylesheet that is not under the root, is not seen.
 // A screenshot diff proves the look once; this keeps it true for the next edit.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -23,8 +26,12 @@ const root = resolve(r >= 0 ? args[r + 1] : i >= 0 ? dirname(file) : fileURLToPa
 // { "<path from root>.css": "<why a mode query may live there>" }. Empty on purpose: the one case there was (the
 // scrub input's forced-colors outline in global.css) moved into a11y-modes.css, with identical computed styles.
 const EXCEPTIONS = {};
-const MODE_QUERY = /@media[^{;]*(?:forced-colors|prefers-contrast|inverted-colors)/i;
-const cssFiles = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.name === 'node_modules' ? [] : e.isDirectory() ? cssFiles(join(dir, e.name)) : e.name.endsWith('.css') ? [join(dir, e.name)] : []));
+const MODE = '(?:forced-colors|prefers-contrast|inverted-colors)';
+const MODE_QUERY = new RegExp(String.raw`@(?:media|import)[^{;]*${MODE}|\bmedia\s*=\s*["'][^"']*${MODE}`, 'i');
+const SOURCE = /\.(?:css|astro|html|ts|tsx|js|mjs|svg)$/;
+const scanFiles = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.name === 'node_modules' ? [] : e.isDirectory() ? scanFiles(join(dir, e.name)) : SOURCE.test(e.name) && !e.name.endsWith('.d.ts') ? [join(dir, e.name)] : []));
+// block comments and whole-line // comments out (a line comment after code could be inside a string, so it stays)
+const stripComments = (t) => t.replace(/\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->|^[ \t]*\/\/.*$/gm, (m) => m.replace(/[^\n]/g, ' '));
 
 const ALLOWED = [/^@media\s*\(\s*forced-colors\s*:\s*active\s*\)$/i, /^@media\s*\(\s*prefers-contrast\s*:\s*more\s*\)$/i];
 // comments out, strings kept literally (a "{" in a string must not move the depth)
@@ -61,11 +68,11 @@ if (!blocks) problems.push(`${rel}: no @media blocks at all (the file is meant t
 
 let scanned = 0;
 const usedExceptions = new Set();
-for (const other of cssFiles(root)) {
+for (const other of scanFiles(root)) {
   if (resolve(other) === file) continue;
   scanned++;
   const name = relative(root, other).split(sep).join('/');
-  const text = readFileSync(other, 'utf8').replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+  const text = stripComments(readFileSync(other, 'utf8'));
   const hit = text.match(MODE_QUERY);
   if (!hit) continue;
   if (Object.hasOwn(EXCEPTIONS, name)) { usedExceptions.add(name); continue; }

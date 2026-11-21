@@ -1,0 +1,3 @@
+/* both mode blocks, with a { in a comment and a string that must not confuse the scan */
+@media (forced-colors: active) { .a { outline: 2px solid Highlight; } .b::after { content: "}"; } }
+@media (prefers-contrast: more) { :root { --x: 1; } @supports (color: red) { .c { color: red; } } }
