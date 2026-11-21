@@ -1,7 +1,8 @@
 // Focus-ring regression gate: npm run check:focus
 //   node scripts/gates/focus-visible.mjs [--root <src dir>] [--allow <allow.json>]
 // Runs the local/focus-outline-replacement stylelint rule (focus-outline-plugin.mjs) over every .css
-// under the root. Exit 1 on any outline that is removed without a replacement that survives
+// under the root (two rounds: the first pools every stylesheet's replacement rings, so a forced-colors ring in
+// a11y-modes.css covers an outline removed in global.css; the second reports). Exit 1 on any outline that is removed without a replacement that survives
 // forced-colors mode, on a stale allow-list entry (one that no longer matches an outline removal),
 // and on a <style> block inside an .astro file (this gate reads .css only, so such a block would
 // escape it silently: extend the gate before adding one).
@@ -43,11 +44,20 @@ for await (const f of walk(root)) {
 if (!css.length) { console.error(`FAIL: no .css files under ${rel(root)}`); process.exit(1); }
 
 const used = new Set();
+// round 1 pools every stylesheet's replacement rings (a forced-colors ring in a11y-modes.css covers an outline removed in
+// global.css); round 2 reports, with the pool filled
+const shared = { forced: new Set(), visibleRing: new Set() };
+const sources = new Map();
 for (const file of css.sort()) {
+  const code = await readFile(file, 'utf8');
+  sources.set(file, code);
+  await stylelint.lint({ code, codeFilename: file, config: { plugins: [plugin], rules: { [ruleName]: [true, { shared, collectOnly: true }] } } });
+}
+for (const file of css) {
   const out = await stylelint.lint({
-    code: await readFile(file, 'utf8'),
+    code: sources.get(file),
     codeFilename: file,
-    config: { plugins: [plugin], rules: { [ruleName]: [true, { allow, onAllowUsed: (s) => used.add(s) }] } },
+    config: { plugins: [plugin], rules: { [ruleName]: [true, { allow, shared, onAllowUsed: (s) => used.add(s) }] } },
   });
   for (const w of out.results.flatMap((r) => [...r.warnings, ...r.parseErrors])) {
     problems.push(`${rel(file)}:${w.line}:${w.column} ${w.text}`);

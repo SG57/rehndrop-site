@@ -1,0 +1,2 @@
+a:focus { outline: none; }
+a:focus-visible { outline-color: red; }

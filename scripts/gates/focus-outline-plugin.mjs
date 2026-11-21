@@ -1,71 +1,147 @@
 // stylelint plugin: local/focus-outline-replacement
 //
-// Fails a rule that removes an element's outline (outline: none | 0, outline-style: none, outline-width: 0) unless the
-// focus indication survives somewhere the browser still draws it. Removing the outline is only safe
-// when something replaces it, and box-shadow is NOT a replacement: forced-colors mode (Windows
-// contrast themes) drops box-shadow, so a ring built from one vanishes for exactly the people who need it.
+// Fails a rule that removes an element's outline (outline: none | 0, outline-style: none, outline-width: 0, or
+// all: unset | initial) unless the focus indication survives somewhere the browser still draws it. Removing the outline is
+// only safe when something replaces it, and box-shadow is NOT a replacement: forced-colors mode (Windows contrast
+// themes) drops box-shadow, so a ring built from one vanishes for exactly the people who need it.
+//
+// What a rule does to the outline is evaluated, not pattern-matched: its declarations are applied in order (a shorthand
+// resets what it omits, a later declaration beats an earlier one, !important beats a later plain one) to a state of
+// { style, width, color }. A rule REMOVES the outline when that state ends with style none or a zero width. A rule is a RING
+// only when it ends with a visible style AND a nonzero width, both declared in that same rule (the outline shorthand with
+// a visible style does both). A colour alone is not a ring: `outline-color: red` on a :focus-visible rule draws nothing,
+// and `outline: none; outline-color: transparent` is still no outline.
 //
 // A selector passes when ANY of these holds:
-//   1. the same rule also sets a transparent outline (outline: 2px solid transparent), the standard
-//      idiom: invisible normally, drawn in a system colour under forced-colors;
-//   2. an @media (forced-colors: active) rule in the same stylesheet sets a real outline on the
-//      selector or on its :focus-visible / :focus form;
-//   3. the selector ends in :focus and the same stylesheet gives its :focus-visible form a real outline
-//      (the pointer focus ring is dropped on purpose, the keyboard one is not);
+//   1. the same rule also ends with a transparent ring (outline: 2px solid transparent), the standard idiom: invisible
+//      normally, drawn in a system colour under forced-colors;
+//   2. an @media (forced-colors: active) rule in ANY stylesheet of the run sets a ring on the selector or on its
+//      :focus-visible / :focus form. "In forced-colors" means the media query is exactly that feature (optionally
+//      prefixed `screen and` or `only screen and`): `not (forced-colors: active)`, a query list, or any other
+//      condition combined with it is NOT forced-colors and earns no exemption;
+//   3. the selector ends in :focus and some stylesheet gives its :focus-visible form a visible, non-transparent ring (the
+//      pointer focus ring is dropped on purpose, the keyboard one is not);
 //   4. it is listed in the plugin option `allow` ({ "<selector>": "<why it is safe>" }), reserved for
 //      elements that take programmatic focus only, or whose ring is supplied by another stylesheet.
 //
 // The `allow` option is a reviewed list, not a mute switch: the runner (focus-visible.mjs) fails when
 // an entry no longer matches an outline removal, so the list cannot rot.
-//   plugin option: { allow: { [selector]: reason }, onAllowUsed?: (selector) => void }
+//   plugin options: { allow: { [selector]: reason }, onAllowUsed?: (selector) => void,
+//                     shared?: { forced: Set, visibleRing: Set }, collectOnly?: boolean }
+//   `shared` lets the runner pool the replacements of every stylesheet (a forced-colors ring in a11y-modes.css covers an
+//   outline removed in global.css); with `collectOnly` the rule only fills `shared` and reports nothing.
+// Lexical limits, left to review: selectors are compared as text (no specificity, no cascade across rules); a value with
+// var() in the outline shorthand is assumed to supply what it does not show; a calc() width is assumed nonzero;
+// nested selectors (&) are not resolved; a replacement in a stylesheet that is not loaded on the page is still counted.
 import stylelint from 'stylelint';
 
 export const ruleName = 'local/focus-outline-replacement';
 export const messages = stylelint.utils.ruleMessages(ruleName, {
   rejected: (sel) =>
-    `outline removed on "${sel}" with no transparent outline, no forced-colors outline and no :focus-visible ring (box-shadow is dropped in forced-colors mode)`,
+    `outline removed on "${sel}" with no transparent outline (visible style and width), no forced-colors outline and no :focus-visible ring (style and width, not a colour alone; box-shadow is dropped in forced-colors mode)`,
 });
 
 const norm = (s) => s.replace(/\s+/g, ' ').trim();
-const value = (d) => d.value.replace(/!important/i, '').trim();
-const isNone = (d) =>
-  (d.prop === 'outline' && /^(none|0)(\s|$)/i.test(value(d))) ||
-  (d.prop === 'outline-style' && /^none$/i.test(value(d))) ||
-  (d.prop === 'outline-width' && /^0(px)?$/i.test(value(d)));
-const isRealOutline = (d) =>
-  (d.prop === 'outline' && !isNone(d) && !/transparent/i.test(d.value)) ||
-  (d.prop === 'outline-width' && !/^0(px)?$/i.test(value(d))) ||
-  (d.prop === 'outline-color' && !/transparent/i.test(d.value));
-const inForcedColors = (rule) => {
-  for (let p = rule.parent; p; p = p.parent) {
-    if (p.type === 'atrule' && /forced-colors\s*:\s*active/i.test(p.params)) return true;
+const STYLE = /^(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|auto)$/i;
+const WIDTH = /^(?:thin|medium|thick|[+-]?(?:\d*\.)?\d+[a-z%]*|(?:calc|min|max|clamp)\(.*\))$/i;
+const ZERO = /^[+-]?(?:0+(?:\.0*)?|\.0+)[a-z%]*$/i;
+const isZero = (w) => ZERO.test(String(w).trim());
+
+/** Split a value on whitespace outside parentheses. */
+function splitTop(v) {
+  const out = [];
+  let depth = 0;
+  let cur = '';
+  for (const c of v) {
+    if (c === '(') depth++;
+    else if (c === ')') depth--;
+    if (/\s/.test(c) && depth <= 0) { if (cur) out.push(cur); cur = ''; } else cur += c;
   }
-  return false;
+  if (cur) out.push(cur);
+  return out;
+}
+
+/** The outline shorthand: everything it omits is reset to its initial value (style none, width medium, colour currentcolor). */
+function parseShorthand(value) {
+  let style; let width; let color;
+  let hasVar = false;
+  for (const t of splitTop(value)) {
+    if (/^var\(/i.test(t)) { hasVar = true; continue; }
+    if (STYLE.test(t) && style === undefined) style = t.toLowerCase();
+    else if (WIDTH.test(t) && width === undefined) width = t.toLowerCase();
+    else color = t;
+  }
+  return { style: style ?? (hasVar ? 'unknown' : 'none'), width: width ?? (hasVar ? 'unknown' : 'medium'), color: color ?? (hasVar ? 'unknown' : 'currentcolor') };
+}
+
+/** What the rule's own declarations leave the outline as. Properties the rule never mentions stay undefined. */
+function evaluate(rule) {
+  const st = { style: undefined, width: undefined, color: undefined };
+  const imp = { style: false, width: false, color: false };
+  let touched = false;
+  const set = (key, val, important) => {
+    if (imp[key] && !important) return;
+    st[key] = val;
+    if (important) imp[key] = true;
+  };
+  const setAll = (o, important) => { for (const k of ['style', 'width', 'color']) set(k, o[k], important); };
+  for (const n of rule.nodes ?? []) {
+    if (n.type !== 'decl') continue;
+    const prop = n.prop.toLowerCase();
+    const important = n.important || /!important/i.test(n.value);
+    const value = n.value.replace(/!important/i, '').trim();
+    if (prop === 'outline') {
+      touched = true;
+      if (/^(initial|unset)$/i.test(value)) setAll({ style: 'none', width: 'medium', color: 'currentcolor' }, important);
+      else if (/^(inherit|revert|revert-layer)$/i.test(value)) setAll({ style: 'unknown', width: 'unknown', color: 'unknown' }, important);
+      else setAll(parseShorthand(value), important);
+    } else if (prop === 'outline-style') { touched = true; set('style', /^var\(/i.test(value) ? 'unknown' : value.toLowerCase(), important); }
+    else if (prop === 'outline-width') { touched = true; set('width', /^var\(/i.test(value) ? 'unknown' : value.toLowerCase(), important); }
+    else if (prop === 'outline-color') { touched = true; set('color', value, important); }
+    else if (prop === 'all' && /^(initial|unset)$/i.test(value)) { touched = true; setAll({ style: 'none', width: 'medium', color: 'currentcolor' }, important); }
+  }
+  return { ...st, touched };
+}
+const removes = (st) => st.style === 'none' || (st.width !== undefined && isZero(st.width));
+const isRing = (st) => st.style !== undefined && st.style !== 'none' && st.width !== undefined && !isZero(st.width);
+const transparent = (st) => /transparent/i.test(st.color ?? '');
+
+// the query must be exactly the forced-colors feature; any `not`, list or extra condition makes it something else
+const PLAIN_FORCED = /^(?:(?:only\s+)?(?:screen|all)\s+and\s+)?\(\s*forced-colors\s*:\s*active\s*\)$/i;
+const inForcedColors = (rule) => {
+  let plain = false;
+  for (let p = rule.parent; p; p = p.parent) {
+    if (p.type !== 'atrule' || p.name.toLowerCase() !== 'media') continue;
+    const q = p.params.trim().replace(/\s+/g, ' ');
+    if (PLAIN_FORCED.test(q)) plain = true;
+    else if (/forced-colors/i.test(q)) return false;
+  }
+  return plain;
 };
 
 /** @type {import('stylelint').Rule} */
 const rule = (primary, secondary = {}) => (root, result) => {
   if (!primary) return;
   const allow = secondary.allow ?? {};
+  const forced = secondary.shared?.forced ?? new Set();
+  const visibleRing = secondary.shared?.visibleRing ?? new Set();
 
-  // pass 1: what this stylesheet already gives focus-visible, and what it gives forced-colors
-  const forced = new Set();
-  const visibleRing = new Set();
+  // pass 1: what this stylesheet (and, through `shared`, the others) already gives focus-visible, and forced-colors
   root.walkRules((r) => {
-    const hasReal = r.some((n) => n.type === 'decl' && isRealOutline(n));
-    if (!hasReal) return;
+    const st = evaluate(r);
+    if (!isRing(st)) return;
     for (const s of r.selectors.map(norm)) {
       if (inForcedColors(r)) forced.add(s);
-      else if (/:focus-visible$/.test(s)) visibleRing.add(s);
+      else if (/:focus-visible$/.test(s) && !transparent(st)) visibleRing.add(s);
     }
   });
+  if (secondary.collectOnly) return;
 
   // pass 2: every rule that removes the outline
   root.walkRules((r) => {
-    if (inForcedColors(r)) return;
-    const removal = r.nodes?.find((n) => n.type === 'decl' && isNone(n));
-    if (!removal) return;
-    if (r.some((n) => n.type === 'decl' && n.prop.startsWith('outline') && /transparent/i.test(n.value))) return;
+    const st = evaluate(r);
+    if (!st.touched || !removes(st)) return;
+    const removal = r.nodes.find((n) => n.type === 'decl' && (/^outline/i.test(n.prop) || n.prop.toLowerCase() === 'all')) ?? r;
     for (const s of r.selectors.map(norm)) {
       if (Object.hasOwn(allow, s)) { secondary.onAllowUsed?.(s); continue; }
       if (forced.has(s) || forced.has(`${s}:focus-visible`) || forced.has(`${s}:focus`)) continue;

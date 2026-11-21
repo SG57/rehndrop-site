@@ -1,0 +1,2 @@
+.h:focus { outline: none; }
+.h:focus-visible { outline-style: solid; outline-width: 2px; outline-color: #fff; }

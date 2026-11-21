@@ -1,0 +1,2 @@
+.s { outline: none; }
+@media (forced-colors: active), print { .s:focus-visible { outline: 2px solid Highlight; } }
