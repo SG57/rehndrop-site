@@ -103,6 +103,17 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
   reopen the preload question with real-network field data (CrUX) if the site ever has it. Dist went from 456 files and
   12 font files (202,352 bytes) to 448 files and 4 font files (94,108 bytes); what a visitor downloads is unchanged (the
   same four woff2 files, as the unicode ranges already kept the other subsets from loading).
+- Type scale (`font-size` everywhere in `src/styles`) is in rem, converted from px as px / 16, so the reader's browser
+  font size applies and the default look is unchanged: at the default 16px root every computed size, and every box
+  and text rectangle on all 33 routes at the 10 qa viewports, is identical to the px version (98,350 elements,
+  13,750 text nodes), and screenshots are pixel-identical with the stage hidden. At a 20px root (Edge's own
+  "Large" font setting, set through a real profile preference, and `html{font-size:125%}`) every size scales by 1.25 except the `clamp()` titles, whose `vw`
+  middle is deliberately not tied to the root (their rem floor and ceiling do scale), and the range input's own
+  UA font (it draws no text); nothing overflows sideways, and
+  no text spills out of its box; at 24px the one real spill (the 16px `.badge` square around a 10px letter) is fixed
+  by sizing the square in rem. What stays px on purpose: layout lengths, `calc()` offsets, media queries, canvas and
+  WebGL sizes, and the `max(1rem, 16px)` floor on the search field (iOS zooms into a field under 16px).
+  `npm run check:type-units` fails on a px font size, so the next edit cannot undo this.
 
 ## Security: Content Security Policy
 
