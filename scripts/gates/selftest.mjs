@@ -7,6 +7,7 @@
 //   page-load  fixtures are `src` trees (+ optional allow.json)
 //   focus      fixtures are .css (+ .astro, optional allow.json)
 //   html       fixtures are dist-like folders
+//   modes      fixtures are folders holding an a11y-modes.css
 //   astro-check fixtures are tiny Astro projects; they are type-checked with the repo's own astro check
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
@@ -68,6 +69,12 @@ const CASES = [
   ['html', 'bad-empty-heading', 'fail', /empty-heading/],
   ['html', 'bad-hidden-focusable', 'fail', /hidden-focusable/],
   ['html', 'bad-no-html', 'fail', /no \.html files/],
+
+  ['modes', 'good', 'pass', /ok: .* 2 top-level block\(s\)/],
+  ['modes', 'bad-bare-rule', 'fail', /top-level block "\.leak" is not an @media/],
+  ['modes', 'bad-wrong-media', 'fail', /top-level block "@media \(min-width: 700px\)" is not an @media/],
+  ['modes', 'bad-import', 'fail', /top-level statement "@import 'other\.css';"/],
+  ['modes', 'bad-trailing-rule', 'fail', /top-level block "\.after" is not an @media/],
 ];
 const ASTRO_CASES = [
   ['astro-check', 'good', 'pass', /0 errors/],
@@ -81,7 +88,7 @@ const report = (ok, label, detail = '') => {
 };
 
 // the table and the folders must agree
-for (const gate of ['page-load', 'focus', 'html', 'astro-check']) {
+for (const gate of ['page-load', 'focus', 'html', 'modes', 'astro-check']) {
   const dir = join(here, 'fixtures', gate);
   const have = existsSync(dir) ? readdirSync(dir) : [];
   const want = [...CASES, ...ASTRO_CASES].filter((c) => c[0] === gate).map((c) => c[1]);
@@ -94,6 +101,7 @@ for (const [gate, name, expect, msg] of CASES) {
   const r =
     gate === 'page-load' ? run('check-page-load.mjs', ['--root', join(dir, 'src'), ...allowArg(gate, name)])
     : gate === 'focus' ? run('focus-visible.mjs', ['--root', dir, ...allowArg(gate, name)])
+    : gate === 'modes' ? run('check-modes.mjs', ['--css', join(dir, 'a11y-modes.css')])
     : run('check-html.mjs', ['--dist', dir]);
   const exitOk = expect === 'pass' ? r.code === 0 : r.code === 1;
   report(exitOk && msg.test(r.out), `${gate}/${name}: expect ${expect}${exitOk ? '' : ` (exit ${r.code})`}${exitOk && !msg.test(r.out) ? ` (message ${msg} missing)` : ''}`, r.out);

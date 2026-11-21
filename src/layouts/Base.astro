@@ -12,6 +12,7 @@ import MiniPlayer from '../components/MiniPlayer.astro';
 import ContactSheet from '../components/ContactSheet.astro';
 import Glyph from '../components/Glyph.astro';
 import '../styles/interact.css'; // last, so it wins ties against component styles
+import '../styles/a11y-modes.css'; // after interact.css: only forced-colors and prefers-contrast rules
 import type { Track } from '../lib/data';
 import curation from '../data/curation.json';
 import { PHONE_VELVET_MQ } from '../lib/config';

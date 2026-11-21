@@ -1,0 +1,62 @@
+/* Visitor-preference modes: forced colours (Windows contrast themes, Edge and Chrome forced
+   colours) and increased contrast. Loaded last. EVERY rule here sits inside one of the two media
+   queries below, so the default look is untouched; scripts/gates/check-modes.mjs fails the build
+   if a rule appears outside them. */
+
+/* ---------- forced colours ----------
+   The user chose their own palette, so the page gets out of its way. The browser already forces
+   text, borders and control faces to system colours and drops text and box shadows. What it cannot
+   fix is text sitting on the picture: the velvet, the WebGL lens (and water on it), the grain and
+   the blurred cover behind a slide. Those are decoration, so they are not drawn; the text then sits
+   on Canvas in CanvasText, with no backplate patches. visibility (not display) keeps their boxes,
+   so the canvases keep a size and no script divides by zero. Covers, logos and glyphs are content
+   and stay. State that the default look carries in colour or a glow gets a system-colour form. */
+@media (forced-colors: active) {
+  .velvet, .lens, .grain, .drops-layer, .edge, .spot-ambient, .r-shade, .r-glow { visibility: hidden; }
+  .r-img { filter: none; }
+
+  html :focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
+
+  /* the contact dialog is a real panel: opaque, outlined, in system colours */
+  .sheet { background: Canvas; color: CanvasText; border: 1px solid CanvasText; }
+  .sheet::backdrop { background: color-mix(in srgb, CanvasText 45%, transparent); }
+  .sheet-btn { border: 1px solid ButtonText; }
+  .toast, .mini { border: 1px solid CanvasText; }
+
+  /* selected and playing: a fill, not a glow */
+  html .ix-view[aria-pressed='true'], html .ix-letter[aria-pressed='true'] { background: Highlight; color: HighlightText; }
+  html .tick span { background: GrayText; }
+  html .tick span::after { background: Highlight; }
+  html .ix-cover.is-active, html .play.is-active, html .play--xl.is-active { outline: 2px solid Highlight; outline-offset: 2px; }
+  html .badge { border: 1px solid CanvasText; }
+  /* the play discs are a fill and a glow: give them an edge */
+  html .play, html .ix-play { border: 2px solid ButtonText; }
+
+  /* the scrubber: rail, fill, hit marks and thumb are drawn with backgrounds and shadows */
+  html .scrub .scrub-rail { background: GrayText; }
+  html .scrub .scrub-fill { background: Highlight; }
+  html .scrub .scrub-mark, html .scrub .scrub-seam { background: CanvasText; }
+  html .scrub .scrub-input::-webkit-slider-thumb { background: ButtonText; border: 2px solid ButtonFace; }
+  html .scrub .scrub-input::-moz-range-thumb { background: ButtonText; }
+}
+
+/* ---------- increased contrast ----------
+   Modest: the floating text gets a solid ink and a harder halo, the grain gives way to a plain
+   dark veil over the stage, hairlines and glass firm up, and the focus ring thickens. */
+@media (prefers-contrast: more) {
+  :root {
+    --ess-text: #f4f6f7;
+    --ess-text-2: #f4f6f7;
+    --ess-text-3: #f4f6f7;
+    --line: rgba(231, 233, 234, 0.5);
+    --line-2: rgba(231, 233, 234, 0.72);
+    --glass: rgba(6, 6, 10, 0.82);
+  }
+  .grain,
+  html[data-tier='software'] .grain { display: block; opacity: 1; background: rgba(2, 2, 4, 0.4); }
+  .bio, .spot-title, .spot-answer, .spot-note, .track-title, .track-meta, .tv-quote, .tv-lyrics-text,
+  .contact-links, .stage-contact, .contact-mail, .foot-line, .scrub-time {
+    text-shadow: 0 0 2px #000, 0 0 6px rgba(0, 0, 0, 0.95), 0 0 16px rgba(2, 2, 4, 0.95), 0 0 34px rgba(2, 2, 4, 0.8);
+  }
+  html :focus-visible { outline-width: 3px; outline-offset: 4px; }
+}

@@ -83,3 +83,9 @@ that one file, and GitHub Pages picks the domain up from the deployed artifact.
   drag). The site has no on-page bio; `BIO` is only the meta description. `npm run gates:local` runs
   `scripts/gates/selection.mjs`, which triple-clicks each of these with a real mouse and checks the stage
   controls still do not select.
+- Visitor-preference modes live in `src/styles/a11y-modes.css`, loaded last, every rule inside `@media (forced-colors: active)`
+  or `@media (prefers-contrast: more)` (`npm run check:modes` fails on anything else, so the default look cannot depend
+  on it). Forced colors: the velvet, lens, grain and water are not drawn, so the text sits on Canvas in CanvasText, and
+  the dialog, play discs, selected state, scrubber and focus ring use system colors. Increased contrast: the grain
+  becomes a plain dark veil, inks go to near-white, hairlines and glass firm up, and the focus ring thickens.
+  Verified with Playwright's media emulation, not a real Windows contrast theme.
