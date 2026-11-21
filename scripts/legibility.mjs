@@ -51,11 +51,14 @@ const BACKDROPS = { 'velvet.webp': 'laptop', 'velvet-phone.webp': 'phone', 'velv
 // Always muted and never on screen. --gpu: headless on the real GPU; --headed: an off-screen
 // window for when headless only gets SwiftShader (the renderer string is printed); default is SwiftShader
 const gpu = process.argv.includes('--gpu');
+// installed Edge unless QA_BROWSER_CHANNEL says otherwise (chrome, msedge, ... or 'bundled' for Playwright's chromium)
+const BROWSER = process.env.QA_BROWSER_CHANNEL ?? 'msedge';
+const CHANNEL = BROWSER === 'bundled' ? {} : { channel: BROWSER };
 const headed = process.argv.includes('--headed');
 const MUTED = ['--mute-audio', '--disable-features=MediaSessionService,HardwareMediaKeyHandling,GlobalMediaControls', '--autoplay-policy=no-user-gesture-required'];
 const b = await chromium.launch(gpu || headed
-  ? { channel: 'msedge', headless: !headed, args: [...MUTED, '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...(headed ? ['--window-position=-2400,-2400'] : [])] }
-  : { channel: 'msedge', headless: true, args: [...MUTED, '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  ? { ...CHANNEL, headless: !headed, args: [...MUTED, '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...(headed ? ['--window-position=-2400,-2400'] : [])] }
+  : { ...CHANNEL, headless: true, args: [...MUTED, '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const only = argAfter('--only')?.split(',');
 const onlyStyles = argAfter('--styles')?.split(',').map((x) => x.trim().toLowerCase());
 const onlyPages = argAfter('--pages')?.split(',');

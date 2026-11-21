@@ -25,6 +25,10 @@ const full = args.includes('--full');
 const software = args.includes('--software');
 const gpu = args.includes('--gpu') && !software;
 const skipLong = args.includes('--skip-long');
+// Browser: the installed Edge unless QA_BROWSER_CHANNEL says otherwise (chrome, msedge, ... or 'bundled' for
+// Playwright's own chromium, which needs `npx playwright-core install chromium`). CI runners set it.
+const BROWSER = process.env.QA_BROWSER_CHANNEL ?? 'msedge';
+const CHANNEL = BROWSER === 'bundled' ? {} : { channel: BROWSER };
 
 const DEVICES = [
   { name: 'iphone-se', width: 375, height: 667, dpr: 2, mobile: true },
@@ -74,10 +78,10 @@ const headed = args.includes('--headed') && !software;
 const SOFT_RE = /swiftshader|llvmpipe|software|basic render/i;
 const SOFTWARE_ARGS = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 const browser = await chromium.launch(software
-  ? { channel: 'msedge', headless: true, args: [...MUTED, ...SOFTWARE_ARGS] }
+  ? { ...CHANNEL, headless: true, args: [...MUTED, ...SOFTWARE_ARGS] }
   : gpu || headed
-  ? { channel: 'msedge', headless: !headed, args: [...MUTED, '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...(headed ? ['--window-position=-2400,-2400'] : [])] }
-  : { channel: 'msedge', headless: true, args: [...MUTED, '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  ? { ...CHANNEL, headless: !headed, args: [...MUTED, '--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...(headed ? ['--window-position=-2400,-2400'] : [])] }
+  : { ...CHANNEL, headless: true, args: [...MUTED, '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 
 const problems = [];
 const skips = [];
