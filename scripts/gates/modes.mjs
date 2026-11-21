@@ -16,9 +16,15 @@
 //                    CanvasText with no gradient. prefers-contrast: .track-title has the hard halo, on both the
 //                    default and the software tier (a different trackpage.css rule sets each). Default: the title
 //                    keeps its accent glow, the mark keeps the room's own paint.
+//   contrast halo    every selector in the prefers-contrast text-shadow list of a11y-modes.css (read from the file, so the
+//                    list cannot drift from the check) must compute to the hard halo on every element it matches, on the
+//                    index and on a track page per room (both tiers there). A higher-specificity rule elsewhere (the
+//                    essence skin on .contact-links, trackpage.css on .track-title) silently beats a plain mode rule; a
+//                    selector that matches nothing on any page fails too, so the list cannot go stale.
 // Part of `npm run gates:local` (needs a browser). Exit 1 on any failed expectation.
 // Playwright emulates the media features; real Windows contrast themes and a real GPU are not covered.
 // Browser: installed Edge, or QA_BROWSER_CHANNEL (see scripts/qa.mjs). Muted, never on screen.
+import { readFileSync } from 'node:fs';
 import { chromium } from 'playwright-core';
 
 const origin = process.argv[2];
@@ -73,6 +79,36 @@ const focusFirst = async (page) => {
   return css(page, ':focus-visible', ['outline-style', 'outline-width', 'outline-color']);
 };
 
+// ---- the contrast text-shadow list, read from a11y-modes.css ------------------------------------------------------------
+const HALO = 'rgb(0, 0, 0) 0px 0px 2px, rgba(0, 0, 0, 0.95) 0px 0px 6px, rgba(2, 2, 4, 0.95) 0px 0px 16px, rgba(2, 2, 4, 0.8) 0px 0px 34px';
+// every selector of every rule inside the prefers-contrast block whose text-shadow is the halo (rules there are one level deep)
+const haloSelectors = (() => {
+  const css = readFileSync(new URL('../../src/styles/a11y-modes.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const start = css.search(/@media\s*\(\s*prefers-contrast\s*:\s*more\s*\)\s*\{/);
+  const block = start < 0 ? '' : css.slice(start);
+  const out = new Set();
+  for (const m of block.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!/text-shadow\s*:\s*0 0 2px #000,/.test(m[2])) continue;
+    for (const sel of m[1].split(',')) out.add(sel.trim());
+  }
+  return [...out];
+})();
+const haloSeen = new Set();
+const setTier = (page, tier) => page.evaluate((t) => { document.documentElement.dataset.tier = t; }, tier);
+// each selector, every element it matches: the computed text-shadow must be the halo
+async function haloLoop(page, label) {
+  const rows = await page.evaluate((sels) => sels.map((sel) => {
+    const els = [...document.querySelectorAll(sel)];
+    return [sel, els.length, els.map((el) => getComputedStyle(el).textShadow)];
+  }), haloSelectors);
+  for (const [sel, n, shadows] of rows) {
+    if (!n) continue;
+    haloSeen.add(sel);
+    const bad = shadows.filter((t) => t !== HALO);
+    expect(!bad.length, `${label}: ${sel} (${n} element(s)) has the hard halo${bad.length ? ` (${bad.length} have ${bad[0].slice(0, 70)})` : ''}`);
+  }
+}
+
 await session('default', {}, async (page) => {
   const stage = await css(page, '.velvet', ['visibility']);
   const lens = await css(page, '.lens', ['visibility']);
@@ -125,25 +161,29 @@ await session('prefers-contrast', { contrast: 'more' }, async (page) => {
   expect(grain.display === 'block' && grain.opacity === '1' && grain['background-image'] === 'none' && /rgba\(2, 2, 4, 0\.4\)/.test(grain['background-color']), `contrast: the grain is a plain dark veil (${JSON.stringify(grain)})`);
   expect(rgb(ink.color).join() === '244,246,247', `contrast: the credit ink is #f4f6f7 (${ink.color})`);
   expect(ring && ring['outline-width'] === '3px', `contrast: the focus ring is 3px (${ring && ring['outline-width']})`);
+  for (const tier of ['hardware', 'software']) {
+    await setTier(page, tier);
+    await haloLoop(page, `contrast index (${tier})`);
+  }
 });
 
 // one track page per room that has hit marks, found through the index links (a gate that finds none must not pass)
 const trackPages = new Map();
+const trackHtml = new Map(); // every track page fetched: url -> html (the halo list also needs a page that carries each class)
 {
   const index = await (await fetch(base)).text();
   const hrefs = [...new Set([...index.matchAll(/href="([^"#]*\/t\/[^"#/]+\/?)"/g)].map((m) => m[1]))];
   for (const href of hrefs) {
-    if (trackPages.size === 3) break;
     const url = new URL(href, base).href;
     const html = await (await fetch(url)).text();
+    trackHtml.set(url, html);
+    if (trackPages.size === 3) continue;
     const room = (html.match(/class="track-page"[^>]*data-room="(\w+)"/) || [])[1];
     if (room && !trackPages.has(room) && /class="scrub-mark"/.test(html)) trackPages.set(room, url.slice(base.length) + '?lens&t=1700000000000');
   }
 }
 expect(trackPages.size === 3, `track pages: found one per room with hit marks (${[...trackPages.keys()].join(', ') || 'none'})`);
 
-const HALO = 'rgb(0, 0, 0) 0px 0px 2px, rgba(0, 0, 0, 0.95) 0px 0px 6px, rgba(2, 2, 4, 0.95) 0px 0px 16px, rgba(2, 2, 4, 0.8) 0px 0px 34px';
-const setTier = (page, tier) => page.evaluate((t) => { document.documentElement.dataset.tier = t; }, tier);
 for (const [room, path] of trackPages) {
   await session(`track ${room} default`, {}, async (page) => {
     const r = await css(page, '.track-title', ['text-shadow']);
@@ -176,9 +216,26 @@ for (const [room, path] of trackPages) {
       await setTier(page, tier);
       const t = await css(page, '.track-title', ['text-shadow']);
       expect(t && t['text-shadow'] === HALO, `track ${room} contrast (${tier}): the title has the hard halo (${t && t['text-shadow'].slice(0, 70)})`);
+      await haloLoop(page, `track ${room} contrast (${tier})`);
     }
   }, path);
 }
+
+// a listed class that none of the pages above carries (the quote and lyrics blocks exist only on some tracks): one more page each
+for (const sel of haloSelectors.filter((x) => !haloSeen.has(x))) {
+  if (haloSeen.has(sel)) continue;
+  const token = (sel.match(/\.([\w-]+)[^.\s]*$/) || [])[1];
+  const url = token && [...trackHtml].find(([, html]) => [...html.matchAll(/class="([^"]*)"/g)].some((m) => m[1].split(/\s+/).includes(token)))?.[0];
+  if (!url) continue;
+  await session(`contrast halo, a page with .${token}`, { contrast: 'more' }, async (page) => {
+    for (const tier of ['hardware', 'software']) { await setTier(page, tier); await haloLoop(page, `contrast .${token} page (${tier})`); }
+  }, url.slice(base.length) + '?lens&t=1700000000000');
+}
+expect(haloSelectors.length > 0, `contrast halo: read ${haloSelectors.length} selector(s) from the prefers-contrast text-shadow list in a11y-modes.css`);
+// a listed selector no page carries (.bio and .stage-contact are left from earlier layouts) has nothing to compute: said, not failed
+const unseen = haloSelectors.filter((sel) => !haloSeen.has(sel));
+expect(haloSeen.size > 0, `contrast halo: ${haloSeen.size} of ${haloSelectors.length} listed selector(s) matched elements and hold the halo`);
+if (unseen.length) console.log(`note  contrast halo: no element carries ${unseen.join(' | ')} on the index or any track page (nothing to check)`);
 
 await browser.close();
 console.log(fails ? `FAIL: ${fails} mode expectation(s) failed` : 'ok: default, forced-colors and prefers-contrast behave as specified, on the index and on a track page per room');

@@ -69,8 +69,11 @@
   html :focus-visible { outline-width: 3px; outline-offset: 4px; }
   /* trackpage.css loads after this file: .track-page .track-title (0,2,0) and, on the software tier,
      html[data-tier='software'] .track-page .track-title (0,3,1) both set text-shadow. html:root body adds the (0,3,2)
-     needed to beat them without depending on stylesheet order */
-  html:root body .track-page .track-title {
+     needed to beat them without depending on stylesheet order. The same goes for .contact-links: the essence skin
+     (essence.css, html [data-essence-skin='button'], 0,1,1) and its :hover (global.css, 0,2,0) both set text-shadow and
+     beat the plain list above, so it takes html:root body (0,2,2) too. modes.mjs checks every selector of the list */
+  html:root body .track-page .track-title,
+  html:root body .contact-links {
     text-shadow: 0 0 2px #000, 0 0 6px rgba(0, 0, 0, 0.95), 0 0 16px rgba(2, 2, 4, 0.95), 0 0 34px rgba(2, 2, 4, 0.8);
   }
 }
